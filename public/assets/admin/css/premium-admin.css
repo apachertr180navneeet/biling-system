@@ -1,0 +1,208 @@
+/* Premium Admin Panel CSS Override - Light Theme */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap');
+
+:root {
+    /* Premium Light Color Palette */
+    --bg-base: #f1f5f9;
+    --bg-surface: rgba(255, 255, 255, 0.7);
+    --bg-surface-hover: rgba(255, 255, 255, 0.9);
+    --primary-color: #4f46e5; /* Indigo */
+    --primary-hover: #4338ca;
+    --accent-color: #ec4899; /* Pink */
+    --text-main: #1e293b;
+    --text-muted: #64748b;
+    --border-color: rgba(0, 0, 0, 0.05);
+    
+    /* Glassmorphism */
+    --glass-blur: blur(16px);
+    --glass-shadow: 0 8px 32px rgba(30, 41, 59, 0.04);
+    --glass-border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+body {
+    font-family: 'Inter', sans-serif !important;
+    background-color: var(--bg-base) !important;
+    color: var(--text-main) !important;
+    background-image: 
+        radial-gradient(at 0% 0%, rgba(79, 70, 229, 0.08) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.08) 0px, transparent 50%);
+    background-attachment: fixed;
+}
+
+/* Headings */
+h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+    font-family: 'Outfit', sans-serif !important;
+    color: var(--text-main) !important;
+    font-weight: 600;
+}
+
+/* Sidebar (Menu) */
+.layout-menu {
+    background: var(--bg-surface) !important;
+    backdrop-filter: var(--glass-blur) !important;
+    -webkit-backdrop-filter: var(--glass-blur) !important;
+    border-right: var(--glass-border) !important;
+    box-shadow: var(--glass-shadow) !important;
+}
+
+.menu-item .menu-link {
+    color: var(--text-muted) !important;
+    transition: all 0.3s ease !important;
+    border-radius: 8px !important;
+    margin: 4px 12px !important;
+}
+
+.menu-item:hover > .menu-link {
+    background: rgba(0, 0, 0, 0.03) !important;
+    color: var(--text-main) !important;
+    transform: translateX(4px);
+}
+
+.menu-item.active > .menu-link {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover)) !important;
+    color: #fff !important;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25) !important;
+}
+
+/* Navbar */
+.layout-navbar {
+    background: var(--bg-surface) !important;
+    backdrop-filter: var(--glass-blur) !important;
+    -webkit-backdrop-filter: var(--glass-blur) !important;
+    border-bottom: var(--glass-border) !important;
+    box-shadow: var(--glass-shadow) !important;
+}
+
+/* Cards */
+.card {
+    background: var(--bg-surface) !important;
+    backdrop-filter: var(--glass-blur) !important;
+    -webkit-backdrop-filter: var(--glass-blur) !important;
+    border: var(--glass-border) !important;
+    border-radius: 16px !important;
+    box-shadow: var(--glass-shadow) !important;
+    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+    color: var(--text-main) !important;
+}
+
+.card:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: 0 12px 32px rgba(30, 41, 59, 0.08) !important;
+}
+
+.card-header, .card-footer {
+    background: transparent !important;
+    border-color: var(--border-color) !important;
+}
+
+/* Tables */
+.table {
+    color: var(--text-main) !important;
+}
+
+.table th {
+    font-family: 'Outfit', sans-serif !important;
+    color: var(--text-muted) !important;
+    border-bottom-color: var(--border-color) !important;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+}
+
+.table td {
+    border-bottom-color: var(--border-color) !important;
+    vertical-align: middle;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.02) !important;
+}
+
+/* Buttons */
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover)) !important;
+    border: none !important;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25) !important;
+    transition: all 0.3s ease !important;
+    color: #fff !important;
+    border-radius: 8px !important;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 16px rgba(79, 70, 229, 0.35) !important;
+}
+
+/* Form Controls */
+.form-control, .form-select {
+    background-color: rgba(255, 255, 255, 0.5) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-main) !important;
+    border-radius: 8px !important;
+    transition: all 0.3s ease !important;
+}
+
+.form-control:focus, .form-select:focus {
+    background-color: rgba(255, 255, 255, 0.9) !important;
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 0.25rem rgba(79, 70, 229, 0.15) !important;
+    color: var(--text-main) !important;
+}
+
+.form-control::placeholder {
+    color: var(--text-muted) !important;
+}
+
+/* Dropdowns */
+.dropdown-menu {
+    background: var(--bg-surface) !important;
+    backdrop-filter: var(--glass-blur) !important;
+    -webkit-backdrop-filter: var(--glass-blur) !important;
+    border: var(--glass-border) !important;
+    box-shadow: 0 8px 32px rgba(30, 41, 59, 0.12) !important;
+}
+
+.dropdown-item {
+    color: var(--text-main) !important;
+    transition: background-color 0.2s ease;
+}
+
+.dropdown-item:hover {
+    background-color: rgba(0, 0, 0, 0.03) !important;
+    color: var(--primary-color) !important;
+}
+
+/* Text Colors Overrides */
+.text-muted {
+    color: var(--text-muted) !important;
+}
+
+.text-dark {
+    color: var(--text-main) !important;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: var(--bg-base);
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(30, 41, 59, 0.15);
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(30, 41, 59, 0.25);
+}
+
+/* Ensure the layout has no ugly white backgrounds from default theme */
+.content-wrapper, .layout-page {
+    background: transparent !important;
+}
+
+.footer {
+    background: transparent !important;
+    border-top: var(--glass-border) !important;
+}

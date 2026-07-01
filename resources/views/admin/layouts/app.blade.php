@@ -27,7 +27,7 @@
         <style>
             
         </style>
-        
+        <link rel="stylesheet" href="{{asset('assets/admin/css/premium-admin.css')}}" />
     </head>
     <body>
        <div class="layout-wrapper layout-content-navbar">
