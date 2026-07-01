@@ -3,11 +3,8 @@
 namespace App\Helpers;
 
 use App\Models\User;
-use App\Models\Page;
 use DB, Auth, File, Mail;
 use Carbon\Carbon;
-use App\Models\Notification;
-use App\Models\NotificationUser;
 
 
 class Helper
@@ -16,11 +13,6 @@ class Helper
     public static function admin(){
         $admin = User::where('id',1)->first();
         return $admin;
-    }
-
-    public static function pages(){
-        $pages = Page::get();
-        return $pages;
     }
 
 
@@ -62,16 +54,6 @@ class Helper
         }
 
         return $slug;
-    }
-
-    public static function getUserNotifications(){
-        $user = Auth::user();
-        $notifications = array();
-        if($user){
-            $user_notifications = NotificationUser::where('user_id',$user->id)->where('read_at',null)->pluck('notification_id')->toArray();
-            $notifications = Notification::whereIn('id',$user_notifications)->orderBy('created_at', 'desc')->take(5)->get();
-        }
-        return $notifications;   
     }
 
 
