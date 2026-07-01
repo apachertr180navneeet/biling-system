@@ -42,17 +42,18 @@
 
                 <hr>
                 <h5>Vehicle Items (Multi-Quantity)</h5>
-                <datalist id="vehicleOptions">
-                    @foreach($vehicleOptions as $opt)
-                    <option value="{{ $opt }}">
-                    @endforeach
-                </datalist>
+                <script>var vehiclePrices = @json($vehiclePrices);</script>
                 @error('items') <div class="text-danger small mb-2">{{ $message }}</div> @enderror
                 <div id="itemsContainer">
                     @foreach($vehiclePurchaseOrder->items as $i => $item)
                     <div class="item-row row">
                         <div class="col-md-3">
-                            <input type="text" name="items[{{ $i }}][vehicle_description]" class="form-control" list="vehicleOptions" value="{{ $item->vehicle_description }}">
+                            <select name="items[{{ $i }}][vehicle_description]" class="form-select vehicle-select">
+                                <option value="">Select Vehicle</option>
+                                @foreach($vehicleList as $opt)
+                                <option value="{{ $opt }}" {{ $item->vehicle_description == $opt ? 'selected' : '' }}>{{ $opt }}</option>
+                                @endforeach
+                            </select>
                         </div>
                         <div class="col-md-2">
                             <input type="text" name="items[{{ $i }}][color_name]" class="form-control" value="{{ $item->color_name }}">
@@ -93,8 +94,13 @@
 $(document).ready(function() {
     var itemIndex = {{ count($vehiclePurchaseOrder->items) }};
     $('#addItem').click(function() {
+        var optionsHtml = '<option value="">Select Vehicle</option>';
+        @foreach($vehicleList as $opt)
+        optionsHtml += '<option value="{{ $opt }}">{{ $opt }}</option>';
+        @endforeach
+
         var html = '<div class="item-row row">' +
-            '<div class="col-md-3"><input type="text" name="items[' + itemIndex + '][vehicle_description]" class="form-control" list="vehicleOptions" placeholder="Vehicle"></div>' +
+            '<div class="col-md-3"><select name="items[' + itemIndex + '][vehicle_description]" class="form-select vehicle-select">' + optionsHtml + '</select></div>' +
             '<div class="col-md-2"><input type="text" name="items[' + itemIndex + '][color_name]" class="form-control" placeholder="Color"></div>' +
             '<div class="col-md-1"><input type="number" name="items[' + itemIndex + '][mfg_year]" class="form-control" placeholder="Year"></div>' +
             '<div class="col-md-1"><input type="number" name="items[' + itemIndex + '][quantity]" class="form-control qty" min="1" value="1"></div>' +
@@ -108,6 +114,14 @@ $(document).ready(function() {
     $(document).on('click', '.remove-item', function() {
         if ($('.item-row').length > 1) $(this).closest('.item-row').remove();
         calcTotal();
+    });
+    $(document).on('change', '.vehicle-select', function() {
+        var row = $(this).closest('.item-row');
+        var desc = $(this).val();
+        if (vehiclePrices[desc]) {
+            row.find('.unit-price').val(vehiclePrices[desc]);
+            row.find('.qty').trigger('keyup');
+        }
     });
     $(document).on('change keyup', '.qty, .unit-price', function() {
         var row = $(this).closest('.item-row');

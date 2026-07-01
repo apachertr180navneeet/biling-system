@@ -21,8 +21,10 @@ class VehiclePurchaseOrderController extends Controller
     public function create()
     {
         $suppliers = Supplier::where('is_active', true)->orderBy('name')->get();
-        $vehicleOptions = $this->getVehicleOptions();
-        return view('admin.vehicle_purchase_orders.create', compact('suppliers', 'vehicleOptions'));
+        $vehicleData = $this->getVehicleOptions();
+        $vehicleList = $vehicleData['list'];
+        $vehiclePrices = $vehicleData['prices'];
+        return view('admin.vehicle_purchase_orders.create', compact('suppliers', 'vehicleList', 'vehiclePrices'));
     }
 
     public function store(Request $request)
@@ -84,8 +86,10 @@ class VehiclePurchaseOrderController extends Controller
         }
         $vehiclePurchaseOrder->load('items');
         $suppliers = Supplier::where('is_active', true)->orderBy('name')->get();
-        $vehicleOptions = $this->getVehicleOptions();
-        return view('admin.vehicle_purchase_orders.edit', compact('vehiclePurchaseOrder', 'suppliers', 'vehicleOptions'));
+        $vehicleData = $this->getVehicleOptions();
+        $vehicleList = $vehicleData['list'];
+        $vehiclePrices = $vehicleData['prices'];
+        return view('admin.vehicle_purchase_orders.edit', compact('vehiclePurchaseOrder', 'suppliers', 'vehicleList', 'vehiclePrices'));
     }
 
     public function update(Request $request, VehiclePurchaseOrder $vehiclePurchaseOrder)
@@ -224,16 +228,22 @@ class VehiclePurchaseOrderController extends Controller
 
     private function getVehicleOptions(): array
     {
-        $options = [];
-        VehicleModel::with('brand', 'variants')->whereHas('brand', fn($q) => $q->where('is_active', true))->orderBy('name')->get()->each(function ($model) use (&$options) {
+        $list = [];
+        $prices = [];
+        VehicleModel::with('brand', 'variants')->whereHas('brand', fn($q) => $q->where('is_active', true))->orderBy('name')->get()->each(function ($model) use (&$list, &$prices) {
             if ($model->variants->count()) {
                 foreach ($model->variants as $variant) {
-                    $options[] = $model->brand->name . ' ' . $model->name . ' ' . $variant->name;
+                    $desc = $model->brand->name . ' ' . $model->name . ' ' . $variant->name;
+                    $list[] = $desc;
+                    if ($variant->ex_showroom_price) {
+                        $prices[$desc] = $variant->ex_showroom_price;
+                    }
                 }
             } else {
-                $options[] = $model->brand->name . ' ' . $model->name;
+                $desc = $model->brand->name . ' ' . $model->name;
+                $list[] = $desc;
             }
         });
-        return $options;
+        return ['list' => $list, 'prices' => $prices];
     }
 }

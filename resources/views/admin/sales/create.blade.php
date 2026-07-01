@@ -19,12 +19,23 @@
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Vehicle Description</label>
-                    <input type="text" name="vehicle_description" class="form-control @error('vehicle_description') is-invalid @enderror" value="{{ old('vehicle_description') }}" placeholder="e.g. Maruti Suzuki Swift LXi">
+                    <select name="vehicle_description" id="vehicle_description" class="form-select @error('vehicle_description') is-invalid @enderror">
+                        <option value="">Select Vehicle</option>
+                        @foreach($variants as $v)
+                            @php
+                                $vName = ($v->model->brand->name ?? '') . ' ' . ($v->model->name ?? '') . ' ' . $v->name;
+                                $stock = $inventoryStock[$vName] ?? 0;
+                            @endphp
+                            <option value="{{ $vName }}" data-price="{{ $v->ex_showroom_price }}" data-stock="{{ $stock }}" {{ old('vehicle_description') == $vName ? 'selected' : '' }}>
+                                {{ $vName }}
+                            </option>
+                        @endforeach
+                    </select>
                     @error('vehicle_description')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Sale Price</label>
-                    <input type="number" step="0.01" name="sale_price" class="form-control @error('sale_price') is-invalid @enderror" value="{{ old('sale_price') }}">
+                    <input type="number" step="0.01" name="sale_price" id="sale_price" class="form-control @error('sale_price') is-invalid @enderror" value="{{ old('sale_price') }}">
                     @error('sale_price')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
                 <div class="col-md-4">
@@ -46,4 +57,34 @@
         </form>
     </div></div>
 </div>
+@endsection
+@section('script')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const vehicleSelect = document.getElementById('vehicle_description');
+        const salePriceInput = document.getElementById('sale_price');
+
+        if (vehicleSelect && salePriceInput) {
+            vehicleSelect.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                if (!selectedOption.value) return;
+                
+                const price = selectedOption.getAttribute('data-price');
+                const stock = parseInt(selectedOption.getAttribute('data-stock') || 0);
+                
+                if (price) {
+                    salePriceInput.value = price;
+                }
+                
+                if (stock <= 0) {
+                    if (typeof setFlesh === 'function') {
+                        setFlesh('error', 'Stock not available for this vehicle.');
+                    } else {
+                        alert('Stock not available for this vehicle.');
+                    }
+                }
+            });
+        }
+    });
+</script>
 @endsection

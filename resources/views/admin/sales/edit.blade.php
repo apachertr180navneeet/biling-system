@@ -37,11 +37,22 @@
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Vehicle Description</label>
-                    <input type="text" name="vehicle_description" class="form-control" value="{{ old('vehicle_description', $sale->vehicle_description) }}">
+                    <select name="vehicle_description" id="vehicle_description" class="form-select">
+                        <option value="">Select Vehicle</option>
+                        @foreach($variants as $v)
+                            @php
+                                $vName = ($v->model->brand->name ?? '') . ' ' . ($v->model->name ?? '') . ' ' . $v->name;
+                                $stock = $inventoryStock[$vName] ?? 0;
+                            @endphp
+                            <option value="{{ $vName }}" data-price="{{ $v->ex_showroom_price }}" data-stock="{{ $stock }}" {{ old('vehicle_description', $sale->vehicle_description) == $vName ? 'selected' : '' }}>
+                                {{ $vName }}
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Sale Price</label>
-                    <input type="number" step="0.01" name="sale_price" class="form-control" value="{{ $sale->sale_price }}">
+                    <input type="number" step="0.01" name="sale_price" id="sale_price" class="form-control" value="{{ $sale->sale_price }}">
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Booking Date</label>
@@ -98,6 +109,26 @@ $(function(){
         $.post('{{ route("admin.sales.update-status", $sale) }}', form.serialize()).done(function(r){
             if(r.success) location.reload();
         }).fail(function(){alert('Error updating status');});
+    });
+
+    $('#vehicle_description').on('change', function() {
+        const selectedOption = $(this).find('option:selected');
+        if (!selectedOption.val()) return;
+        
+        const price = selectedOption.data('price');
+        const stock = parseInt(selectedOption.data('stock') || 0);
+        
+        if (price !== undefined && price !== '') {
+            $('#sale_price').val(price);
+        }
+        
+        if (stock <= 0) {
+            if (typeof setFlesh === 'function') {
+                setFlesh('error', 'Stock not available for this vehicle.');
+            } else {
+                alert('Stock not available for this vehicle.');
+            }
+        }
     });
 });
 </script>

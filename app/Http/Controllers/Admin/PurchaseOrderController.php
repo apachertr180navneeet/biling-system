@@ -7,6 +7,7 @@ use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderItem;
 use App\Models\Supplier;
 use App\Models\SparePart;
+use App\Models\SparePartStock;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -165,6 +166,12 @@ class PurchaseOrderController extends Controller
 
                 if ($newReceived > 0) {
                     $anyReceived = true;
+                    $stock = SparePartStock::firstOrCreate(
+                        ['spare_part_id' => $poItem->spare_part_id],
+                        ['quantity' => 0, 'min_quantity' => 0, 'purchase_price' => 0]
+                    );
+                    $stock->increment('quantity', $newReceived);
+                    $stock->update(['purchase_price' => $poItem->unit_price, 'purchase_order_id' => $purchaseOrder->id]);
                 }
 
                 if ($newReceived < $poItem->quantity) {

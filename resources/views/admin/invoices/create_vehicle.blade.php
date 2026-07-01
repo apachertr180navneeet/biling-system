@@ -99,6 +99,7 @@
 @endsection
 @section('script')
 <script>
+var vehiclePrices = @json($vehiclePrices);
 $(document).ready(function() {
     function calcGst() {
         var price = parseFloat($('#sellingPrice').val()) || 0;
@@ -119,10 +120,15 @@ $(document).ready(function() {
     $('#inventorySelect').change(function() {
         var opt = $(this).find(':selected');
         if (opt.val()) {
-            $('#vehicleDesc').val(opt.data('desc'));
+            var desc = opt.data('desc');
+            $('#vehicleDesc').val(desc);
             $('#chassisNum').val(opt.data('chassis'));
             $('#engineNum').val(opt.data('engine'));
             $('#mfgYear').val(opt.data('year'));
+            if (vehiclePrices[desc]) {
+                $('#sellingPrice').val(vehiclePrices[desc]);
+                calcGst();
+            }
         }
     });
     $('#sellingPrice, #gstToggle, #customerSelect').on('change keyup', calcGst);

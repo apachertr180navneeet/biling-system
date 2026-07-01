@@ -65,6 +65,17 @@
                 </div>
             </div>
         </div>
+        <div class="col-lg-3 col-md-6 col-12 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div><span class="d-block mb-1 text-muted">Part Inventory</span><h3 class="mb-0">{{ $lowStockCount }}</h3></div>
+                        <span class="badge bg-label-warning p-2 rounded"><i class="bx bx-box stat-icon"></i></span>
+                    </div>
+                    <small class="text-muted">low stock items</small>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="row">

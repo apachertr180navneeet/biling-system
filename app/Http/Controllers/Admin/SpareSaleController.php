@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\SpareSale;
 use App\Models\SpareSaleItem;
 use App\Models\SparePart;
+use App\Models\SparePartStock;
 use App\Models\Customer;
 use App\Services\GstCalculator;
 use Illuminate\Http\Request;
@@ -80,6 +81,12 @@ class SpareSaleController extends Controller
                     'total' => $total,
                 ]);
 
+                if (!empty($item['spare_part_id'])) {
+                    $stock = SparePartStock::where('spare_part_id', $item['spare_part_id'])->first();
+                    if ($stock && $stock->quantity >= $item['quantity']) {
+                        $stock->decrement('quantity', $item['quantity']);
+                    }
+                }
 
             }
 
@@ -107,8 +114,20 @@ class SpareSaleController extends Controller
 
     public function destroy(SpareSale $spareSale)
     {
-        $spareSale->items()->delete();
-        $spareSale->delete();
+        DB::transaction(function () use ($spareSale) {
+            $spareSale->load('items');
+            foreach ($spareSale->items as $item) {
+                if ($item->spare_part_id) {
+                    $stock = SparePartStock::firstOrCreate(
+                        ['spare_part_id' => $item->spare_part_id],
+                        ['quantity' => 0, 'min_quantity' => 0, 'purchase_price' => 0]
+                    );
+                    $stock->increment('quantity', $item->quantity);
+                }
+            }
+            $spareSale->items()->delete();
+            $spareSale->delete();
+        });
         return response()->json(['success' => true, 'message' => 'Deleted successfully.']);
     }
 }

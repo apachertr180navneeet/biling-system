@@ -7,7 +7,9 @@ use App\Models\Invoice;
 use App\Models\InvoiceSeries;
 use App\Models\Customer;
 use App\Models\SparePart;
+use App\Models\SparePartStock;
 use App\Models\VehicleInventory;
+use App\Models\VehicleModel;
 use App\Services\GstCalculator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -24,7 +26,16 @@ class InvoiceController extends Controller
     {
         $customers = Customer::orderBy('first_name')->get();
         $vehicleInventories = VehicleInventory::where('quantity', '>', 0)->where('status', 'available')->where('is_active', true)->orderBy('vehicle_description')->get();
-        return view('admin.invoices.create_vehicle', compact('customers', 'vehicleInventories'));
+        $vehiclePrices = [];
+        VehicleModel::with('brand', 'variants')->whereHas('brand', fn($q) => $q->where('is_active', true))->get()->each(function ($model) use (&$vehiclePrices) {
+            foreach ($model->variants as $v) {
+                $desc = $model->brand->name . ' ' . $model->name . ' ' . $v->name;
+                if ($v->ex_showroom_price) {
+                    $vehiclePrices[$desc] = $v->ex_showroom_price;
+                }
+            }
+        });
+        return view('admin.invoices.create_vehicle', compact('customers', 'vehicleInventories', 'vehiclePrices'));
     }
 
     public function storeVehicle(Request $request, GstCalculator $gst)
@@ -140,6 +151,12 @@ class InvoiceController extends Controller
 
             foreach ($result['calculatedItems'] as $item) {
                 $invoice->items()->create($item);
+                if (!empty($item['spare_part_id'])) {
+                    $stock = SparePartStock::where('spare_part_id', $item['spare_part_id'])->first();
+                    if ($stock && $stock->quantity >= $item['quantity']) {
+                        $stock->decrement('quantity', $item['quantity']);
+                    }
+                }
             }
 
             return $invoice;
@@ -162,6 +179,18 @@ class InvoiceController extends Controller
                 if ($inv) {
                     $inv->increment('quantity');
                     $inv->update(['status' => 'available']);
+                }
+            }
+            if ($invoice->invoice_type === 'parts') {
+                $invoice->load('items');
+                foreach ($invoice->items as $item) {
+                    if ($item->spare_part_id) {
+                        $stock = SparePartStock::firstOrCreate(
+                            ['spare_part_id' => $item->spare_part_id],
+                            ['quantity' => 0, 'min_quantity' => 0, 'purchase_price' => 0]
+                        );
+                        $stock->increment('quantity', $item->quantity);
+                    }
                 }
             }
             $invoice->delete();

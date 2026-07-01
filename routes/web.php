@@ -24,6 +24,7 @@ use App\Http\Controllers\Admin\ServiceReminderController;
 use App\Http\Controllers\Admin\SaleController;
 use App\Http\Controllers\Admin\SpareSaleController;
 use App\Http\Controllers\Admin\VehiclePurchaseOrderController;
+use App\Http\Controllers\Admin\SparePartStockController;
 
 
 /*
@@ -98,6 +99,9 @@ Route::name('admin.')->prefix('admin')->group(function () {
         Route::get('vehicle-purchase-orders/{vehicle_purchase_order}/receive', [VehiclePurchaseOrderController::class, 'receive'])->name('vehicle-purchase-orders.receive');
         Route::post('vehicle-purchase-orders/{vehicle_purchase_order}/receive-store', [VehiclePurchaseOrderController::class, 'receiveStore'])->name('vehicle-purchase-orders.receive-store');
         Route::get('vehicle-inventories', [VehiclePurchaseOrderController::class, 'inventory'])->name('vehicle-inventories.index');
+        Route::get('spare-part-stocks', [SparePartStockController::class, 'index'])->name('spare-part-stocks.index');
+        Route::post('spare-part-stocks/{spare_part_stock}/toggle-status', [SparePartStockController::class, 'toggleStatus'])->name('spare-part-stocks.toggle-status');
+        Route::post('spare-part-stocks/{spare_part_stock}/destroy', [SparePartStockController::class, 'destroy'])->name('spare-part-stocks.destroy');
 
         Route::get('invoices', [InvoiceController::class, 'index'])->name('invoices.index');
         Route::get('invoices/create-vehicle', [InvoiceController::class, 'createVehicle'])->name('invoices.create-vehicle');

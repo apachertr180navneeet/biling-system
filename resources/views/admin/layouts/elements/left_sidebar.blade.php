@@ -159,6 +159,13 @@
 			</a>
 		</li>
 
+		<li class="menu-item {{ request()->routeIs('admin.spare-part-stocks.*') ? 'active' : ''}}">
+			<a href="{{route('admin.spare-part-stocks.index')}}" class="menu-link">
+				<i class="menu-icon tf-icons bx bx-box"></i>
+				<div data-i18n="Part Inventory">Part Inventory</div>
+			</a>
+		</li>
+
 		<li class="menu-header small text-uppercase"><span class="menu-header-text">Services</span></li>
 
 		<li class="menu-item {{ request()->routeIs('admin.job-cards.*') ? 'active' : ''}}">

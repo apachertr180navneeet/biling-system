@@ -14,6 +14,7 @@ use App\Models\Customer;
 use App\Models\Payment;
 use App\Models\VehicleInventory;
 use App\Models\VehiclePurchaseOrder;
+use App\Models\SparePartStock;
 
 class AdminAuthController extends Controller
 {
@@ -284,6 +285,7 @@ class AdminAuthController extends Controller
 
         $vehicleInventoryCount = VehicleInventory::where('quantity', '>', 0)->where('status', 'available')->sum('quantity');
         $pendingVehiclePOs = VehiclePurchaseOrder::whereIn('status', ['pending', 'partial'])->count();
+        $lowStockCount = SparePartStock::where('is_active', true)->whereColumn('quantity', '<', 'min_quantity')->where('min_quantity', '>', 0)->count();
 
         $recentInvoices = Invoice::with('customer')->latest()->take(5)->get();
         $recentPayments = Payment::with('customer')->latest()->take(5)->get();
@@ -292,7 +294,7 @@ class AdminAuthController extends Controller
             'todayInvoices', 'monthRevenue',
             'totalCustomers', 'totalInvoices',
             'totalRevenue', 'totalPayments', 'pendingInvoices',
-            'vehicleInventoryCount', 'pendingVehiclePOs',
+            'vehicleInventoryCount', 'pendingVehiclePOs', 'lowStockCount',
             'recentInvoices', 'recentPayments'
         ));
     }

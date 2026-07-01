@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Sale;
 use App\Models\Customer;
 use App\Models\Invoice;
+use App\Models\VehicleVariant;
+use App\Models\VehicleInventory;
 use Illuminate\Http\Request;
 
 class SaleController extends Controller
@@ -19,7 +21,14 @@ class SaleController extends Controller
     public function create()
     {
         $customers = Customer::orderBy('first_name')->get();
-        return view('admin.sales.create', compact('customers'));
+        $variants = VehicleVariant::with(['model.brand'])->where('is_active', true)->get();
+        $inventoryStock = VehicleInventory::where('quantity', '>', 0)
+            ->where('status', 'available')
+            ->where('is_active', true)
+            ->groupBy('vehicle_description')
+            ->selectRaw('vehicle_description, SUM(quantity) as total_qty')
+            ->pluck('total_qty', 'vehicle_description');
+        return view('admin.sales.create', compact('customers', 'variants', 'inventoryStock'));
     }
 
     public function store(Request $request)
@@ -45,7 +54,14 @@ class SaleController extends Controller
     public function edit(Sale $sale)
     {
         $customers = Customer::orderBy('first_name')->get();
-        return view('admin.sales.edit', compact('sale', 'customers'));
+        $variants = VehicleVariant::with(['model.brand'])->where('is_active', true)->get();
+        $inventoryStock = VehicleInventory::where('quantity', '>', 0)
+            ->where('status', 'available')
+            ->where('is_active', true)
+            ->groupBy('vehicle_description')
+            ->selectRaw('vehicle_description, SUM(quantity) as total_qty')
+            ->pluck('total_qty', 'vehicle_description');
+        return view('admin.sales.edit', compact('sale', 'customers', 'variants', 'inventoryStock'));
     }
 
     public function update(Request $request, Sale $sale)
