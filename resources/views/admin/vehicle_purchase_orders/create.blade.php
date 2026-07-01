@@ -7,19 +7,19 @@
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
     <h4 class="fw-bold py-3 mb-4">
-        <span class="text-muted fw-light">Admin / Purchase Orders /</span> Create
+        <span class="text-muted fw-light">Admin / Vehicle Purchase Orders /</span> Create
     </h4>
     <div class="card">
-        <div class="card-header"><h5 class="mb-0">New Purchase Order</h5></div>
+        <div class="card-header"><h5 class="mb-0">New Vehicle Purchase Order</h5></div>
         <div class="card-body">
-            <form method="POST" action="{{ route('admin.purchase-orders.store') }}" id="poForm">
+            <form method="POST" action="{{ route('admin.vehicle-purchase-orders.store') }}" id="poForm">
                 @csrf
                 <div class="mb-3">
                     <label class="form-label">Supplier</label>
                     <select name="supplier_id" class="form-control @error('supplier_id') is-invalid @enderror">
                         <option value="">Select Supplier</option>
-                        @foreach($suppliers as $supplier)
-                        <option value="{{ $supplier->id }}" {{ old('supplier_id') == $supplier->id ? 'selected' : '' }}>{{ $supplier->name }}</option>
+                        @foreach($suppliers as $s)
+                        <option value="{{ $s->id }}" {{ old('supplier_id') == $s->id ? 'selected' : '' }}>{{ $s->name }}</option>
                         @endforeach
                     </select>
                     @error('supplier_id') <div class="text-danger small">{{ $message }}</div> @enderror
@@ -41,23 +41,29 @@
                 </div>
 
                 <hr>
-                <h5>Order Items</h5>
+                <h5>Vehicle Items (Multi-Quantity)</h5>
+                <datalist id="vehicleOptions">
+                    @foreach($vehicleOptions as $opt)
+                    <option value="{{ $opt }}">
+                    @endforeach
+                </datalist>
                 @error('items') <div class="text-danger small mb-2">{{ $message }}</div> @enderror
                 <div id="itemsContainer">
                     <div class="item-row row">
-                        <div class="col-md-5">
-                            <select name="items[0][spare_part_id]" class="form-control @error('items.0.spare_part_id') is-invalid @enderror">
-                                <option value="">Select Part</option>
-                                @foreach($spareParts as $part)
-                                <option value="{{ $part->id }}" data-price="{{ $part->purchase_price }}">{{ $part->part_no }} - {{ $part->name }}</option>
-                                @endforeach
-                            </select>
+                        <div class="col-md-3">
+                            <input type="text" name="items[0][vehicle_description]" class="form-control" list="vehicleOptions" placeholder="Vehicle (e.g. Swift VXi)" value="{{ old('items.0.vehicle_description') }}">
                         </div>
                         <div class="col-md-2">
+                            <input type="text" name="items[0][color_name]" class="form-control" placeholder="Color" value="{{ old('items.0.color_name') }}">
+                        </div>
+                        <div class="col-md-1">
+                            <input type="number" name="items[0][mfg_year]" class="form-control" placeholder="Year" value="{{ old('items.0.mfg_year') }}">
+                        </div>
+                        <div class="col-md-1">
                             <input type="number" name="items[0][quantity]" class="form-control qty" placeholder="Qty" min="1" value="1">
                         </div>
                         <div class="col-md-2">
-                            <input type="number" step="0.01" name="items[0][unit_price]" class="form-control unit-price" placeholder="Price" min="0" value="0">
+                            <input type="number" step="0.01" name="items[0][unit_price]" class="form-control unit-price" placeholder="Unit Price" min="0" value="0">
                         </div>
                         <div class="col-md-2">
                             <input type="text" class="form-control line-total" readonly value="0.00">
@@ -67,14 +73,14 @@
                         </div>
                     </div>
                 </div>
-                <button type="button" class="btn btn-sm btn-secondary mt-2" id="addItem">+ Add Item</button>
+                <button type="button" class="btn btn-sm btn-secondary mt-2" id="addItem">+ Add Vehicle Row</button>
 
                 <hr>
                 <div class="text-end">
                     <h5>Total: <span id="grandTotal">0.00</span></h5>
                 </div>
-                <button type="submit" class="btn btn-primary">Create Order</button>
-                <a href="{{ route('admin.purchase-orders.index') }}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">Create PO</button>
+                <a href="{{ route('admin.vehicle-purchase-orders.index') }}" class="btn btn-secondary">Cancel</a>
             </form>
         </div>
     </div>
@@ -86,9 +92,11 @@ $(document).ready(function() {
     var itemIndex = 1;
     $('#addItem').click(function() {
         var html = '<div class="item-row row">' +
-            '<div class="col-md-5"><select name="items[' + itemIndex + '][spare_part_id]" class="form-control"><option value="">Select Part</option>@foreach($spareParts as $part)<option value="{{ $part->id }}" data-price="{{ $part->purchase_price }}">{{ $part->part_no }} - {{ $part->name }}</option>@endforeach</select></div>' +
-            '<div class="col-md-2"><input type="number" name="items[' + itemIndex + '][quantity]" class="form-control qty" placeholder="Qty" min="1" value="1"></div>' +
-            '<div class="col-md-2"><input type="number" step="0.01" name="items[' + itemIndex + '][unit_price]" class="form-control unit-price" placeholder="Price" min="0" value="0"></div>' +
+            '<div class="col-md-3"><input type="text" name="items[' + itemIndex + '][vehicle_description]" class="form-control" list="vehicleOptions" placeholder="Vehicle (e.g. Swift VXi)"></div>' +
+            '<div class="col-md-2"><input type="text" name="items[' + itemIndex + '][color_name]" class="form-control" placeholder="Color"></div>' +
+            '<div class="col-md-1"><input type="number" name="items[' + itemIndex + '][mfg_year]" class="form-control" placeholder="Year"></div>' +
+            '<div class="col-md-1"><input type="number" name="items[' + itemIndex + '][quantity]" class="form-control qty" placeholder="Qty" min="1" value="1"></div>' +
+            '<div class="col-md-2"><input type="number" step="0.01" name="items[' + itemIndex + '][unit_price]" class="form-control unit-price" placeholder="Unit Price" min="0" value="0"></div>' +
             '<div class="col-md-2"><input type="text" class="form-control line-total" readonly value="0.00"></div>' +
             '<div class="col-md-1"><button type="button" class="btn btn-sm btn-danger remove-item">X</button></div>' +
         '</div>';
@@ -105,13 +113,6 @@ $(document).ready(function() {
         var price = parseFloat(row.find('.unit-price').val()) || 0;
         row.find('.line-total').val((qty * price).toFixed(2));
         calcTotal();
-    });
-    $(document).on('change', 'select[name$="[spare_part_id]"]', function() {
-        var row = $(this).closest('.item-row');
-        var selected = $(this).find(':selected');
-        var price = selected.data('price') || 0;
-        row.find('.unit-price').val(price);
-        row.find('.qty').trigger('keyup');
     });
     function calcTotal() {
         var total = 0;

@@ -16,7 +16,7 @@
                         <td>{{ $loop->iteration }}</td>
                         <td>{{ $s->sale_number }}</td>
                         <td>{{ $s->customer->first_name ?? '' }} {{ $s->customer->last_name ?? '' }}</td>
-                        <td>{{ $s->vehicleStock->chassis_number ?? '-' }}</td>
+                        <td>{{ $s->vehicle_description ?? '-' }}</td>
                         <td>{{ number_format($s->sale_price, 2) }}</td>
                         <td><span class="badge bg-{{ $s->status=='booking'?'secondary':($s->status=='allotment'?'info':($s->status=='registration'?'primary':($s->status=='delivery'?'success':'dark'))) }}">{{ ucfirst($s->status) }}</span></td>
                         <td>{{ $s->booking_date->format('d-m-Y') }}</td>

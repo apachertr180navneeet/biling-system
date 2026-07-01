@@ -138,31 +138,24 @@
 
 		<li class="menu-header small text-uppercase"><span class="menu-header-text">Inventory</span></li>
 
-		<li class="menu-item {{ request()->routeIs('admin.vehicle-stocks.*') ? 'active' : ''}}">
-			<a href="{{route('admin.vehicle-stocks.index')}}" class="menu-link">
-				<i class="menu-icon tf-icons bx bx-car"></i>
-				<div data-i18n="Vehicle Stock">Vehicle Stock</div>
-			</a>
-		</li>
-
-		<li class="menu-item {{ request()->routeIs('admin.spare-part-stocks.*') ? 'active' : ''}}">
-			<a href="{{route('admin.spare-part-stocks.index')}}" class="menu-link">
-				<i class="menu-icon tf-icons bx bx-cube"></i>
-				<div data-i18n="Part Stock">Part Stock</div>
-			</a>
-		</li>
-
 		<li class="menu-item {{ request()->routeIs('admin.purchase-orders.*') ? 'active' : ''}}">
 			<a href="{{route('admin.purchase-orders.index')}}" class="menu-link">
 				<i class="menu-icon tf-icons bx bx-cart"></i>
-				<div data-i18n="Purchase Orders">Purchase Orders</div>
+				<div data-i18n="Part POs">Part POs</div>
 			</a>
 		</li>
 
-		<li class="menu-item {{ request()->routeIs('admin.goods-receipt-notes.*') ? 'active' : ''}}">
-			<a href="{{route('admin.goods-receipt-notes.index')}}" class="menu-link">
-				<i class="menu-icon tf-icons bx bx-import"></i>
-				<div data-i18n="GRN">GRN</div>
+		<li class="menu-item {{ request()->routeIs('admin.vehicle-purchase-orders.*') ? 'active' : ''}}">
+			<a href="{{route('admin.vehicle-purchase-orders.index')}}" class="menu-link">
+				<i class="menu-icon tf-icons bx bx-car"></i>
+				<div data-i18n="Vehicle POs">Vehicle POs</div>
+			</a>
+		</li>
+
+		<li class="menu-item {{ request()->routeIs('admin.vehicle-inventories.*') ? 'active' : ''}}">
+			<a href="{{route('admin.vehicle-inventories.index')}}" class="menu-link">
+				<i class="menu-icon tf-icons bx bx-layer"></i>
+				<div data-i18n="Vehicle Inventory">Vehicle Inventory</div>
 			</a>
 		</li>
 
@@ -222,20 +215,6 @@
 		</li>
 
 		<li class="menu-header small text-uppercase"><span class="menu-header-text">Reports</span></li>
-
-		<li class="menu-item {{ request()->routeIs('admin.reports.stock-vehicles') ? 'active' : ''}}">
-			<a href="{{route('admin.reports.stock-vehicles')}}" class="menu-link">
-				<i class="menu-icon tf-icons bx bx-car"></i>
-				<div data-i18n="Vehicle Stock">Vehicle Stock Report</div>
-			</a>
-		</li>
-
-		<li class="menu-item {{ request()->routeIs('admin.reports.stock-parts') ? 'active' : ''}}">
-			<a href="{{route('admin.reports.stock-parts')}}" class="menu-link">
-				<i class="menu-icon tf-icons bx bx-cube"></i>
-				<div data-i18n="Part Stock">Part Stock Report</div>
-			</a>
-		</li>
 
 		<li class="menu-item {{ request()->routeIs('admin.reports.ledger') ? 'active' : ''}}">
 			<a href="{{route('admin.reports.ledger')}}" class="menu-link">

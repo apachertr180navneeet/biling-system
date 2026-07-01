@@ -22,7 +22,7 @@ class SpareSaleController extends Controller
     public function create()
     {
         $customers = Customer::orderBy('first_name')->get();
-        $spareParts = SparePart::with('category')->orderBy('part_name')->get();
+        $spareParts = SparePart::with('category')->orderBy('name')->get();
         return view('admin.spare_sales.create', compact('customers', 'spareParts'));
     }
 
@@ -79,6 +79,8 @@ class SpareSaleController extends Controller
                     'gst_amount' => $gstAmount,
                     'total' => $total,
                 ]);
+
+
             }
 
             $sale->update([

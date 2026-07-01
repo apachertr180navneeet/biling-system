@@ -33,28 +33,24 @@
                 </div>
             </div>
 
-            @if($invoice->invoice_type == 'vehicle' && $invoice->vehicleStock)
+            @if($invoice->invoice_type == 'vehicle')
             <h5>Vehicle Details</h5>
             <table class="table table-bordered mb-4">
                 <tr>
                     <td><strong>Vehicle</strong></td>
-                    <td>{{ $invoice->vehicleStock->color->variant->model->brand->name ?? '' }} {{ $invoice->vehicleStock->color->variant->model->name ?? '' }} {{ $invoice->vehicleStock->color->variant->name ?? '' }}</td>
-                </tr>
-                <tr>
-                    <td><strong>Color</strong></td>
-                    <td>{{ $invoice->vehicleStock->color->color_name ?? '-' }}</td>
+                    <td>{{ $invoice->vehicle_description }}</td>
                 </tr>
                 <tr>
                     <td><strong>Chassis No.</strong></td>
-                    <td>{{ $invoice->vehicleStock->chassis_number }}</td>
+                    <td>{{ $invoice->chassis_number ?? '-' }}</td>
                 </tr>
                 <tr>
                     <td><strong>Engine No.</strong></td>
-                    <td>{{ $invoice->vehicleStock->engine_number ?? '-' }}</td>
+                    <td>{{ $invoice->engine_number ?? '-' }}</td>
                 </tr>
                 <tr>
                     <td><strong>Mfg Year</strong></td>
-                    <td>{{ $invoice->vehicleStock->mfg_year ?? '-' }}</td>
+                    <td>{{ $invoice->mfg_year ?? '-' }}</td>
                 </tr>
             </table>
             @endif
@@ -77,7 +73,7 @@
                     @if($invoice->invoice_type == 'vehicle')
                     <tr>
                         <td>1</td>
-                        <td>{{ $invoice->vehicleStock->color->variant->model->brand->name ?? '' }} {{ $invoice->vehicleStock->color->variant->model->name ?? '' }} {{ $invoice->vehicleStock->color->variant->name ?? '' }} ({{ $invoice->vehicleStock->chassis_number }})</td>
+                        <td>{{ $invoice->vehicle_description }}</td>
                         <td>1</td>
                         <td>{{ number_format($invoice->subtotal, 2) }}</td>
                         <td>{{ number_format($invoice->subtotal, 2) }}</td>

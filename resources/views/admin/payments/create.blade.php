@@ -12,7 +12,7 @@
                     <select name="customer_id" class="form-select @error('customer_id') is-invalid @enderror">
                         <option value="">Select Customer</option>
                         @foreach($customers as $c)
-                        <option value="{{ $c->id }}" {{ old('customer_id')==$c->id ? 'selected':'' }}>{{ $c->first_name }} {{ $c->last_name }} ({{ $c->mobile }})</option>
+                        <option value="{{ $c->id }}" {{ old('customer_id')==$c->id ? 'selected':'' }}>{{ $c->first_name }} {{ $c->last_name }} ({{ $c->phone }})</option>
                         @endforeach
                     </select>
                     @error('customer_id')<div class="invalid-feedback">{{ $message }}</div>@enderror

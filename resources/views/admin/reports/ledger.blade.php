@@ -10,7 +10,7 @@
                 <select name="customer_id" class="form-select" onchange="this.form.submit()">
                     <option value="">-- Select --</option>
                     @foreach($customers as $c)
-                    <option value="{{ $c->id }}" {{ ($selectedCustomer && $selectedCustomer->id == $c->id) ? 'selected':'' }}>{{ $c->first_name }} {{ $c->last_name }} ({{ $c->mobile }})</option>
+                    <option value="{{ $c->id }}" {{ ($selectedCustomer && $selectedCustomer->id == $c->id) ? 'selected':'' }}>{{ $c->first_name }} {{ $c->last_name }} ({{ $c->phone }})</option>
                     @endforeach
                 </select>
             </div>

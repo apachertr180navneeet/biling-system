@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Sale;
 use App\Models\Customer;
-use App\Models\VehicleStock;
 use App\Models\Invoice;
 use Illuminate\Http\Request;
 
@@ -13,22 +12,21 @@ class SaleController extends Controller
 {
     public function index()
     {
-        $sales = Sale::with('customer', 'vehicleStock')->orderBy('created_at', 'desc')->paginate(20);
+        $sales = Sale::with('customer')->orderBy('created_at', 'desc')->paginate(20);
         return view('admin.sales.index', compact('sales'));
     }
 
     public function create()
     {
         $customers = Customer::orderBy('first_name')->get();
-        $vehicleStocks = VehicleStock::where('status', 'available')->get();
-        return view('admin.sales.create', compact('customers', 'vehicleStocks'));
+        return view('admin.sales.create', compact('customers'));
     }
 
     public function store(Request $request)
     {
         $data = $request->validate([
             'customer_id' => 'required|exists:customers,id',
-            'vehicle_stock_id' => 'required|exists:vehicle_stocks,id',
+            'vehicle_description' => 'required|string|max:255',
             'sale_price' => 'required|numeric|min:0',
             'booking_date' => 'required|date',
             'booking_amount' => 'required|numeric|min:0',
@@ -47,15 +45,14 @@ class SaleController extends Controller
     public function edit(Sale $sale)
     {
         $customers = Customer::orderBy('first_name')->get();
-        $vehicleStocks = VehicleStock::get();
-        return view('admin.sales.edit', compact('sale', 'customers', 'vehicleStocks'));
+        return view('admin.sales.edit', compact('sale', 'customers'));
     }
 
     public function update(Request $request, Sale $sale)
     {
         $data = $request->validate([
             'customer_id' => 'required|exists:customers,id',
-            'vehicle_stock_id' => 'required|exists:vehicle_stocks,id',
+            'vehicle_description' => 'required|string|max:255',
             'sale_price' => 'required|numeric|min:0',
             'booking_date' => 'required|date',
             'booking_amount' => 'required|numeric|min:0',
@@ -69,16 +66,12 @@ class SaleController extends Controller
 
         $sale->update($data);
 
-        if ($data['status'] === 'delivery' || $data['status'] === 'completed') {
-            $sale->vehicleStock()->update(['status' => 'sold']);
-        }
-
         return redirect()->route('admin.sales.index')->withSuccess('Sale updated successfully.');
     }
 
     public function show(Sale $sale)
     {
-        $sale->load('customer', 'vehicleStock');
+        $sale->load('customer');
         return view('admin.sales.show', compact('sale'));
     }
 
@@ -110,7 +103,6 @@ class SaleController extends Controller
             case 'delivery':
             case 'completed':
                 $data['delivery_date'] = now();
-                $sale->vehicleStock()->update(['status' => 'sold']);
                 break;
         }
 
@@ -120,10 +112,10 @@ class SaleController extends Controller
 
     public function generateInvoice(Sale $sale)
     {
-        $sale->load('customer', 'vehicleStock');
+        $sale->load('customer');
         return redirect()->route('admin.invoices.create-vehicle', [
             'customer_id' => $sale->customer_id,
-            'vehicle_stock_id' => $sale->vehicle_stock_id,
+            'vehicle_description' => $sale->vehicle_description,
             'sale_id' => $sale->id,
             'sale_price' => $sale->sale_price,
         ]);

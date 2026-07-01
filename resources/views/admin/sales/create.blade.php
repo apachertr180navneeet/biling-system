@@ -12,20 +12,15 @@
                     <select name="customer_id" class="form-select @error('customer_id') is-invalid @enderror">
                         <option value="">Select</option>
                         @foreach($customers as $c)
-                        <option value="{{ $c->id }}" {{ old('customer_id')==$c->id ? 'selected':'' }}>{{ $c->first_name }} {{ $c->last_name }} ({{ $c->mobile }})</option>
+                        <option value="{{ $c->id }}" {{ old('customer_id')==$c->id ? 'selected':'' }}>{{ $c->first_name }} {{ $c->last_name }} ({{ $c->phone }})</option>
                         @endforeach
                     </select>
                     @error('customer_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">Vehicle Stock (Chassis)</label>
-                    <select name="vehicle_stock_id" class="form-select @error('vehicle_stock_id') is-invalid @enderror">
-                        <option value="">Select</option>
-                        @foreach($vehicleStocks as $vs)
-                        <option value="{{ $vs->id }}" {{ old('vehicle_stock_id')==$vs->id ? 'selected':'' }}>{{ $vs->chassis_number }}</option>
-                        @endforeach
-                    </select>
-                    @error('vehicle_stock_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    <label class="form-label">Vehicle Description</label>
+                    <input type="text" name="vehicle_description" class="form-control @error('vehicle_description') is-invalid @enderror" value="{{ old('vehicle_description') }}" placeholder="e.g. Maruti Suzuki Swift LXi">
+                    @error('vehicle_description')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Sale Price</label>

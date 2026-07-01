@@ -15,7 +15,7 @@
             <div class="card"><div class="card-body">
                 <h5>Customer Details</h5>
                 <p><strong>Name:</strong> {{ $jobCard->customer->first_name ?? '' }} {{ $jobCard->customer->last_name ?? '' }}<br>
-                <strong>Mobile:</strong> {{ $jobCard->customer->mobile ?? '-' }}<br>
+                <strong>Mobile:</strong> {{ $jobCard->customer->phone ?? '-' }}<br>
                 <strong>Vehicle:</strong> {{ $jobCard->vehicle_number ?? $jobCard->vehicle_model ?? '-' }}<br>
                 <strong>KM Reading:</strong> {{ $jobCard->kilometer_reading ?? '-' }}</p>
             </div></div>

@@ -4,8 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Invoice;
-use App\Models\VehicleStock;
-use App\Models\SparePartStock;
 use App\Models\Payment;
 use App\Models\Customer;
 use Illuminate\Http\Request;
@@ -13,37 +11,6 @@ use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
 {
-    public function stockVehicles()
-    {
-        $total = VehicleStock::count();
-        $available = VehicleStock::where('status', 'available')->count();
-        $sold = VehicleStock::where('status', 'sold')->count();
-
-        $byBrand = VehicleStock::select('vehicle_brands.name as brand', DB::raw('count(*) as total'))
-            ->join('vehicle_colors', 'vehicle_stocks.color_id', '=', 'vehicle_colors.id')
-            ->join('vehicle_variants', 'vehicle_colors.variant_id', '=', 'vehicle_variants.id')
-            ->join('vehicle_models', 'vehicle_variants.model_id', '=', 'vehicle_models.id')
-            ->join('vehicle_brands', 'vehicle_models.brand_id', '=', 'vehicle_brands.id')
-            ->groupBy('vehicle_brands.name')
-            ->orderByDesc('total')
-            ->get();
-
-        return view('admin.reports.stock_vehicles', compact('total', 'available', 'sold', 'byBrand'));
-    }
-
-    public function stockParts()
-    {
-        $stocks = SparePartStock::with('sparePart.category')
-            ->orderBy('quantity')
-            ->paginate(20);
-
-        $lowStock = SparePartStock::whereColumn('quantity', '<=', 'min_quantity')->count();
-        $outOfStock = SparePartStock::where('quantity', '<=', 0)->count();
-        $totalParts = SparePartStock::sum('quantity');
-
-        return view('admin.reports.stock_parts', compact('stocks', 'lowStock', 'outOfStock', 'totalParts'));
-    }
-
     public function ledger(Request $request)
     {
         $customers = Customer::orderBy('first_name')->get();

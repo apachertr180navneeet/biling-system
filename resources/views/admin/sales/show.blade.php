@@ -26,12 +26,12 @@
             <div class="col-md-6">
                 <h5>Customer Details</h5>
                 <p><strong>Name:</strong> {{ $sale->customer->first_name ?? '' }} {{ $sale->customer->last_name ?? '' }}<br>
-                <strong>Mobile:</strong> {{ $sale->customer->mobile ?? '-' }}<br>
+                <strong>Mobile:</strong> {{ $sale->customer->phone ?? '-' }}<br>
                 <strong>Address:</strong> {{ $sale->customer->address ?? '-' }}</p>
             </div>
             <div class="col-md-6">
                 <h5>Vehicle Details</h5>
-                <p><strong>Chassis:</strong> {{ $sale->vehicleStock->chassis_number ?? '-' }}<br>
+                <p><strong>Vehicle:</strong> {{ $sale->vehicle_description ?? '-' }}<br>
                 <strong>Sale Price:</strong> {{ number_format($sale->sale_price, 2) }}<br>
                 <strong>Reg Number:</strong> {{ $sale->reg_number ?? '-' }}</p>
             </div>

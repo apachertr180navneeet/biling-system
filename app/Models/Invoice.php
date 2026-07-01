@@ -12,7 +12,9 @@ class Invoice extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'invoice_number', 'invoice_type', 'customer_id', 'vehicle_stock_id',
+        'invoice_number', 'invoice_type', 'customer_id',
+        'vehicle_description', 'chassis_number', 'engine_number', 'mfg_year',
+        'vehicle_inventory_id',
         'invoice_date', 'is_gst', 'gst_type', 'subtotal', 'gst_amount',
         'cess_amount', 'total_amount', 'round_off', 'grand_total',
         'status', 'notes', 'is_active',
@@ -31,9 +33,11 @@ class Invoice extends Model
         return $this->belongsTo(Customer::class, 'customer_id');
     }
 
-    public function vehicleStock(): BelongsTo
+
+
+    public function vehicleInventory(): BelongsTo
     {
-        return $this->belongsTo(VehicleStock::class, 'vehicle_stock_id');
+        return $this->belongsTo(VehicleInventory::class, 'vehicle_inventory_id');
     }
 
     public function items(): HasMany

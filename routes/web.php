@@ -12,10 +12,8 @@ use App\Http\Controllers\Admin\SparePartCategoryController;
 use App\Http\Controllers\Admin\SparePartController;
 use App\Http\Controllers\Admin\SupplierController;
 use App\Http\Controllers\Admin\CustomerController;
-use App\Http\Controllers\Admin\VehicleStockController;
-use App\Http\Controllers\Admin\SparePartStockController;
+
 use App\Http\Controllers\Admin\PurchaseOrderController;
-use App\Http\Controllers\Admin\GoodsReceiptNoteController;
 use App\Http\Controllers\Admin\InvoiceController;
 use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\ReportController;
@@ -25,6 +23,7 @@ use App\Http\Controllers\Admin\JobCardController;
 use App\Http\Controllers\Admin\ServiceReminderController;
 use App\Http\Controllers\Admin\SaleController;
 use App\Http\Controllers\Admin\SpareSaleController;
+use App\Http\Controllers\Admin\VehiclePurchaseOrderController;
 
 
 /*
@@ -89,17 +88,16 @@ Route::name('admin.')->prefix('admin')->group(function () {
         Route::resource('customers', CustomerController::class);
         Route::post('customers/{customer}/toggle-status', [CustomerController::class, 'toggleStatus'])->name('customers.toggle-status');
 
-        Route::resource('vehicle-stocks', VehicleStockController::class)->except(['show']);
-        Route::post('vehicle-stocks/{vehicle_stock}/toggle-status', [VehicleStockController::class, 'toggleStatus'])->name('vehicle-stocks.toggle-status');
-
-        Route::resource('spare-part-stocks', SparePartStockController::class)->except(['show']);
-        Route::post('spare-part-stocks/{spare_part_stock}/toggle-status', [SparePartStockController::class, 'toggleStatus'])->name('spare-part-stocks.toggle-status');
-
         Route::resource('purchase-orders', PurchaseOrderController::class);
         Route::post('purchase-orders/{purchase_order}/toggle-status', [PurchaseOrderController::class, 'toggleStatus'])->name('purchase-orders.toggle-status');
+        Route::get('purchase-orders/{purchase_order}/receive', [PurchaseOrderController::class, 'receive'])->name('purchase-orders.receive');
+        Route::post('purchase-orders/{purchase_order}/receive-store', [PurchaseOrderController::class, 'receiveStore'])->name('purchase-orders.receive-store');
 
-        Route::resource('goods-receipt-notes', GoodsReceiptNoteController::class)->except(['edit', 'update']);
-        Route::post('goods-receipt-notes/{goods_receipt_note}/toggle-status', [GoodsReceiptNoteController::class, 'toggleStatus'])->name('goods-receipt-notes.toggle-status');
+        Route::resource('vehicle-purchase-orders', VehiclePurchaseOrderController::class);
+        Route::post('vehicle-purchase-orders/{vehicle_purchase_order}/toggle-status', [VehiclePurchaseOrderController::class, 'toggleStatus'])->name('vehicle-purchase-orders.toggle-status');
+        Route::get('vehicle-purchase-orders/{vehicle_purchase_order}/receive', [VehiclePurchaseOrderController::class, 'receive'])->name('vehicle-purchase-orders.receive');
+        Route::post('vehicle-purchase-orders/{vehicle_purchase_order}/receive-store', [VehiclePurchaseOrderController::class, 'receiveStore'])->name('vehicle-purchase-orders.receive-store');
+        Route::get('vehicle-inventories', [VehiclePurchaseOrderController::class, 'inventory'])->name('vehicle-inventories.index');
 
         Route::get('invoices', [InvoiceController::class, 'index'])->name('invoices.index');
         Route::get('invoices/create-vehicle', [InvoiceController::class, 'createVehicle'])->name('invoices.create-vehicle');
@@ -112,8 +110,6 @@ Route::name('admin.')->prefix('admin')->group(function () {
         Route::resource('payments', PaymentController::class)->except(['edit', 'update', 'show']);
 
         Route::prefix('reports')->name('reports.')->group(function () {
-            Route::get('stock-vehicles', [ReportController::class, 'stockVehicles'])->name('stock-vehicles');
-            Route::get('stock-parts', [ReportController::class, 'stockParts'])->name('stock-parts');
             Route::get('ledger', [ReportController::class, 'ledger'])->name('ledger');
             Route::get('gstr1', [ReportController::class, 'gstr1'])->name('gstr1');
             Route::post('gstr1-export', [ReportController::class, 'gstr1Export'])->name('gstr1-export');

@@ -17,7 +17,7 @@
             <button class="btn btn-sm btn-dark update-status" data-status="completed">Complete Sale</button>
             @endif
             @if(in_array($sale->status, ['booking','allotment']))
-            <a href="{{ route('admin.invoices.create-vehicle') }}?customer_id={{ $sale->customer_id }}&vehicle_stock_id={{ $sale->vehicle_stock_id }}&sale_id={{ $sale->id }}&sale_price={{ $sale->sale_price }}" class="btn btn-sm btn-warning">Generate Invoice</a>
+            <a href="{{ route('admin.invoices.create-vehicle') }}?customer_id={{ $sale->customer_id }}&vehicle_description={{ urlencode($sale->vehicle_description) }}&sale_id={{ $sale->id }}&sale_price={{ $sale->sale_price }}" class="btn btn-sm btn-warning">Generate Invoice</a>
             @endif
             <a href="{{ route('admin.sales.index') }}" class="btn btn-sm btn-secondary">Back</a>
         </div>
@@ -36,12 +36,8 @@
                     </select>
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">Vehicle Stock</label>
-                    <select name="vehicle_stock_id" class="form-select">
-                        @foreach($vehicleStocks as $vs)
-                        <option value="{{ $vs->id }}" {{ $sale->vehicle_stock_id==$vs->id ? 'selected':'' }}>{{ $vs->chassis_number }}</option>
-                        @endforeach
-                    </select>
+                    <label class="form-label">Vehicle Description</label>
+                    <input type="text" name="vehicle_description" class="form-control" value="{{ old('vehicle_description', $sale->vehicle_description) }}">
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Sale Price</label>

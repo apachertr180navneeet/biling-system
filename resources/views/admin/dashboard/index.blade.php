@@ -36,17 +36,6 @@
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex justify-content-between">
-                        <div><span class="d-block mb-1 text-muted">Vehicle Stock</span><h3 class="mb-0">{{ $totalVehicles }}</h3></div>
-                        <span class="badge bg-label-success p-2 rounded"><i class="bx bx-car stat-icon"></i></span>
-                    </div>
-                    <small class="text-success">{{ $availableVehicles }} available</small> <small class="text-secondary ms-2">{{ $soldVehicles }} sold</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6 col-12 mb-4">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
                         <div><span class="d-block mb-1 text-muted">Customers</span><h3 class="mb-0">{{ $totalCustomers }}</h3></div>
                         <span class="badge bg-label-info p-2 rounded"><i class="bx bx-user stat-icon"></i></span>
                     </div>
@@ -58,10 +47,21 @@
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex justify-content-between">
-                        <div><span class="d-block mb-1 text-muted">Low Stock</span><h3 class="mb-0">{{ $lowStockItems }}</h3></div>
-                        <span class="badge bg-label-warning p-2 rounded"><i class="bx bx-error stat-icon"></i></span>
+                        <div><span class="d-block mb-1 text-muted">Total Invoices</span><h3 class="mb-0">{{ $totalInvoices }}</h3></div>
+                        <span class="badge bg-label-primary p-2 rounded"><i class="bx bx-receipt stat-icon"></i></span>
                     </div>
-                    <small class="text-warning">Items below reorder level</small>
+                    <small class="text-muted">{{ number_format($totalRevenue, 2) }} revenue</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 col-12 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div><span class="d-block mb-1 text-muted">Vehicle Stock</span><h3 class="mb-0">{{ $vehicleInventoryCount }}</h3></div>
+                        <span class="badge bg-label-success p-2 rounded"><i class="bx bx-car stat-icon"></i></span>
+                    </div>
+                    <small class="text-muted">{{ $pendingVehiclePOs }} pending POs</small>
                 </div>
             </div>
         </div>

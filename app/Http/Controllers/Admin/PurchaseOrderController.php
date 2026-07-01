@@ -9,6 +9,7 @@ use App\Models\Supplier;
 use App\Models\SparePart;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class PurchaseOrderController extends Controller
 {
@@ -130,5 +131,56 @@ class PurchaseOrderController extends Controller
     {
         $purchaseOrder->update(['is_active' => !$purchaseOrder->is_active]);
         return response()->json(['success' => true, 'is_active' => $purchaseOrder->fresh()->is_active]);
+    }
+
+    public function receive(PurchaseOrder $purchaseOrder)
+    {
+        $purchaseOrder->load('items.sparePart', 'supplier');
+        if ($purchaseOrder->status === 'received') {
+            return redirect()->route('admin.purchase-orders.show', $purchaseOrder)->with('error', 'Already fully received.');
+        }
+        return view('admin.purchase_orders.receive', compact('purchaseOrder'));
+    }
+
+    public function receiveStore(Request $request, PurchaseOrder $purchaseOrder)
+    {
+        if ($purchaseOrder->status === 'received') {
+            return back()->with('error', 'Already fully received.');
+        }
+
+        $request->validate([
+            'items' => 'required|array',
+            'items.*.id' => 'required|exists:purchase_order_items,id',
+            'items.*.received_qty' => 'required|integer|min:0',
+        ]);
+
+        DB::transaction(function () use ($request, $purchaseOrder) {
+            $allFullyReceived = true;
+            $anyReceived = false;
+
+            foreach ($request->items as $itemData) {
+                $poItem = $purchaseOrder->items()->findOrFail($itemData['id']);
+                $newReceived = min($itemData['received_qty'], $poItem->quantity);
+                $poItem->update(['received_quantity' => $newReceived]);
+
+                if ($newReceived > 0) {
+                    $anyReceived = true;
+                }
+
+                if ($newReceived < $poItem->quantity) {
+                    $allFullyReceived = false;
+                }
+            }
+
+            if (!$anyReceived) {
+                throw new \Exception('Receive at least one item.');
+            }
+
+            $purchaseOrder->update([
+                'status' => $allFullyReceived ? 'received' : 'partial',
+            ]);
+        });
+
+        return redirect()->route('admin.purchase-orders.show', $purchaseOrder)->withSuccess('Items received successfully.');
     }
 }

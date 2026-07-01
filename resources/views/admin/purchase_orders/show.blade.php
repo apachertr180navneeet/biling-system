@@ -9,7 +9,12 @@
     <div class="card">
         <div class="card-header d-flex align-items-center justify-content-between">
             <h5 class="mb-0">Purchase Order Details</h5>
-            <a href="{{ route('admin.purchase-orders.index') }}" class="btn btn-secondary">Back</a>
+            <div>
+                @if($purchaseOrder->status != 'received')
+                <a href="{{ route('admin.purchase-orders.receive', $purchaseOrder) }}" class="btn btn-sm btn-primary"><i class="bx bx-import"></i> Receive Items</a>
+                @endif
+                <a href="{{ route('admin.purchase-orders.index') }}" class="btn btn-secondary">Back</a>
+            </div>
         </div>
         <div class="card-body">
             <div class="row mb-4">

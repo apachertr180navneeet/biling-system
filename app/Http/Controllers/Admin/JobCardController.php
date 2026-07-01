@@ -5,10 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\JobCard;
 use App\Models\Customer;
-use App\Models\VehicleStock;
 use App\Models\Service;
 use App\Models\SparePart;
-use App\Models\SparePartStock;
 use App\Services\GstCalculator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -24,17 +22,15 @@ class JobCardController extends Controller
     public function create()
     {
         $customers = Customer::orderBy('first_name')->get();
-        $vehicleStocks = VehicleStock::where('status', 'available')->get();
         $services = Service::with('category')->orderBy('name')->get();
-        $spareParts = SparePart::with('category')->orderBy('part_name')->get();
-        return view('admin.job_cards.create', compact('customers', 'vehicleStocks', 'services', 'spareParts'));
+        $spareParts = SparePart::with('category')->orderBy('name')->get();
+        return view('admin.job_cards.create', compact('customers', 'services', 'spareParts'));
     }
 
     public function store(Request $request)
     {
         $data = $request->validate([
             'customer_id' => 'required|exists:customers,id',
-            'vehicle_stock_id' => 'nullable|exists:vehicle_stocks,id',
             'vehicle_number' => 'nullable|string|max:50',
             'vehicle_model' => 'nullable|string|max:255',
             'kilometer_reading' => 'nullable|string|max:50',
@@ -49,11 +45,6 @@ class JobCardController extends Controller
         $data['job_card_number'] = 'JC-' . date('Ymd') . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
         $data['status'] = 'pending';
         $data['is_gst'] = $request->boolean('is_gst');
-
-        if ($request->vehicle_stock_id) {
-            $stock = VehicleStock::find($request->vehicle_stock_id);
-            $data['vehicle_number'] = $stock->chassis_number;
-        }
 
         $data['total_labor'] = 0;
         $data['total_parts'] = 0;
@@ -85,18 +76,16 @@ class JobCardController extends Controller
     public function edit(JobCard $jobCard)
     {
         $customers = Customer::orderBy('first_name')->get();
-        $vehicleStocks = VehicleStock::where('status', 'available')->get();
         $services = Service::with('category')->orderBy('name')->get();
-        $spareParts = SparePart::with('category')->orderBy('part_name')->get();
+        $spareParts = SparePart::with('category')->orderBy('name')->get();
         $jobCard->load('services', 'parts');
-        return view('admin.job_cards.edit', compact('jobCard', 'customers', 'vehicleStocks', 'services', 'spareParts'));
+        return view('admin.job_cards.edit', compact('jobCard', 'customers', 'services', 'spareParts'));
     }
 
     public function update(Request $request, JobCard $jobCard)
     {
         $data = $request->validate([
             'customer_id' => 'required|exists:customers,id',
-            'vehicle_stock_id' => 'nullable|exists:vehicle_stocks,id',
             'vehicle_number' => 'nullable|string|max:50',
             'vehicle_model' => 'nullable|string|max:255',
             'kilometer_reading' => 'nullable|string|max:50',
@@ -114,7 +103,7 @@ class JobCardController extends Controller
 
     public function show(JobCard $jobCard)
     {
-        $jobCard->load('customer', 'vehicleStock', 'services.service', 'parts.sparePart');
+        $jobCard->load('customer', 'services.service', 'parts.sparePart');
         return view('admin.job_cards.show', compact('jobCard'));
     }
 
@@ -148,14 +137,31 @@ class JobCardController extends Controller
             'items.*.gst_rate' => 'nullable|numeric|min:0',
         ]);
 
-        $totalLabor = 0;
-        $totalParts = 0;
+        $gstCalc = new GstCalculator();
+        $gstItems = [];
+        foreach ($request->items as $item) {
+            $gstItems[] = [
+                'description' => $item['name'],
+                'quantity' => ($item['type'] === 'part' ? ($item['qty'] ?? 1) : 1),
+                'unit_price' => $item['rate'],
+                'gst_rate' => $item['gst_rate'] ?? 0,
+                'cess_rate' => 0,
+                'spare_part_id' => null,
+            ];
+        }
+        $result = $gstCalc->calculateForItems($gstItems, $jobCard->is_gst, $jobCard->customer);
 
-        DB::transaction(function () use ($jobCard, $request, &$totalLabor, &$totalParts) {
+        DB::transaction(function () use ($jobCard, $request, $result) {
             $jobCard->services()->delete();
             $jobCard->parts()->delete();
 
-            foreach ($request->items as $item) {
+            $totalLabor = 0;
+            $totalPartsTotal = 0;
+
+            foreach ($request->items as $i => $item) {
+                $ci = $result['calculatedItems'][$i] ?? null;
+                if (!$ci) continue;
+
                 if ($item['type'] === 'service') {
                     $totalLabor += $item['rate'];
                     $jobCard->services()->create([
@@ -163,42 +169,26 @@ class JobCardController extends Controller
                         'labor_charge' => $item['rate'],
                     ]);
                 } else {
-                    $qty = $item['qty'] ?? 1;
-                    $gstRate = $item['gst_rate'] ?? 0;
-                    $gstAmount = ($item['rate'] * $qty * $gstRate) / 100;
-                    $total = ($item['rate'] * $qty) + $gstAmount;
-                    $totalParts += $total;
-
+                    $totalPartsTotal += $ci['total'];
                     $jobCard->parts()->create([
                         'part_name' => $item['name'],
-                        'quantity' => $qty,
+                        'quantity' => $ci['quantity'],
                         'rate' => $item['rate'],
-                        'gst_rate' => $gstRate,
-                        'gst_amount' => $gstAmount,
-                        'total' => $total,
+                        'gst_rate' => $ci['gst_rate'],
+                        'gst_amount' => $ci['gst_amount'],
+                        'total' => $ci['total'],
                     ]);
                 }
             }
 
-            $subtotal = $totalLabor + $totalParts;
-            $totalGst = 0;
-            $gstType = null;
-
-            if ($jobCard->is_gst) {
-                $customer = $jobCard->customer;
-                $gstCalc = new GstCalculator(0, $customer);
-                $result = $gstCalc->calculate($subtotal);
-                $totalGst = $result['total_gst'];
-                $gstType = $result['type'] === 'igst' ? 'igst' : 'cgst_sgst';
-            }
-
             $jobCard->update([
                 'total_labor' => $totalLabor,
-                'total_parts' => $totalParts,
-                'subtotal' => $subtotal,
-                'gst_type' => $gstType,
-                'gst_amount' => $totalGst,
-                'grand_total' => $subtotal + $totalGst,
+                'total_parts' => $totalPartsTotal,
+                'subtotal' => $result['subtotal'],
+                'gst_type' => $result['gstType'],
+                'gst_amount' => $result['totalGst'],
+                'cess_amount' => $result['totalCess'],
+                'grand_total' => $result['grandTotal'],
             ]);
         });
 

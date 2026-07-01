@@ -1,5 +1,8 @@
 @extends('admin.layouts.app')
 @section('style')
+<style>
+#gstInfo { display:none; }
+</style>
 @endsection
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
@@ -22,16 +25,41 @@
                     @error('customer_id') <div class="text-danger small">{{ $message }}</div> @enderror
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Vehicle Stock (Available)</label>
-                    <select name="vehicle_stock_id" class="form-control @error('vehicle_stock_id') is-invalid @enderror" id="stockSelect">
-                        <option value="">Select Chassis</option>
-                        @foreach($stocks as $s)
-                        <option value="{{ $s->id }}" data-price="{{ $s->purchase_price }}" {{ old('vehicle_stock_id') == $s->id ? 'selected' : '' }}>
-                            {{ $s->chassis_number }} - {{ $s->color->variant->model->brand->name ?? '' }} {{ $s->color->variant->model->name ?? '' }} {{ $s->color->variant->name ?? '' }} ({{ $s->color->color_name ?? '' }})
+                    <label class="form-label">From Vehicle Inventory (optional)</label>
+                    <select name="vehicle_inventory_id" class="form-control" id="inventorySelect">
+                        <option value="">-- Type vehicle details manually --</option>
+                        @foreach($vehicleInventories as $inv)
+                        <option value="{{ $inv->id }}"
+                            data-desc="{{ $inv->vehicle_description }}"
+                            data-chassis="{{ $inv->chassis_number ?? '' }}"
+                            data-engine="{{ $inv->engine_number ?? '' }}"
+                            data-year="{{ $inv->mfg_year ?? '' }}">
+                            {{ $inv->vehicle_description }} ({{ $inv->color_name ?? '' }} {{ $inv->mfg_year ?? '' }}, Qty: {{ $inv->quantity }})
                         </option>
                         @endforeach
                     </select>
-                    @error('vehicle_stock_id') <div class="text-danger small">{{ $message }}</div> @enderror
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Vehicle Description</label>
+                    <input type="text" name="vehicle_description" class="form-control @error('vehicle_description') is-invalid @enderror" id="vehicleDesc" value="{{ old('vehicle_description', request('vehicle_description')) }}" placeholder="e.g. Maruti Suzuki Swift LXi">
+                    @error('vehicle_description') <div class="text-danger small">{{ $message }}</div> @enderror
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Chassis Number</label>
+                        <input type="text" name="chassis_number" class="form-control @error('chassis_number') is-invalid @enderror" id="chassisNum" value="{{ old('chassis_number') }}">
+                        @error('chassis_number') <div class="text-danger small">{{ $message }}</div> @enderror
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Engine Number</label>
+                        <input type="text" name="engine_number" class="form-control @error('engine_number') is-invalid @enderror" id="engineNum" value="{{ old('engine_number') }}">
+                        @error('engine_number') <div class="text-danger small">{{ $message }}</div> @enderror
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Mfg Year</label>
+                        <input type="number" name="mfg_year" class="form-control @error('mfg_year') is-invalid @enderror" id="mfgYear" value="{{ old('mfg_year', date('Y')) }}" min="1900" max="{{ date('Y') + 1 }}">
+                        @error('mfg_year') <div class="text-danger small">{{ $message }}</div> @enderror
+                    </div>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Invoice Date</label>
@@ -40,7 +68,7 @@
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Selling Price</label>
-                    <input type="number" step="0.01" name="selling_price" class="form-control @error('selling_price') is-invalid @enderror" id="sellingPrice" value="{{ old('selling_price', 0) }}">
+                    <input type="number" step="0.01" name="selling_price" class="form-control @error('selling_price') is-invalid @enderror" id="sellingPrice" value="{{ old('selling_price', request('sale_price', 0)) }}">
                     @error('selling_price') <div class="text-danger small">{{ $message }}</div> @enderror
                 </div>
                 <div class="mb-3">
@@ -49,7 +77,7 @@
                         <input type="checkbox" name="is_gst" class="form-check-input" value="1" {{ old('is_gst', '1') == '1' ? 'checked' : '' }} id="gstToggle">
                     </div>
                 </div>
-                <div class="mb-3" id="gstInfo" style="display:none">
+                <div class="mb-3" id="gstInfo">
                     <div class="alert alert-info">
                         <strong>GST Type:</strong> <span id="gstTypeDisplay">CGST + SGST</span><br>
                         <strong>GST Rate:</strong> 28%<br>
@@ -88,12 +116,17 @@ $(document).ready(function() {
             $('#gstInfo').hide();
         }
     }
-    $('#sellingPrice, #gstToggle, #customerSelect').on('change keyup', calcGst);
-    $('#stockSelect').change(function() {
-        var price = $(this).find(':selected').data('price') || 0;
-        $('#sellingPrice').val(price);
-        calcGst();
+    $('#inventorySelect').change(function() {
+        var opt = $(this).find(':selected');
+        if (opt.val()) {
+            $('#vehicleDesc').val(opt.data('desc'));
+            $('#chassisNum').val(opt.data('chassis'));
+            $('#engineNum').val(opt.data('engine'));
+            $('#mfgYear').val(opt.data('year'));
+        }
     });
+    $('#sellingPrice, #gstToggle, #customerSelect').on('change keyup', calcGst);
+    calcGst();
 });
 </script>
 @endsection
