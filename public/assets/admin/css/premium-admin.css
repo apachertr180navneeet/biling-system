@@ -206,3 +206,32 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
     background: transparent !important;
     border-top: var(--glass-border) !important;
 }
+
+/* Mobile Responsiveness Improvements */
+@media (max-width: 767.98px) {
+    .container-xxl, .container-fluid, .container-p-y {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+    
+    .card {
+        margin-bottom: 1rem !important;
+    }
+    
+    .card-body {
+        padding: 1.25rem !important;
+    }
+    
+    h2 {
+        font-size: 1.75rem !important;
+    }
+    
+    h3 {
+        font-size: 1.5rem !important;
+    }
+
+    .layout-navbar {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+}

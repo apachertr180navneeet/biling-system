@@ -10,7 +10,7 @@
         <div class="row mb-4">
             <div class="col-lg-12">
                 <div class="card">
-                    <div class="card-body p-5 text-center">
+                    <div class="card-body p-4 p-md-5 text-center">
                         <h2 class="text-primary mb-2">Welcome, {{ Auth::user()->full_name }} 🚀</h2>
                         <p class="mb-0 text-muted">Manage your vehicle billing system with style and efficiency.</p>
                     </div>
