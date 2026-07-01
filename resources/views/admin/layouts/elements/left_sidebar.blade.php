@@ -64,7 +64,192 @@
 			</a>
 		</li>
 
-		
-		
+		<li class="menu-header small text-uppercase"><span class="menu-header-text">Master Data</span></li>
+
+		<li class="menu-item {{ request()->routeIs('admin.invoices.*') ? 'active' : ''}}">
+			<a href="{{route('admin.invoices.index')}}" class="menu-link">
+				<i class="menu-icon tf-icons bx bx-receipt"></i>
+				<div data-i18n="Invoices">Invoices</div>
+			</a>
+		</li>
+
+		<li class="menu-item {{ request()->routeIs('admin.customers.*') ? 'active' : ''}}">
+			<a href="{{route('admin.customers.index')}}" class="menu-link">
+				<i class="menu-icon tf-icons bx bx-user"></i>
+				<div data-i18n="Customers">Customers</div>
+			</a>
+		</li>
+
+		<li class="menu-item {{ request()->routeIs('admin.vehicle-brands.*') ? 'active' : ''}}">
+			<a href="{{route('admin.vehicle-brands.index')}}" class="menu-link">
+				<i class="menu-icon tf-icons bx bx-car"></i>
+				<div data-i18n="Brands">Brands</div>
+			</a>
+		</li>
+
+		<li class="menu-item {{ request()->routeIs('admin.vehicle-models.*') ? 'active' : ''}}">
+			<a href="{{route('admin.vehicle-models.index')}}" class="menu-link">
+				<i class="menu-icon tf-icons bx bx-car"></i>
+				<div data-i18n="Models">Models</div>
+			</a>
+		</li>
+
+		<li class="menu-item {{ request()->routeIs('admin.vehicle-variants.*') ? 'active' : ''}}">
+			<a href="{{route('admin.vehicle-variants.index')}}" class="menu-link">
+				<i class="menu-icon tf-icons bx bx-car"></i>
+				<div data-i18n="Variants">Variants</div>
+			</a>
+		</li>
+
+		<li class="menu-item {{ request()->routeIs('admin.vehicle-colors.*') ? 'active' : ''}}">
+			<a href="{{route('admin.vehicle-colors.index')}}" class="menu-link">
+				<i class="menu-icon tf-icons bx bx-palette"></i>
+				<div data-i18n="Colors">Colors</div>
+			</a>
+		</li>
+
+		<li class="menu-item {{ request()->routeIs('admin.hsn-sac-master.*') ? 'active' : ''}}">
+			<a href="{{route('admin.hsn-sac-master.index')}}" class="menu-link">
+				<i class="menu-icon tf-icons bx bx-barcode"></i>
+				<div data-i18n="HSN/SAC">HSN/SAC</div>
+			</a>
+		</li>
+
+		<li class="menu-item {{ request()->routeIs('admin.spare-part-categories.*') ? 'active' : ''}}">
+			<a href="{{route('admin.spare-part-categories.index')}}" class="menu-link">
+				<i class="menu-icon tf-icons bx bx-category"></i>
+				<div data-i18n="Part Categories">Part Categories</div>
+			</a>
+		</li>
+
+		<li class="menu-item {{ request()->routeIs('admin.spare-parts.*') ? 'active' : ''}}">
+			<a href="{{route('admin.spare-parts.index')}}" class="menu-link">
+				<i class="menu-icon tf-icons bx bx-wrench"></i>
+				<div data-i18n="Spare Parts">Spare Parts</div>
+			</a>
+		</li>
+
+		<li class="menu-item {{ request()->routeIs('admin.suppliers.*') ? 'active' : ''}}">
+			<a href="{{route('admin.suppliers.index')}}" class="menu-link">
+				<i class="menu-icon tf-icons bx bx-truck"></i>
+				<div data-i18n="Suppliers">Suppliers</div>
+			</a>
+		</li>
+
+		<li class="menu-header small text-uppercase"><span class="menu-header-text">Inventory</span></li>
+
+		<li class="menu-item {{ request()->routeIs('admin.vehicle-stocks.*') ? 'active' : ''}}">
+			<a href="{{route('admin.vehicle-stocks.index')}}" class="menu-link">
+				<i class="menu-icon tf-icons bx bx-car"></i>
+				<div data-i18n="Vehicle Stock">Vehicle Stock</div>
+			</a>
+		</li>
+
+		<li class="menu-item {{ request()->routeIs('admin.spare-part-stocks.*') ? 'active' : ''}}">
+			<a href="{{route('admin.spare-part-stocks.index')}}" class="menu-link">
+				<i class="menu-icon tf-icons bx bx-cube"></i>
+				<div data-i18n="Part Stock">Part Stock</div>
+			</a>
+		</li>
+
+		<li class="menu-item {{ request()->routeIs('admin.purchase-orders.*') ? 'active' : ''}}">
+			<a href="{{route('admin.purchase-orders.index')}}" class="menu-link">
+				<i class="menu-icon tf-icons bx bx-cart"></i>
+				<div data-i18n="Purchase Orders">Purchase Orders</div>
+			</a>
+		</li>
+
+		<li class="menu-item {{ request()->routeIs('admin.goods-receipt-notes.*') ? 'active' : ''}}">
+			<a href="{{route('admin.goods-receipt-notes.index')}}" class="menu-link">
+				<i class="menu-icon tf-icons bx bx-import"></i>
+				<div data-i18n="GRN">GRN</div>
+			</a>
+		</li>
+
+		<li class="menu-header small text-uppercase"><span class="menu-header-text">Services</span></li>
+
+		<li class="menu-item {{ request()->routeIs('admin.job-cards.*') ? 'active' : ''}}">
+			<a href="{{route('admin.job-cards.index')}}" class="menu-link">
+				<i class="menu-icon tf-icons bx bx-wrench"></i>
+				<div data-i18n="Job Cards">Job Cards</div>
+			</a>
+		</li>
+
+		<li class="menu-item {{ request()->routeIs('admin.service-categories.*') ? 'active' : ''}}">
+			<a href="{{route('admin.service-categories.index')}}" class="menu-link">
+				<i class="menu-icon tf-icons bx bx-category"></i>
+				<div data-i18n="Svc Categories">Svc Categories</div>
+			</a>
+		</li>
+
+		<li class="menu-item {{ request()->routeIs('admin.services.*') ? 'active' : ''}}">
+			<a href="{{route('admin.services.index')}}" class="menu-link">
+				<i class="menu-icon tf-icons bx bx-list-ul"></i>
+				<div data-i18n="Service List">Service List</div>
+			</a>
+		</li>
+
+		<li class="menu-item {{ request()->routeIs('admin.service-reminders.*') ? 'active' : ''}}">
+			<a href="{{route('admin.service-reminders.index')}}" class="menu-link">
+				<i class="menu-icon tf-icons bx bx-bell"></i>
+				<div data-i18n="Reminders">Reminders</div>
+			</a>
+		</li>
+
+		<li class="menu-header small text-uppercase"><span class="menu-header-text">Sales</span></li>
+
+		<li class="menu-item {{ request()->routeIs('admin.sales.*') ? 'active' : ''}}">
+			<a href="{{route('admin.sales.index')}}" class="menu-link">
+				<i class="menu-icon tf-icons bx bx-shopping-bag"></i>
+				<div data-i18n="Vehicle Sales">Vehicle Sales</div>
+			</a>
+		</li>
+
+		<li class="menu-item {{ request()->routeIs('admin.spare-sales.*') ? 'active' : ''}}">
+			<a href="{{route('admin.spare-sales.index')}}" class="menu-link">
+				<i class="menu-icon tf-icons bx bx-cart"></i>
+				<div data-i18n="Counter Sales">Counter Sales</div>
+			</a>
+		</li>
+
+		<li class="menu-header small text-uppercase"><span class="menu-header-text">Finance</span></li>
+
+		<li class="menu-item {{ request()->routeIs('admin.payments.*') ? 'active' : ''}}">
+			<a href="{{route('admin.payments.index')}}" class="menu-link">
+				<i class="menu-icon tf-icons bx bx-credit-card"></i>
+				<div data-i18n="Payments">Payments</div>
+			</a>
+		</li>
+
+		<li class="menu-header small text-uppercase"><span class="menu-header-text">Reports</span></li>
+
+		<li class="menu-item {{ request()->routeIs('admin.reports.stock-vehicles') ? 'active' : ''}}">
+			<a href="{{route('admin.reports.stock-vehicles')}}" class="menu-link">
+				<i class="menu-icon tf-icons bx bx-car"></i>
+				<div data-i18n="Vehicle Stock">Vehicle Stock Report</div>
+			</a>
+		</li>
+
+		<li class="menu-item {{ request()->routeIs('admin.reports.stock-parts') ? 'active' : ''}}">
+			<a href="{{route('admin.reports.stock-parts')}}" class="menu-link">
+				<i class="menu-icon tf-icons bx bx-cube"></i>
+				<div data-i18n="Part Stock">Part Stock Report</div>
+			</a>
+		</li>
+
+		<li class="menu-item {{ request()->routeIs('admin.reports.ledger') ? 'active' : ''}}">
+			<a href="{{route('admin.reports.ledger')}}" class="menu-link">
+				<i class="menu-icon tf-icons bx bx-book"></i>
+				<div data-i18n="Ledger">Customer Ledger</div>
+			</a>
+		</li>
+
+		<li class="menu-item {{ request()->routeIs('admin.reports.gstr1*') ? 'active' : ''}}">
+			<a href="{{route('admin.reports.gstr1')}}" class="menu-link">
+				<i class="menu-icon tf-icons bx bx-file"></i>
+				<div data-i18n="GSTR-1">GSTR-1 Export</div>
+			</a>
+		</li>
+
 	</ul>
 </aside>

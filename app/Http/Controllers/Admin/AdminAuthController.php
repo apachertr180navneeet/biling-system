@@ -9,6 +9,11 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Mail, DB, Hash, Validator, Session, File,Exception;
+use App\Models\Invoice;
+use App\Models\VehicleStock;
+use App\Models\SparePartStock;
+use App\Models\Customer;
+use App\Models\Payment;
 
 class AdminAuthController extends Controller
 {
@@ -234,7 +239,7 @@ class AdminAuthController extends Controller
             $validator = Validator::make($data,[
                 "first_name" => "required",
                 "last_name" => "required",
-                "phone" => "required|min:9|unique:users,phone," .$user->id,
+                "phone" => "required|digits:10|unique:users,phone," .$user->id,
                 "email" => "required|email|unique:users,email," . $user->id,
                 "avatar" => "sometimes|image|mimes:jpeg,jpg,png|max:5000"
             ]);
@@ -269,7 +274,26 @@ class AdminAuthController extends Controller
 
     public function adminDashboard()
     {
-        return view("admin.dashboard.index");
+        $todayInvoices = Invoice::whereDate('created_at', today())->count();
+        $monthRevenue = Invoice::whereMonth('created_at', date('m'))->whereYear('created_at', date('Y'))->sum('grand_total');
+        $totalVehicles = VehicleStock::count();
+        $lowStockItems = SparePartStock::whereColumn('quantity', '<=', 'min_quantity')->count();
+        $availableVehicles = VehicleStock::where('status', 'available')->count();
+        $soldVehicles = VehicleStock::where('status', 'sold')->count();
+        $totalCustomers = Customer::count();
+        $totalInvoices = Invoice::count();
+        $totalRevenue = Invoice::sum('grand_total');
+        $totalPayments = Payment::sum('amount');
+        $pendingInvoices = Invoice::where('status', 'confirmed')->count();
+
+        $recentInvoices = Invoice::with('customer')->latest()->take(5)->get();
+        $recentPayments = Payment::with('customer')->latest()->take(5)->get();
+
+        return view("admin.dashboard.index", compact(
+            'todayInvoices', 'monthRevenue', 'totalVehicles', 'lowStockItems',
+            'availableVehicles', 'soldVehicles', 'totalCustomers', 'totalInvoices',
+            'totalRevenue', 'totalPayments', 'pendingInvoices', 'recentInvoices', 'recentPayments'
+        ));
     }
 
 
