@@ -12,13 +12,16 @@ class SpareSale extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'sale_number', 'customer_id', 'sale_date', 'subtotal',
+        'sale_number', 'customer_id', 'sale_date', 'is_gst', 'gst_type', 'subtotal',
         'gst_amount', 'grand_total', 'payment_mode', 'notes', 'is_active',
     ];
 
     protected function casts(): array
     {
-        return ['sale_date' => 'date'];
+        return [
+            'sale_date' => 'date',
+            'is_gst' => 'boolean',
+        ];
     }
 
     public function customer(): BelongsTo

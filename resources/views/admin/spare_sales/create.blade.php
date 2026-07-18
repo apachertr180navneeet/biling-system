@@ -12,21 +12,21 @@
         <form method="POST" action="{{ route('admin.spare-sales.store') }}">
             @csrf
             <div class="row g-3 mb-4">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label">Customer (optional)</label>
-                    <select name="customer_id" class="form-select">
+                    <select name="customer_id" class="form-select" id="customerSelect">
                         <option value="">Walk-in Customer</option>
                         @foreach($customers as $c)
-                        <option value="{{ $c->id }}" {{ old('customer_id')==$c->id ? 'selected':'' }}>{{ $c->first_name }} {{ $c->last_name }}</option>
+                        <option value="{{ $c->id }}" data-state="{{ $c->state }}" {{ old('customer_id')==$c->id ? 'selected':'' }}>{{ $c->first_name }} {{ $c->last_name }}</option>
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label">Sale Date</label>
                     <input type="date" name="sale_date" class="form-control @error('sale_date') is-invalid @enderror" value="{{ old('sale_date', date('Y-m-d')) }}">
                     @error('sale_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label">Payment Mode</label>
                     <select name="payment_mode" class="form-select @error('payment_mode') is-invalid @enderror">
                         <option value="cash" {{ old('payment_mode')=='cash'?'selected':'' }}>Cash</option>
@@ -36,6 +36,12 @@
                         <option value="card" {{ old('payment_mode')=='card'?'selected':'' }}>Card</option>
                     </select>
                     @error('payment_mode')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">GST Applicable</label>
+                    <div class="form-check form-switch pt-2">
+                        <input type="checkbox" name="is_gst" class="form-check-input" value="1" id="gstToggle" checked>
+                    </div>
                 </div>
             </div>
 
@@ -91,10 +97,11 @@
 <script>
 function recalc() {
     var subtotal=0, gst=0;
+    var isGst = $('#gstToggle').is(':checked');
     $('#itemsContainer tr').each(function(){
         var qty=parseFloat($(this).find('.qty').val())||0;
         var rate=parseFloat($(this).find('.rate').val())||0;
-        var gstRate=parseFloat($(this).find('.gst-rate').val())||0;
+        var gstRate=isGst ? (parseFloat($(this).find('.gst-rate').val())||0) : 0;
         var lineSub=rate*qty;
         var lineGst=lineSub*gstRate/100;
         var lineTotal=lineSub+lineGst;
@@ -133,6 +140,7 @@ $(document).on('change', '.part-select', function(){
     row.find('.part-name-input').val(opt.data('name'));
     recalc();
 });
+$('#gstToggle').change(recalc);
 $(document).on('input', '.qty, .rate, .gst-rate', recalc);
 </script>
 @endpush

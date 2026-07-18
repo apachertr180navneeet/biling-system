@@ -119,13 +119,6 @@ $(document).ready(function() {
         calcInvoice();
     });
     $(document).on('change keyup', '.qty, .unit-price, .gst-rate', function() {
-        var row = $(this).closest('.item-row');
-        var qty = parseFloat(row.find('.qty').val()) || 0;
-        var price = parseFloat(row.find('.unit-price').val()) || 0;
-        var gst = parseFloat(row.find('.gst-rate').val()) || 0;
-        var taxable = qty * price;
-        var gstAmt = taxable * gst / 100;
-        row.find('.line-total').val((taxable + gstAmt).toFixed(2));
         calcInvoice();
     });
     $(document).on('change', '.part-select', function() {
@@ -133,24 +126,26 @@ $(document).ready(function() {
         var selected = $(this).find(':selected');
         row.find('.unit-price').val(selected.data('price') || 0);
         row.find('.gst-rate').val(selected.data('gst') || 0);
-        row.find('.qty').trigger('keyup');
+        calcInvoice();
     });
     $('#gstToggle').change(calcInvoice);
     $('#customerSelect').change(calcInvoice);
 
     function calcInvoice() {
         var subtotal = 0, totalGst = 0, totalAmount = 0;
+        var isGst = $('#gstToggle').is(':checked');
         $('.item-row').each(function() {
             var qty = parseFloat($(this).find('.qty').val()) || 0;
             var price = parseFloat($(this).find('.unit-price').val()) || 0;
-            var gst = parseFloat($(this).find('.gst-rate').val()) || 0;
+            var gst = isGst ? (parseFloat($(this).find('.gst-rate').val()) || 0) : 0;
             var taxable = qty * price;
             var gstAmt = taxable * gst / 100;
+            var lineTotal = taxable + gstAmt;
+            $(this).find('.line-total').val(lineTotal.toFixed(2));
             subtotal += taxable;
             totalGst += gstAmt;
-            totalAmount += taxable + gstAmt;
+            totalAmount += lineTotal;
         });
-        var isGst = $('#gstToggle').is(':checked');
         if (isGst && subtotal > 0) {
             var customerState = $('#customerSelect').find(':selected').data('state');
             var sellerState = '{{ config("app.seller_state", "Delhi") }}';

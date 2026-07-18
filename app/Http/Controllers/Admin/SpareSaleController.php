@@ -33,6 +33,7 @@ class SpareSaleController extends Controller
             'customer_id' => 'nullable|exists:customers,id',
             'sale_date' => 'required|date',
             'payment_mode' => 'required|in:cash,bank_transfer,cheque,upi,card',
+            'is_gst' => 'nullable|boolean',
             'notes' => 'nullable|string',
             'items' => 'required|array|min:1',
             'items.*.spare_part_id' => 'nullable|exists:spare_parts,id',
@@ -42,6 +43,8 @@ class SpareSaleController extends Controller
             'items.*.rate' => 'required|numeric|min:0',
             'items.*.gst_rate' => 'nullable|numeric|min:0',
         ]);
+
+        $data['is_gst'] = $request->boolean('is_gst', true);
 
         $data['sale_number'] = DB::transaction(function () {
             $last = DB::table('spare_sales')->lockForUpdate()->orderBy('id', 'desc')->first();
@@ -63,13 +66,15 @@ class SpareSaleController extends Controller
             ];
         }
 
-        $result = $gst->calculateForItems($gstItems, true, $customer);
+        $result = $gst->calculateForItems($gstItems, $data['is_gst'], $customer);
 
         DB::transaction(function () use ($data, $request, $result) {
             $sale = SpareSale::create([
                 'sale_number' => $data['sale_number'],
                 'customer_id' => $data['customer_id'],
                 'sale_date' => $data['sale_date'],
+                'is_gst' => $data['is_gst'],
+                'gst_type' => $result['gstType'],
                 'payment_mode' => $data['payment_mode'],
                 'notes' => $data['notes'],
                 'subtotal' => $result['subtotal'],

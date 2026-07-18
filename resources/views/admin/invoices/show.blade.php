@@ -16,7 +16,7 @@
         <div class="card-body">
             <div class="text-center mb-4">
                 <h3>{{ config('app.name') }}</h3>
-                <h5>TAX INVOICE</h5>
+                <h5>{{ $invoice->is_gst ? 'TAX INVOICE' : 'RETAIL INVOICE / CASH MEMO' }}</h5>
             </div>
 
             <div class="row mb-4">
@@ -112,8 +112,10 @@
                 </div>
                 <div class="col-md-6 text-end">
                     <h6>Subtotal: {{ number_format($invoice->subtotal, 2) }}</h6>
+                    @if($invoice->is_gst)
                     <h6>GST: {{ number_format($invoice->gst_amount, 2) }}</h6>
                     <h6>Cess: {{ number_format($invoice->cess_amount, 2) }}</h6>
+                    @endif
                     <h6>Round Off: {{ number_format($invoice->round_off, 2) }}</h6>
                     <h4>Grand Total: {{ number_format($invoice->grand_total, 2) }}</h4>
                 </div>
