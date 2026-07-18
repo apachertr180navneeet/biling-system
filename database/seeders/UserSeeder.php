@@ -25,7 +25,7 @@ class UserSeeder extends Seeder
             'city' => 'Sydney',
             'state' => 'NSW',
             'country' => 'Australia',
-            'country_code' => '1',
+            'country_code' => '61',
             'zipcode' => '2000',
             'latitude' => '-33.8664701',
             'longitude' => '151.2081952',

@@ -12,7 +12,9 @@ class SpareSaleItem extends Model
 
     protected $fillable = [
         'spare_sale_id', 'spare_part_id', 'part_name', 'hsn_code',
-        'quantity', 'rate', 'gst_rate', 'gst_amount', 'total', 'is_active',
+        'quantity', 'rate', 'gst_rate', 'gst_amount',
+        'cgst_amount', 'sgst_amount', 'igst_amount',
+        'total', 'is_active',
     ];
 
     public function spareSale(): BelongsTo

@@ -14,6 +14,7 @@ class InvoiceSeries extends Model
     public function nextNumber(): string
     {
         $this->increment('last_number');
+        $this->refresh();
         $num = str_pad($this->last_number, 4, '0', STR_PAD_LEFT);
         return "{$this->prefix}/{$this->fiscal_year}/{$num}";
     }

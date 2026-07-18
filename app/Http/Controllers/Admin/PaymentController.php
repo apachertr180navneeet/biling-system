@@ -7,6 +7,7 @@ use App\Models\Payment;
 use App\Models\Customer;
 use App\Models\Invoice;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PaymentController extends Controller
 {
@@ -35,9 +36,25 @@ class PaymentController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        $last = Payment::orderBy('id', 'desc')->first();
-        $nextId = $last ? $last->id + 1 : 1;
-        $data['payment_number'] = 'PAY-' . date('Ymd') . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
+        if (!empty($data['invoice_id'])) {
+            $invoice = Invoice::find($data['invoice_id']);
+            if ($invoice) {
+                if ($data['customer_id'] != $invoice->customer_id) {
+                    return back()->withErrors(['customer_id' => 'Payment customer does not match invoice customer.']);
+                }
+                $totalPaid = Payment::where('invoice_id', $data['invoice_id'])->sum('amount');
+                if (($totalPaid + $data['amount']) > $invoice->grand_total) {
+                    $remaining = $invoice->grand_total - $totalPaid;
+                    return back()->withErrors(['amount' => "Payment exceeds invoice balance. Remaining: ₹" . number_format($remaining, 2)]);
+                }
+            }
+        }
+
+        $data['payment_number'] = DB::transaction(function () {
+            $last = DB::table('payments')->lockForUpdate()->orderBy('id', 'desc')->first();
+            $nextId = $last ? $last->id + 1 : 1;
+            return 'PAY-' . date('Ymd') . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
+        });
 
         Payment::create($data);
         return redirect()->route('admin.payments.index')->withSuccess('Payment recorded successfully.');

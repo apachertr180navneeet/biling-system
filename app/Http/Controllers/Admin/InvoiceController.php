@@ -10,6 +10,7 @@ use App\Models\SparePart;
 use App\Models\SparePartStock;
 use App\Models\VehicleInventory;
 use App\Models\VehicleModel;
+use App\Models\Payment;
 use App\Services\GstCalculator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -60,10 +61,11 @@ class InvoiceController extends Controller
         $invoice = DB::transaction(function () use ($data, $result) {
             $series = InvoiceSeries::where('type', $data['is_gst'] ? 'gst' : 'non_gst')
                 ->where('fiscal_year', $this->fiscalYear())
+                ->lockForUpdate()
                 ->firstOrFail();
 
             if (!empty($data['vehicle_inventory_id'])) {
-                $inv = VehicleInventory::findOrFail($data['vehicle_inventory_id']);
+                $inv = VehicleInventory::where('id', $data['vehicle_inventory_id'])->lockForUpdate()->firstOrFail();
                 if ($inv->quantity < 1 || $inv->status !== 'available') {
                     throw new \Exception('Vehicle inventory not available.');
                 }
@@ -87,6 +89,9 @@ class InvoiceController extends Controller
                 'gst_type' => $result['gstType'],
                 'subtotal' => $data['selling_price'],
                 'gst_amount' => $result['gstAmount'],
+                'cgst_amount' => $result['cgstAmount'],
+                'sgst_amount' => $result['sgstAmount'],
+                'igst_amount' => $result['igstAmount'],
                 'cess_amount' => $result['cessAmount'],
                 'total_amount' => $result['total'],
                 'round_off' => $result['roundOff'],
@@ -130,6 +135,7 @@ class InvoiceController extends Controller
         $invoice = DB::transaction(function () use ($data, $result) {
             $series = InvoiceSeries::where('type', $data['is_gst'] ? 'gst' : 'non_gst')
                 ->where('fiscal_year', $this->fiscalYear())
+                ->lockForUpdate()
                 ->firstOrFail();
 
             $invoice = Invoice::create([
@@ -141,6 +147,9 @@ class InvoiceController extends Controller
                 'gst_type' => $result['gstType'],
                 'subtotal' => $result['subtotal'],
                 'gst_amount' => $result['totalGst'],
+                'cgst_amount' => $result['totalCgst'],
+                'sgst_amount' => $result['totalSgst'],
+                'igst_amount' => $result['totalIgst'],
                 'cess_amount' => $result['totalCess'],
                 'total_amount' => $result['totalAmount'],
                 'round_off' => $result['roundOff'],
@@ -152,10 +161,11 @@ class InvoiceController extends Controller
             foreach ($result['calculatedItems'] as $item) {
                 $invoice->items()->create($item);
                 if (!empty($item['spare_part_id'])) {
-                    $stock = SparePartStock::where('spare_part_id', $item['spare_part_id'])->first();
-                    if ($stock && $stock->quantity >= $item['quantity']) {
-                        $stock->decrement('quantity', $item['quantity']);
+                    $stock = SparePartStock::where('spare_part_id', $item['spare_part_id'])->lockForUpdate()->first();
+                    if (!$stock || $stock->quantity < $item['quantity']) {
+                        throw new \Exception("Insufficient stock for spare part ID {$item['spare_part_id']}. Available: " . ($stock->quantity ?? 0) . ", requested: {$item['quantity']}.");
                     }
+                    $stock->decrement('quantity', $item['quantity']);
                 }
             }
 
@@ -193,6 +203,7 @@ class InvoiceController extends Controller
                     }
                 }
             }
+            Payment::where('invoice_id', $invoice->id)->update(['invoice_id' => null]);
             $invoice->delete();
         });
         return response()->json(['success' => true, 'message' => 'Invoice deleted successfully.']);

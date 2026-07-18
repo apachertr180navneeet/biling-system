@@ -42,9 +42,11 @@ class VehiclePurchaseOrderController extends Controller
             'items.*.unit_price' => 'required|numeric|min:0',
         ]);
 
-        $last = VehiclePurchaseOrder::orderBy('id', 'desc')->first();
-        $nextId = $last ? $last->id + 1 : 1;
-        $data['po_number'] = 'VPO-' . date('Ymd') . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
+        $data['po_number'] = DB::transaction(function () {
+            $last = DB::table('vehicle_purchase_orders')->lockForUpdate()->orderBy('id', 'desc')->first();
+            $nextId = $last ? $last->id + 1 : 1;
+            return 'VPO-' . date('Ymd') . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
+        });
         $data['status'] = 'pending';
 
         $total = 0;
@@ -139,14 +141,36 @@ class VehiclePurchaseOrderController extends Controller
 
     public function destroy(VehiclePurchaseOrder $vehiclePurchaseOrder)
     {
-        $vehiclePurchaseOrder->delete();
+        DB::transaction(function () use ($vehiclePurchaseOrder) {
+            $vehiclePurchaseOrder->load('items');
+            foreach ($vehiclePurchaseOrder->items as $item) {
+                if ($item->received_quantity > 0) {
+                    $existing = VehicleInventory::where('vehicle_po_id', $vehiclePurchaseOrder->id)
+                        ->where('vehicle_description', $item->vehicle_description)
+                        ->where('color_name', $item->color_name)
+                        ->where('mfg_year', $item->mfg_year)
+                        ->where('status', 'available')
+                        ->lockForUpdate()
+                        ->first();
+                    if ($existing) {
+                        $existing->decrement('quantity', $item->received_quantity);
+                        if ($existing->quantity <= 0) {
+                            $existing->update(['status' => 'sold']);
+                        }
+                    }
+                }
+            }
+            $vehiclePurchaseOrder->items()->delete();
+            $vehiclePurchaseOrder->delete();
+        });
         return response()->json(['success' => true, 'message' => 'Deleted successfully.']);
     }
 
     public function toggleStatus(VehiclePurchaseOrder $vehiclePurchaseOrder)
     {
         $vehiclePurchaseOrder->update(['is_active' => !$vehiclePurchaseOrder->is_active]);
-        return response()->json(['success' => true, 'is_active' => $vehiclePurchaseOrder->fresh()->is_active]);
+        $vehiclePurchaseOrder->refresh();
+        return response()->json(['success' => true, 'is_active' => $vehiclePurchaseOrder->is_active]);
     }
 
     public function receive(VehiclePurchaseOrder $vehiclePurchaseOrder)
@@ -176,19 +200,22 @@ class VehiclePurchaseOrderController extends Controller
 
             foreach ($request->items as $itemData) {
                 $poItem = $vehiclePurchaseOrder->items()->findOrFail($itemData['id']);
-                $newReceived = min($itemData['received_qty'], $poItem->quantity);
+                $previousReceived = $poItem->received_quantity;
+                $newReceived = min($itemData['received_qty'] + $previousReceived, $poItem->quantity);
+                $delta = $newReceived - $previousReceived;
                 $poItem->update(['received_quantity' => $newReceived]);
 
-                if ($newReceived > 0) {
+                if ($delta > 0) {
                     $anyReceived = true;
                     $existing = VehicleInventory::where('vehicle_po_id', $vehiclePurchaseOrder->id)
                         ->where('vehicle_description', $poItem->vehicle_description)
                         ->where('color_name', $poItem->color_name)
                         ->where('mfg_year', $poItem->mfg_year)
                         ->where('status', 'available')
+                        ->lockForUpdate()
                         ->first();
                     if ($existing) {
-                        $existing->increment('quantity', $newReceived);
+                        $existing->increment('quantity', $delta);
                         $existing->update(['purchase_price' => $poItem->unit_price]);
                     } else {
                         VehicleInventory::create([
@@ -196,7 +223,7 @@ class VehiclePurchaseOrderController extends Controller
                             'vehicle_description' => $poItem->vehicle_description,
                             'color_name' => $poItem->color_name,
                             'mfg_year' => $poItem->mfg_year,
-                            'quantity' => $newReceived,
+                            'quantity' => $delta,
                             'purchase_price' => $poItem->unit_price,
                             'status' => 'available',
                         ]);

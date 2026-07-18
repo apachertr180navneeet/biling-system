@@ -7,6 +7,7 @@ use App\Models\JobCard;
 use App\Models\Customer;
 use App\Models\Service;
 use App\Models\SparePart;
+use App\Models\SparePartStock;
 use App\Services\GstCalculator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -40,9 +41,11 @@ class JobCardController extends Controller
             'is_gst' => 'nullable|boolean',
         ]);
 
-        $last = JobCard::orderBy('id', 'desc')->first();
-        $nextId = $last ? $last->id + 1 : 1;
-        $data['job_card_number'] = 'JC-' . date('Ymd') . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
+        $data['job_card_number'] = DB::transaction(function () {
+            $last = DB::table('job_cards')->lockForUpdate()->orderBy('id', 'desc')->first();
+            $nextId = $last ? $last->id + 1 : 1;
+            return 'JC-' . date('Ymd') . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
+        });
         $data['status'] = 'pending';
         $data['is_gst'] = $request->boolean('is_gst');
 
@@ -109,13 +112,27 @@ class JobCardController extends Controller
 
     public function destroy(JobCard $jobCard)
     {
-        $jobCard->delete();
+        DB::transaction(function () use ($jobCard) {
+            $jobCard->load('parts');
+            foreach ($jobCard->parts as $part) {
+                if ($part->spare_part_id) {
+                    $stock = SparePartStock::where('spare_part_id', $part->spare_part_id)->lockForUpdate()->first();
+                    if ($stock) {
+                        $stock->increment('quantity', $part->quantity);
+                    }
+                }
+            }
+            $jobCard->services()->delete();
+            $jobCard->parts()->delete();
+            $jobCard->delete();
+        });
         return response()->json(['success' => true, 'message' => 'Deleted successfully.']);
     }
 
     public function toggleStatus(JobCard $jobCard)
     {
         $jobCard->update(['is_active' => !$jobCard->is_active]);
+        $jobCard->refresh();
         return response()->json(['success' => true, 'is_active' => $jobCard->is_active]);
     }
 
@@ -152,6 +169,16 @@ class JobCardController extends Controller
         $result = $gstCalc->calculateForItems($gstItems, $jobCard->is_gst, $jobCard->customer);
 
         DB::transaction(function () use ($jobCard, $request, $result) {
+            $jobCard->load('parts');
+            foreach ($jobCard->parts as $oldPart) {
+                if ($oldPart->spare_part_id) {
+                    $stock = SparePartStock::where('spare_part_id', $oldPart->spare_part_id)->lockForUpdate()->first();
+                    if ($stock) {
+                        $stock->increment('quantity', $oldPart->quantity);
+                    }
+                }
+            }
+
             $jobCard->services()->delete();
             $jobCard->parts()->delete();
 
@@ -176,6 +203,9 @@ class JobCardController extends Controller
                         'rate' => $item['rate'],
                         'gst_rate' => $ci['gst_rate'],
                         'gst_amount' => $ci['gst_amount'],
+                        'cgst_amount' => $ci['cgst_amount'],
+                        'sgst_amount' => $ci['sgst_amount'],
+                        'igst_amount' => $ci['igst_amount'],
                         'total' => $ci['total'],
                     ]);
                 }

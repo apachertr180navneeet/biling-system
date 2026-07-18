@@ -40,9 +40,11 @@ class PurchaseOrderController extends Controller
             'items.*.unit_price' => 'required|numeric|min:0',
         ]);
 
-        $lastOrder = PurchaseOrder::orderBy('id', 'desc')->first();
-        $nextId = $lastOrder ? $lastOrder->id + 1 : 1;
-        $data['order_number'] = 'PO-' . date('Ymd') . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
+        $data['order_number'] = DB::transaction(function () {
+            $lastOrder = DB::table('purchase_orders')->lockForUpdate()->orderBy('id', 'desc')->first();
+            $nextId = $lastOrder ? $lastOrder->id + 1 : 1;
+            return 'PO-' . date('Ymd') . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
+        });
         $data['created_by'] = Auth::id();
 
         $total = 0;
@@ -124,14 +126,27 @@ class PurchaseOrderController extends Controller
 
     public function destroy(PurchaseOrder $purchaseOrder)
     {
-        $purchaseOrder->delete();
+        DB::transaction(function () use ($purchaseOrder) {
+            $purchaseOrder->load('items');
+            foreach ($purchaseOrder->items as $item) {
+                if ($item->received_quantity > 0) {
+                    $stock = SparePartStock::where('spare_part_id', $item->spare_part_id)->lockForUpdate()->first();
+                    if ($stock) {
+                        $stock->decrement('quantity', $item->received_quantity);
+                    }
+                }
+            }
+            $purchaseOrder->items()->delete();
+            $purchaseOrder->delete();
+        });
         return response()->json(['success' => true, 'message' => 'Purchase order deleted successfully.']);
     }
 
     public function toggleStatus(PurchaseOrder $purchaseOrder)
     {
         $purchaseOrder->update(['is_active' => !$purchaseOrder->is_active]);
-        return response()->json(['success' => true, 'is_active' => $purchaseOrder->fresh()->is_active]);
+        $purchaseOrder->refresh();
+        return response()->json(['success' => true, 'is_active' => $purchaseOrder->is_active]);
     }
 
     public function receive(PurchaseOrder $purchaseOrder)
@@ -161,16 +176,18 @@ class PurchaseOrderController extends Controller
 
             foreach ($request->items as $itemData) {
                 $poItem = $purchaseOrder->items()->findOrFail($itemData['id']);
-                $newReceived = min($itemData['received_qty'], $poItem->quantity);
+                $previousReceived = $poItem->received_quantity;
+                $newReceived = min($itemData['received_qty'] + $previousReceived, $poItem->quantity);
+                $delta = $newReceived - $previousReceived;
                 $poItem->update(['received_quantity' => $newReceived]);
 
-                if ($newReceived > 0) {
+                if ($delta > 0) {
                     $anyReceived = true;
                     $stock = SparePartStock::firstOrCreate(
                         ['spare_part_id' => $poItem->spare_part_id],
                         ['quantity' => 0, 'min_quantity' => 0, 'purchase_price' => 0]
                     );
-                    $stock->increment('quantity', $newReceived);
+                    $stock->increment('quantity', $delta);
                     $stock->update(['purchase_price' => $poItem->unit_price, 'purchase_order_id' => $purchaseOrder->id]);
                 }
 

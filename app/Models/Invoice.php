@@ -16,6 +16,7 @@ class Invoice extends Model
         'vehicle_description', 'chassis_number', 'engine_number', 'mfg_year',
         'vehicle_inventory_id',
         'invoice_date', 'is_gst', 'gst_type', 'subtotal', 'gst_amount',
+        'cgst_amount', 'sgst_amount', 'igst_amount',
         'cess_amount', 'total_amount', 'round_off', 'grand_total',
         'status', 'notes', 'is_active',
     ];

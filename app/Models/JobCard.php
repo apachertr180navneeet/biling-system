@@ -12,7 +12,8 @@ class JobCard extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'job_card_number', 'customer_id', 'vehicle_number',
+        'job_card_number', 'customer_id', 'vehicle_number', 'vehicle_model',
+        'kilometer_reading', 'complaint', 'status',
         'total_labor', 'total_parts', 'subtotal', 'is_gst', 'gst_type',
         'gst_amount', 'cess_amount', 'grand_total', 'service_date',
         'completion_date', 'notes', 'is_active',

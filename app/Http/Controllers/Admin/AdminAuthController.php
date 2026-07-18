@@ -48,7 +48,7 @@ class AdminAuthController extends Controller
 
     public function registration()
     {
-        return view("admin.auth.registration");
+        return redirect()->route('admin.login')->with('error', 'Registration is disabled.');
     }
 
     public function postLogin(Request $request)
@@ -59,23 +59,10 @@ class AdminAuthController extends Controller
                 "password" => "required",
             ]);
             $user = User::where('role','admin')->where('email',$request->email)->first();
-            if($user){
-                $credentials = $request->only("email", "password");
-                if(Auth::attempt([
-                        'email' => $request->email,
-                        'password' => $request->password,
-                        'role' => function ($query) {
-                            $query->where('role','admin');
-                        }
-                    ]))
-                {
-                    return redirect()->route("admin.dashboard")->with("success", "Welcome to your dashboard.");
-                }
-                return back()->with("error","Invalid credentials");
-            }else{
-                return back()->with("error","Invalid credentials");
+            if($user && Auth::attempt($request->only("email", "password"))){
+                return redirect()->route("admin.dashboard")->with("success", "Welcome to your dashboard.");
             }
-
+            return back()->with("error","Invalid credentials");
         }
         catch(Exception $e){
             return back()->with("error",$e->getMessage());
@@ -84,16 +71,7 @@ class AdminAuthController extends Controller
 
     public function postRegistration(Request $request)
     {
-        $request->validate([
-            "name" => "required",
-            "email" => "required|email|unique:users",
-            "password" => "required|min:6",
-        ]);
-
-        $data = $request->all();
-        $check = $this->create($data);
-
-        return redirect("admin.dashboard")->with("success","Great! You have Successfully loggedin");
+        return redirect()->route('admin.login')->with('error', 'Registration is disabled.');
     }
 
     public function create(array $data)
@@ -144,6 +122,9 @@ class AdminAuthController extends Controller
     {
         try{    
             $user = DB::table("password_resets")->where("token", $token)->first();
+            if (!$user) {
+                return redirect()->route("admin.login")->with("error", "Invalid or expired reset link.");
+            }
             $email = $user->email;
             return view("admin.auth.reset-password", ["token" => $token,"email" => $email,]);
         }
@@ -207,11 +188,12 @@ class AdminAuthController extends Controller
 
     
 
-    public function logout()
+    public function logout(Request $request)
     {
         try{
-            Session::flush();
             Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
             return redirect()->route("admin.login")->withSuccess('Logout Successful!');
         }
         catch(Exception $e){
@@ -251,11 +233,11 @@ class AdminAuthController extends Controller
             
             if($request->file("avatar")) {
                 $file = $request->file("avatar");
-                $filename = time() . $file->getClientOriginalName();
+                $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
                 $folder = "uploads/user/";
                 $path = public_path($folder);
                 if (!File::exists($path)) {
-                    File::makeDirectory($path, $mode = 0777, true, true);
+                    File::makeDirectory($path, $mode = 0755, true, true);
                 }
                 $file->move($path, $filename);
                 $user->avatar = $folder . $filename;

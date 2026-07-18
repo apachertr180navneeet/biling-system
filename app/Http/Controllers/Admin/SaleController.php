@@ -9,6 +9,7 @@ use App\Models\Invoice;
 use App\Models\VehicleVariant;
 use App\Models\VehicleInventory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class SaleController extends Controller
 {
@@ -42,9 +43,11 @@ class SaleController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        $last = Sale::orderBy('id', 'desc')->first();
-        $nextId = $last ? $last->id + 1 : 1;
-        $data['sale_number'] = 'SL-' . date('Ymd') . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
+        $data['sale_number'] = DB::transaction(function () {
+            $last = DB::table('sales')->lockForUpdate()->orderBy('id', 'desc')->first();
+            $nextId = $last ? $last->id + 1 : 1;
+            return 'SL-' . date('Ymd') . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
+        });
         $data['status'] = 'booking';
 
         Sale::create($data);
@@ -100,12 +103,24 @@ class SaleController extends Controller
     public function toggleStatus(Sale $sale)
     {
         $sale->update(['is_active' => !$sale->is_active]);
+        $sale->refresh();
         return response()->json(['success' => true, 'is_active' => $sale->is_active]);
     }
 
     public function updateStatus(Sale $sale, Request $request)
     {
         $request->validate(['status' => 'required|in:booking,allotment,registration,delivery,completed']);
+
+        $allowed = [
+            'booking'      => ['allotment'],
+            'allotment'    => ['registration'],
+            'registration' => ['delivery'],
+            'delivery'     => ['completed'],
+        ];
+
+        if (!isset($allowed[$sale->status]) || !in_array($request->status, $allowed[$sale->status])) {
+            return response()->json(['success' => false, 'message' => "Cannot transition from '{$sale->status}' to '{$request->status}'."], 422);
+        }
 
         $data = ['status' => $request->status];
 

@@ -23,7 +23,18 @@ class GstCalculator
         $roundOff = round($total) - $total;
         $grandTotal = round($total);
 
-        return compact('gstRate', 'cessRate', 'gstType', 'gstAmount', 'cessAmount', 'total', 'roundOff', 'grandTotal');
+        $cgstAmount = 0;
+        $sgstAmount = 0;
+        $igstAmount = 0;
+
+        if ($gstType === 'cgst_sgst') {
+            $cgstAmount = round($gstAmount / 2, 2);
+            $sgstAmount = round($gstAmount - $cgstAmount, 2);
+        } else {
+            $igstAmount = $gstAmount;
+        }
+
+        return compact('gstRate', 'cessRate', 'gstType', 'gstAmount', 'cessAmount', 'total', 'roundOff', 'grandTotal', 'cgstAmount', 'sgstAmount', 'igstAmount');
     }
 
     public function calculateForItems(array $items, bool $isGst, ?Customer $customer): array
@@ -47,6 +58,17 @@ class GstCalculator
             $totalGst += $gstAmount;
             $totalCess += $cessAmount;
 
+            $cgstAmount = 0;
+            $sgstAmount = 0;
+            $igstAmount = 0;
+
+            if ($gstType === 'cgst_sgst') {
+                $cgstAmount = round($gstAmount / 2, 2);
+                $sgstAmount = round($gstAmount - $cgstAmount, 2);
+            } else {
+                $igstAmount = $gstAmount;
+            }
+
             $calculatedItems[] = [
                 'description' => $item['description'] ?? '',
                 'spare_part_id' => $item['spare_part_id'] ?? null,
@@ -56,6 +78,9 @@ class GstCalculator
                 'cess_rate' => $cessRate,
                 'taxable_value' => $taxableValue,
                 'gst_amount' => $gstAmount,
+                'cgst_amount' => $cgstAmount,
+                'sgst_amount' => $sgstAmount,
+                'igst_amount' => $igstAmount,
                 'cess_amount' => $cessAmount,
                 'total' => $total,
             ];
@@ -65,7 +90,18 @@ class GstCalculator
         $roundOff = round($totalAmount) - $totalAmount;
         $grandTotal = round($totalAmount);
 
-        return compact('calculatedItems', 'subtotal', 'totalGst', 'totalCess', 'totalAmount', 'roundOff', 'grandTotal', 'gstType');
+        $totalCgst = 0;
+        $totalSgst = 0;
+        $totalIgst = 0;
+
+        if ($gstType === 'cgst_sgst') {
+            $totalCgst = round($totalGst / 2, 2);
+            $totalSgst = round($totalGst - $totalCgst, 2);
+        } else {
+            $totalIgst = $totalGst;
+        }
+
+        return compact('calculatedItems', 'subtotal', 'totalGst', 'totalCess', 'totalAmount', 'roundOff', 'grandTotal', 'gstType', 'totalCgst', 'totalSgst', 'totalIgst');
     }
 
     private function determineGstType(?Customer $customer): string
@@ -87,6 +123,9 @@ class GstCalculator
         $total = $price;
         $roundOff = round($total) - $total;
         $grandTotal = round($total);
-        return compact('gstRate', 'cessRate', 'gstType', 'gstAmount', 'cessAmount', 'total', 'roundOff', 'grandTotal');
+        $cgstAmount = 0;
+        $sgstAmount = 0;
+        $igstAmount = 0;
+        return compact('gstRate', 'cessRate', 'gstType', 'gstAmount', 'cessAmount', 'total', 'roundOff', 'grandTotal', 'cgstAmount', 'sgstAmount', 'igstAmount');
     }
 }

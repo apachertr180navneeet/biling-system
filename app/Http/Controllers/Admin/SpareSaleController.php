@@ -27,7 +27,7 @@ class SpareSaleController extends Controller
         return view('admin.spare_sales.create', compact('customers', 'spareParts'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request, GstCalculator $gst)
     {
         $data = $request->validate([
             'customer_id' => 'nullable|exists:customers,id',
@@ -43,58 +43,65 @@ class SpareSaleController extends Controller
             'items.*.gst_rate' => 'nullable|numeric|min:0',
         ]);
 
-        $last = SpareSale::orderBy('id', 'desc')->first();
-        $nextId = $last ? $last->id + 1 : 1;
-        $data['sale_number'] = 'SS-' . date('Ymd') . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
+        $data['sale_number'] = DB::transaction(function () {
+            $last = DB::table('spare_sales')->lockForUpdate()->orderBy('id', 'desc')->first();
+            $nextId = $last ? $last->id + 1 : 1;
+            return 'SS-' . date('Ymd') . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
+        });
 
-        DB::transaction(function () use ($data, $request) {
-            $subtotal = 0;
-            $totalGst = 0;
+        $customer = !empty($data['customer_id']) ? Customer::find($data['customer_id']) : null;
 
+        $gstItems = [];
+        foreach ($request->items as $item) {
+            $gstItems[] = [
+                'description' => $item['part_name'],
+                'spare_part_id' => $item['spare_part_id'] ?? null,
+                'quantity' => $item['quantity'],
+                'unit_price' => $item['rate'],
+                'gst_rate' => $item['gst_rate'] ?? 0,
+                'cess_rate' => 0,
+            ];
+        }
+
+        $result = $gst->calculateForItems($gstItems, true, $customer);
+
+        DB::transaction(function () use ($data, $request, $result) {
             $sale = SpareSale::create([
                 'sale_number' => $data['sale_number'],
                 'customer_id' => $data['customer_id'],
                 'sale_date' => $data['sale_date'],
                 'payment_mode' => $data['payment_mode'],
                 'notes' => $data['notes'],
-                'subtotal' => 0,
-                'gst_amount' => 0,
-                'grand_total' => 0,
+                'subtotal' => $result['subtotal'],
+                'gst_amount' => $result['totalGst'],
+                'grand_total' => $result['grandTotal'],
             ]);
 
-            foreach ($request->items as $item) {
-                $gstRate = $item['gst_rate'] ?? 0;
-                $lineTotal = $item['rate'] * $item['quantity'];
-                $gstAmount = ($lineTotal * $gstRate) / 100;
-                $total = $lineTotal + $gstAmount;
-                $subtotal += $lineTotal;
-                $totalGst += $gstAmount;
+            foreach ($result['calculatedItems'] as $i => $ci) {
+                $item = $request->items[$i];
 
                 $sale->items()->create([
-                    'spare_part_id' => $item['spare_part_id'],
+                    'spare_part_id' => $item['spare_part_id'] ?? null,
                     'part_name' => $item['part_name'],
-                    'hsn_code' => $item['hsn_code'],
-                    'quantity' => $item['quantity'],
+                    'hsn_code' => $item['hsn_code'] ?? null,
+                    'quantity' => $ci['quantity'],
                     'rate' => $item['rate'],
-                    'gst_rate' => $gstRate,
-                    'gst_amount' => $gstAmount,
-                    'total' => $total,
+                    'gst_rate' => $ci['gst_rate'],
+                    'gst_amount' => $ci['gst_amount'],
+                    'cgst_amount' => $ci['cgst_amount'],
+                    'sgst_amount' => $ci['sgst_amount'],
+                    'igst_amount' => $ci['igst_amount'],
+                    'total' => $ci['total'],
                 ]);
 
                 if (!empty($item['spare_part_id'])) {
-                    $stock = SparePartStock::where('spare_part_id', $item['spare_part_id'])->first();
-                    if ($stock && $stock->quantity >= $item['quantity']) {
-                        $stock->decrement('quantity', $item['quantity']);
+                    $stock = SparePartStock::where('spare_part_id', $item['spare_part_id'])->lockForUpdate()->first();
+                    if (!$stock || $stock->quantity < $ci['quantity']) {
+                        throw new \Exception("Insufficient stock for spare part ID {$item['spare_part_id']}. Available: " . ($stock->quantity ?? 0) . ", requested: {$ci['quantity']}.");
                     }
+                    $stock->decrement('quantity', $ci['quantity']);
                 }
-
             }
-
-            $sale->update([
-                'subtotal' => $subtotal,
-                'gst_amount' => $totalGst,
-                'grand_total' => $subtotal + $totalGst,
-            ]);
         });
 
         return redirect()->route('admin.spare-sales.index')->withSuccess('Spare sale completed successfully.');
