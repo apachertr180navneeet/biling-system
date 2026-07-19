@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\SaleController;
 use App\Http\Controllers\Admin\SpareSaleController;
 use App\Http\Controllers\Admin\VehiclePurchaseOrderController;
 use App\Http\Controllers\Admin\SparePartStockController;
+use App\Http\Controllers\Admin\VehicleMasterController;
 
 
 /*
@@ -63,6 +64,9 @@ Route::name('admin.')->prefix('admin')->group(function () {
         Route::get('profile', [AdminAuthController::class, 'adminProfile'])->name('profile');
 
         Route::post('profile', [AdminAuthController::class, 'updateAdminProfile'])->name('update.profile');
+
+        Route::resource('vehicle-masters', VehicleMasterController::class)->except(['show']);
+        Route::post('vehicle-masters/{vehicle_master}/toggle-status', [VehicleMasterController::class, 'toggleStatus'])->name('vehicle-masters.toggle-status');
 
         Route::resource('spare-parts', SparePartController::class)->except(['show']);
         Route::post('spare-parts/{spare_part}/toggle-status', [SparePartController::class, 'toggleStatus'])->name('spare-parts.toggle-status');

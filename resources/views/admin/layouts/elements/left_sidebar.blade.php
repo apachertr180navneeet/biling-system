@@ -66,6 +66,13 @@
 
 		<li class="menu-header small text-uppercase"><span class="menu-header-text">Master Data</span></li>
 
+		<li class="menu-item {{ request()->routeIs('admin.vehicle-masters.*') ? 'active' : ''}}">
+			<a href="{{route('admin.vehicle-masters.index')}}" class="menu-link">
+				<i class="menu-icon tf-icons bx bx-car"></i>
+				<div data-i18n="Vehicle Master">Vehicle Master</div>
+			</a>
+		</li>
+
 		<li class="menu-item {{ request()->routeIs('admin.customers.*') ? 'active' : ''}}">
 			<a href="{{route('admin.customers.index')}}" class="menu-link">
 				<i class="menu-icon tf-icons bx bx-user"></i>

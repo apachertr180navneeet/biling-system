@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('part_no')->unique();
             $table->string('name');
-            $table->foreignId('category_id')->constrained('spare_part_categories')->cascadeOnDelete();
+            $table->string('category')->nullable();
             $table->string('hsn_code', 8)->nullable();
             $table->boolean('is_gst_applicable')->default(true);
             $table->decimal('gst_rate', 5, 2)->default(0);
