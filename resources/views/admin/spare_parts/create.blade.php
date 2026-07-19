@@ -57,6 +57,11 @@
                     @error('selling_price') <div class="text-danger small">{{ $message }}</div> @enderror
                 </div>
                 <div class="mb-3">
+                    <label class="form-label">MRP</label>
+                    <input type="number" step="0.01" name="mrp" class="form-control @error('mrp') is-invalid @enderror" value="{{ old('mrp') }}">
+                    @error('mrp') <div class="text-danger small">{{ $message }}</div> @enderror
+                </div>
+                <div class="mb-3">
                     <label class="form-label">Unit</label>
                     <input type="text" name="unit" class="form-control @error('unit') is-invalid @enderror" value="{{ old('unit') }}">
                     @error('unit') <div class="text-danger small">{{ $message }}</div> @enderror

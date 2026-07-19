@@ -32,6 +32,7 @@ class SparePartController extends Controller
             'gst_rate' => 'required|numeric|min:0|max:100',
             'purchase_price' => 'required|numeric|min:0',
             'selling_price' => 'required|numeric|min:0',
+            'mrp' => 'required|numeric|min:0',
             'unit' => 'required|string|max:10',
         ]);
         $data['is_gst_applicable'] = $request->boolean('is_gst_applicable');
@@ -56,6 +57,7 @@ class SparePartController extends Controller
             'gst_rate' => 'required|numeric|min:0|max:100',
             'purchase_price' => 'required|numeric|min:0',
             'selling_price' => 'required|numeric|min:0',
+            'mrp' => 'required|numeric|min:0',
             'unit' => 'required|string|max:10',
         ]);
         $data['is_gst_applicable'] = $request->boolean('is_gst_applicable');

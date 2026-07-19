@@ -21,6 +21,7 @@
                         <th>Category</th>
                         <th>HSN Code</th>
                         <th>GST</th>
+                        <th>MRP</th>
                         <th>Selling Price</th>
                         <th>Status</th>
                         <th>Actions</th>
@@ -35,6 +36,7 @@
                         <td>{{ $part->category->name ?? '-' }}</td>
                         <td>{{ $part->hsn_code ?? '-' }}</td>
                         <td>{{ $part->is_gst_applicable ? 'Yes' : 'No' }}</td>
+                        <td>{{ number_format($part->mrp, 2) }}</td>
                         <td>{{ number_format($part->selling_price, 2) }}</td>
                         <td>
                             <div class="form-check form-switch mb-0">
@@ -47,7 +49,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="9" class="text-center">No spare parts found.</td></tr>
+                    <tr><td colspan="10" class="text-center">No spare parts found.</td></tr>
                     @endforelse
                 </tbody>
             </table>
