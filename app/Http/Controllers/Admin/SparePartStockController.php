@@ -10,7 +10,7 @@ class SparePartStockController extends Controller
 {
     public function index()
     {
-        $stocks = SparePartStock::with('sparePart.category', 'purchaseOrder')->orderBy('created_at', 'desc')->paginate(20);
+        $stocks = SparePartStock::with('sparePart', 'purchaseOrder')->orderBy('created_at', 'desc')->paginate(20);
         return view('admin.spare_part_stocks.index', compact('stocks'));
     }
 

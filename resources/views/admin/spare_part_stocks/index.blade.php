@@ -26,7 +26,7 @@
                         <td>{{ $loop->iteration }}</td>
                         <td>{{ $s->sparePart->part_no ?? '-' }}</td>
                         <td>{{ $s->sparePart->name ?? '-' }}</td>
-                        <td>{{ $s->sparePart->category->name ?? '-' }}</td>
+                        <td>{{ $s->sparePart->category ?? '-' }}</td>
                         <td><strong>{{ $s->quantity }}</strong></td>
                         <td>{{ number_format($s->purchase_price, 2) }}</td>
                         <td>

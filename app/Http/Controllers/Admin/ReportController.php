@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\Customer;
+use App\Models\SparePartStock;
+use App\Models\VehicleInventory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -58,6 +60,26 @@ class ReportController extends Controller
         }
 
         return view('admin.reports.ledger', compact('customers', 'selectedCustomer', 'transactions'));
+    }
+
+    public function purchaseParts()
+    {
+        $stocks = SparePartStock::with('sparePart', 'purchaseOrder')
+            ->where('is_active', true)
+            ->orderBy('created_at', 'desc')
+            ->get();
+        $totalValue = $stocks->sum(fn($s) => $s->quantity * $s->purchase_price);
+        return view('admin.reports.purchase_parts', compact('stocks', 'totalValue'));
+    }
+
+    public function vehicleStock()
+    {
+        $vehicles = VehicleInventory::where('is_active', true)
+            ->orderBy('created_at', 'desc')
+            ->get();
+        $totalQty = $vehicles->sum('quantity');
+        $totalValue = $vehicles->sum(fn($v) => $v->quantity * $v->purchase_price);
+        return view('admin.reports.vehicle_stock', compact('vehicles', 'totalQty', 'totalValue'));
     }
 
     public function gstr1()

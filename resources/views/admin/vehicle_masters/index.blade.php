@@ -41,13 +41,7 @@
                     <tr>
                         <td>{{ $loop->iteration }}</td>
                         <td>{{ $v->variant_name ?? '-' }}</td>
-                        <td>
-                            @if($v->color_code)
-                                <span class="badge" style="background-color:{{ $v->color_code }};color:#fff;">{{ $v->color_name ?? '-' }}</span>
-                            @else
-                                {{ $v->color_name ?? '-' }}
-                            @endif
-                        </td>
+                        <td>{{ $v->color_name ?? '-' }}</td>
                         <td>{{ $v->fuel_type ?? '-' }}</td>
                         <td>{{ $v->transmission ?? '-' }}</td>
                         <td>{{ number_format($v->ex_showroom_price, 2) }}</td>

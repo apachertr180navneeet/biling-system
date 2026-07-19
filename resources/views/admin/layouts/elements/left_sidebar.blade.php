@@ -202,5 +202,19 @@
 			</a>
 		</li>
 
+		<li class="menu-item {{ request()->routeIs('admin.reports.purchase-parts') ? 'active' : ''}}">
+			<a href="{{route('admin.reports.purchase-parts')}}" class="menu-link">
+				<i class="menu-icon tf-icons bx bx-package"></i>
+				<div data-i18n="Parts Stock">Parts Stock Report</div>
+			</a>
+		</li>
+
+		<li class="menu-item {{ request()->routeIs('admin.reports.vehicle-stock') ? 'active' : ''}}">
+			<a href="{{route('admin.reports.vehicle-stock')}}" class="menu-link">
+				<i class="menu-icon tf-icons bx bx-car"></i>
+				<div data-i18n="Vehicle Stock">Vehicle Stock Report</div>
+			</a>
+		</li>
+
 	</ul>
 </aside>

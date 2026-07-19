@@ -111,6 +111,8 @@ Route::name('admin.')->prefix('admin')->group(function () {
 
         Route::prefix('reports')->name('reports.')->group(function () {
             Route::get('ledger', [ReportController::class, 'ledger'])->name('ledger');
+            Route::get('purchase-parts', [ReportController::class, 'purchaseParts'])->name('purchase-parts');
+            Route::get('vehicle-stock', [ReportController::class, 'vehicleStock'])->name('vehicle-stock');
             Route::get('gstr1', [ReportController::class, 'gstr1'])->name('gstr1');
             Route::post('gstr1-export', [ReportController::class, 'gstr1Export'])->name('gstr1-export');
         });

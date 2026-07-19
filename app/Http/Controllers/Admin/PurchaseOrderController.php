@@ -71,7 +71,7 @@ class PurchaseOrderController extends Controller
 
     public function show(PurchaseOrder $purchaseOrder)
     {
-        $purchaseOrder->load('supplier', 'items.sparePart.category', 'createdBy');
+        $purchaseOrder->load('supplier', 'items.sparePart', 'createdBy');
         return view('admin.purchase_orders.show', compact('purchaseOrder'));
     }
 
