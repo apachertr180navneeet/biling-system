@@ -24,7 +24,7 @@ class JobCardController extends Controller
     {
         $customers = Customer::orderBy('first_name')->get();
         $services = Service::with('category')->orderBy('name')->get();
-        $spareParts = SparePart::with('category')->orderBy('name')->get();
+        $spareParts = SparePart::orderBy('name')->get();
         return view('admin.job_cards.create', compact('customers', 'services', 'spareParts'));
     }
 
@@ -80,7 +80,7 @@ class JobCardController extends Controller
     {
         $customers = Customer::orderBy('first_name')->get();
         $services = Service::with('category')->orderBy('name')->get();
-        $spareParts = SparePart::with('category')->orderBy('name')->get();
+        $spareParts = SparePart::orderBy('name')->get();
         $jobCard->load('services', 'parts');
         return view('admin.job_cards.edit', compact('jobCard', 'customers', 'services', 'spareParts'));
     }

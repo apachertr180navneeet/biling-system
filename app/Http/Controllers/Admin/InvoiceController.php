@@ -109,7 +109,7 @@ class InvoiceController extends Controller
     public function createParts()
     {
         $customers = Customer::orderBy('first_name')->get();
-        $spareParts = SparePart::with('category')->orderBy('name')->get();
+        $spareParts = SparePart::orderBy('name')->get();
         return view('admin.invoices.create_parts', compact('customers', 'spareParts'));
     }
 

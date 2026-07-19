@@ -23,7 +23,7 @@ class PurchaseOrderController extends Controller
     public function create()
     {
         $suppliers = Supplier::orderBy('name')->get();
-        $spareParts = SparePart::with('category')->orderBy('name')->get();
+        $spareParts = SparePart::orderBy('name')->get();
         return view('admin.purchase_orders.create', compact('suppliers', 'spareParts'));
     }
 
@@ -82,7 +82,7 @@ class PurchaseOrderController extends Controller
         }
         $purchaseOrder->load('items');
         $suppliers = Supplier::orderBy('name')->get();
-        $spareParts = SparePart::with('category')->orderBy('name')->get();
+        $spareParts = SparePart::orderBy('name')->get();
         return view('admin.purchase_orders.edit', compact('purchaseOrder', 'suppliers', 'spareParts'));
     }
 
