@@ -177,6 +177,13 @@ class SupplierController extends Controller
                 continue;
             }
 
+            $typeClean = strtolower(str_replace([' ', '_', '-'], '', $type));
+            if ($typeClean === 'oem') {
+                $type = 'OEM';
+            } elseif ($typeClean === 'partsvendor' || $typeClean === 'parts') {
+                $type = 'parts_vendor';
+            }
+
             if (!in_array($type, ['OEM', 'parts_vendor'])) {
                 $errors[] = "Row {$rowCount}: Type must be 'OEM' or 'parts_vendor'.";
                 $skipped++;
