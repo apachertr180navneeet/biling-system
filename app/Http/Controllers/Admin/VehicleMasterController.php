@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\VehicleMaster;
 use Illuminate\Http\Request;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xls;
 
 class VehicleMasterController extends Controller
 {
@@ -64,50 +66,70 @@ class VehicleMasterController extends Controller
 
     public function downloadTemplate()
     {
-        $headers = [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="vehicle_master_template.csv"',
-        ];
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setCellValue('A1', 'variant_name');
+        $sheet->setCellValue('B1', 'color_name');
+        $sheet->setCellValue('C1', 'fuel_type');
+        $sheet->setCellValue('D1', 'transmission');
+        $sheet->setCellValue('E1', 'ex_showroom_price');
+        // Example row
+        $sheet->setCellValue('A2', 'test');
+        $sheet->setCellValue('B2', 'red');
+        $sheet->setCellValue('C2', 'Petrol');
+        $sheet->setCellValue('D2', 'Manual');
+        $sheet->setCellValue('E2', '750000.00');
 
-        $callback = function () {
-            $file = fopen('php://output', 'w');
-            fputcsv($file, ['variant_name', 'color_name', 'fuel_type', 'transmission', 'ex_showroom_price']);
-            // Example row
-            fputcsv($file, ['test', 'red', 'Petrol', 'Manual', '750000.00']);
-            fclose($file);
-        };
+        $writer = new Xls($spreadsheet);
+        $path = storage_path('app/vehicle_master_template.xls');
+        $writer->save($path);
 
-        return response()->stream($callback, 200, $headers);
+        return response()->download($path, 'vehicle_master_template.xls')->deleteFileAfterSend(true);
     }
 
     public function import(Request $request)
     {
         $request->validate([
-            'csv_file' => 'required|file|mimes:csv,txt|max:2048',
+            'csv_file' => 'required|file|mimes:csv,txt,xls,xlsx|max:2048',
         ]);
 
         $file = $request->file('csv_file');
-        $path = $file->getRealPath();
-        
-        $handle = fopen($path, 'r');
-        if (!$handle) {
-            return redirect()->back()->withErrors(['csv_file' => 'Failed to open the uploaded file.']);
-        }
+        $ext = strtolower($file->getClientOriginalExtension());
 
-        $header = fgetcsv($handle);
-        if (!$header) {
+        if (in_array($ext, ['xls', 'xlsx'])) {
+            $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file->getRealPath());
+            $sheet = $spreadsheet->getActiveSheet();
+            $rows = $sheet->toArray();
+            if (count($rows) < 2) {
+                return redirect()->back()->withErrors(['csv_file' => 'The uploaded file is empty.']);
+            }
+            $header = array_map(function($h) {
+                return trim(strtolower($h));
+            }, array_shift($rows));
+            $dataRows = $rows;
+        } else {
+            $handle = fopen($file->getRealPath(), 'r');
+            if (!$handle) {
+                return redirect()->back()->withErrors(['csv_file' => 'Failed to open the uploaded file.']);
+            }
+            $header = fgetcsv($handle);
+            if (!$header) {
+                fclose($handle);
+                return redirect()->back()->withErrors(['csv_file' => 'The uploaded file is empty.']);
+            }
+            $header = array_map(function($h) {
+                return trim(strtolower($h));
+            }, $header);
+            $dataRows = [];
+            while (($row = fgetcsv($handle)) !== false) {
+                $dataRows[] = $row;
+            }
             fclose($handle);
-            return redirect()->back()->withErrors(['csv_file' => 'The uploaded file is empty.']);
         }
-
-        $header = array_map(function($h) {
-            return trim(strtolower($h));
-        }, $header);
 
         $required = ['variant_name', 'color_name', 'fuel_type', 'transmission', 'ex_showroom_price'];
         foreach ($required as $req) {
             if (!in_array($req, $header)) {
-                fclose($handle);
                 return redirect()->back()->withErrors(['csv_file' => "Missing required header column: {$req}"]);
             }
         }
@@ -118,7 +140,7 @@ class VehicleMasterController extends Controller
         $rowCount = 0;
         $seenInFile = [];
 
-        while (($row = fgetcsv($handle)) !== false) {
+        foreach ($dataRows as $row) {
             $rowCount++;
             if (count($row) !== count($header)) {
                 if (count(array_filter($row)) === 0) {
@@ -180,8 +202,6 @@ class VehicleMasterController extends Controller
 
             $imported++;
         }
-
-        fclose($handle);
 
         $msg = "Import complete. Successfully imported: {$imported} record(s). Skipped: {$skipped} record(s).";
         

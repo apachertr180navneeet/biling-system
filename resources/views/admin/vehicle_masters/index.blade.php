@@ -89,7 +89,7 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Choose CSV File</label>
-                        <input type="file" name="csv_file" class="form-control" accept=".csv" required>
+                        <input type="file" name="csv_file" class="form-control" accept=".csv,.txt,.xls,.xlsx" required>
                         <div class="form-text text-muted mt-2">
                             Please upload a valid CSV file using the template headers:<br>
                             <code>variant_name, color_name, fuel_type, transmission, ex_showroom_price</code>

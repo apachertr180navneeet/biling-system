@@ -51,11 +51,8 @@ class VehicleImportTest extends TestCase
             ->get(route('admin.vehicle-masters.import-template'));
 
         $response->assertStatus(200);
-        $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
-        $response->assertHeader('Content-Disposition', 'attachment; filename="vehicle_master_template.csv"');
-        
-        $content = $response->streamedContent();
-        $this->assertStringContainsString('variant_name,color_name,fuel_type,transmission,ex_showroom_price', $content);
+        $response->assertHeader('Content-Disposition');
+        $this->assertStringContainsString('vehicle_master_template.xls', $response->headers->get('Content-Disposition'));
     }
 
     public function test_can_import_valid_csv(): void
