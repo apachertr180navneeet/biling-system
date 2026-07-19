@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Sale;
 use App\Models\Customer;
 use App\Models\Invoice;
-use App\Models\VehicleVariant;
+use App\Models\VehicleMaster;
 use App\Models\VehicleInventory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -22,7 +22,7 @@ class SaleController extends Controller
     public function create()
     {
         $customers = Customer::orderBy('first_name')->get();
-        $variants = VehicleVariant::with(['model.brand'])->where('is_active', true)->get();
+        $variants = VehicleMaster::where('is_active', true)->orderBy('variant_name')->get();
         $inventoryStock = VehicleInventory::where('quantity', '>', 0)
             ->where('status', 'available')
             ->where('is_active', true)
@@ -57,7 +57,7 @@ class SaleController extends Controller
     public function edit(Sale $sale)
     {
         $customers = Customer::orderBy('first_name')->get();
-        $variants = VehicleVariant::with(['model.brand'])->where('is_active', true)->get();
+        $variants = VehicleMaster::where('is_active', true)->orderBy('variant_name')->get();
         $inventoryStock = VehicleInventory::where('quantity', '>', 0)
             ->where('status', 'available')
             ->where('is_active', true)

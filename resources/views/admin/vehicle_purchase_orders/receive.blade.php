@@ -9,14 +9,12 @@
         <form method="POST" action="{{ route('admin.vehicle-purchase-orders.receive-store', $vehiclePurchaseOrder) }}">
             @csrf
             <table class="table table-bordered">
-                <thead><tr><th>#</th><th>Vehicle</th><th>Color</th><th>Year</th><th>Ordered Qty</th><th>Previously Received</th><th>Receive Qty</th></tr></thead>
+                <thead><tr><th>#</th><th>Vehicle</th><th>Ordered Qty</th><th>Previously Received</th><th>Receive Qty</th></tr></thead>
                 <tbody>
                     @foreach($vehiclePurchaseOrder->items as $i => $item)
                     <tr>
                         <td>{{ $i + 1 }}</td>
                         <td>{{ $item->vehicle_description }}</td>
-                        <td>{{ $item->color_name ?? '-' }}</td>
-                        <td>{{ $item->mfg_year ?? '-' }}</td>
                         <td>{{ $item->quantity }}</td>
                         <td>{{ $item->received_quantity }}</td>
                         <td>

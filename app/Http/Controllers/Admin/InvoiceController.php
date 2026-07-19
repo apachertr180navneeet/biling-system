@@ -9,7 +9,7 @@ use App\Models\Customer;
 use App\Models\SparePart;
 use App\Models\SparePartStock;
 use App\Models\VehicleInventory;
-use App\Models\VehicleModel;
+use App\Models\VehicleMaster;
 use App\Models\Payment;
 use App\Services\GstCalculator;
 use Illuminate\Http\Request;
@@ -28,12 +28,10 @@ class InvoiceController extends Controller
         $customers = Customer::orderBy('first_name')->get();
         $vehicleInventories = VehicleInventory::where('quantity', '>', 0)->where('status', 'available')->where('is_active', true)->orderBy('vehicle_description')->get();
         $vehiclePrices = [];
-        VehicleModel::with('brand', 'variants')->whereHas('brand', fn($q) => $q->where('is_active', true))->get()->each(function ($model) use (&$vehiclePrices) {
-            foreach ($model->variants as $v) {
-                $desc = $model->brand->name . ' ' . $model->name . ' ' . $v->name;
-                if ($v->ex_showroom_price) {
-                    $vehiclePrices[$desc] = $v->ex_showroom_price;
-                }
+        VehicleMaster::where('is_active', true)->get()->each(function ($v) use (&$vehiclePrices) {
+            $desc = trim($v->variant_name . ' ' . $v->color_name);
+            if ($v->ex_showroom_price) {
+                $vehiclePrices[$desc] = $v->ex_showroom_price;
             }
         });
         return view('admin.invoices.create_vehicle', compact('customers', 'vehicleInventories', 'vehiclePrices'));

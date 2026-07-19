@@ -36,15 +36,13 @@
             <h5>Items</h5>
             <table class="table table-bordered">
                 <thead>
-                    <tr><th>#</th><th>Vehicle</th><th>Color</th><th>Year</th><th>Qty</th><th>Unit Price</th><th>Total</th><th>Received</th></tr>
+                    <tr><th>#</th><th>Vehicle</th><th>Qty</th><th>Unit Price</th><th>Total</th><th>Received</th></tr>
                 </thead>
                 <tbody>
                     @foreach($vehiclePurchaseOrder->items as $i => $item)
                     <tr>
                         <td>{{ $i + 1 }}</td>
                         <td>{{ $item->vehicle_description }}</td>
-                        <td>{{ $item->color_name ?? '-' }}</td>
-                        <td>{{ $item->mfg_year ?? '-' }}</td>
                         <td>{{ $item->quantity }}</td>
                         <td>{{ number_format($item->unit_price, 2) }}</td>
                         <td>{{ number_format($item->total_price, 2) }}</td>
@@ -53,7 +51,7 @@
                     @endforeach
                 </tbody>
                 <tfoot>
-                    <tr><th colspan="6" class="text-end">Total:</th><th>{{ number_format($vehiclePurchaseOrder->total_amount, 2) }}</th><th></th></tr>
+                    <tr><th colspan="4" class="text-end">Total:</th><th>{{ number_format($vehiclePurchaseOrder->total_amount, 2) }}</th><th></th></tr>
                 </tfoot>
             </table>
         </div>

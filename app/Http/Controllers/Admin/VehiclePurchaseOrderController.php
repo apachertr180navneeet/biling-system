@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\VehiclePurchaseOrder;
 use App\Models\VehicleInventory;
 use App\Models\Supplier;
-use App\Models\VehicleModel;
+use App\Models\VehicleMaster;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -36,8 +36,6 @@ class VehiclePurchaseOrderController extends Controller
             'notes' => 'nullable|string',
             'items' => 'required|array|min:1',
             'items.*.vehicle_description' => 'required|string|max:255',
-            'items.*.color_name' => 'nullable|string|max:100',
-            'items.*.mfg_year' => 'nullable|integer|min:1900|max:' . (date('Y') + 1),
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.unit_price' => 'required|numeric|min:0',
         ]);
@@ -51,8 +49,6 @@ class VehiclePurchaseOrderController extends Controller
             $total += $lineTotal;
             $items[] = new \App\Models\VehiclePoItem([
                 'vehicle_description' => $item['vehicle_description'],
-                'color_name' => $item['color_name'],
-                'mfg_year' => $item['mfg_year'],
                 'quantity' => $item['quantity'],
                 'unit_price' => $item['unit_price'],
                 'total_price' => $lineTotal,
@@ -105,8 +101,6 @@ class VehiclePurchaseOrderController extends Controller
             'notes' => 'nullable|string',
             'items' => 'required|array|min:1',
             'items.*.vehicle_description' => 'required|string|max:255',
-            'items.*.color_name' => 'nullable|string|max:100',
-            'items.*.mfg_year' => 'nullable|integer|min:1900|max:' . (date('Y') + 1),
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.unit_price' => 'required|numeric|min:0',
         ]);
@@ -118,8 +112,6 @@ class VehiclePurchaseOrderController extends Controller
             $total += $lineTotal;
             $newItems[] = new \App\Models\VehiclePoItem([
                 'vehicle_description' => $item['vehicle_description'],
-                'color_name' => $item['color_name'],
-                'mfg_year' => $item['mfg_year'],
                 'quantity' => $item['quantity'],
                 'unit_price' => $item['unit_price'],
                 'total_price' => $lineTotal,
@@ -255,18 +247,11 @@ class VehiclePurchaseOrderController extends Controller
     {
         $list = [];
         $prices = [];
-        VehicleModel::with('brand', 'variants')->whereHas('brand', fn($q) => $q->where('is_active', true))->orderBy('name')->get()->each(function ($model) use (&$list, &$prices) {
-            if ($model->variants->count()) {
-                foreach ($model->variants as $variant) {
-                    $desc = $model->brand->name . ' ' . $model->name . ' ' . $variant->name;
-                    $list[] = $desc;
-                    if ($variant->ex_showroom_price) {
-                        $prices[$desc] = $variant->ex_showroom_price;
-                    }
-                }
-            } else {
-                $desc = $model->brand->name . ' ' . $model->name;
-                $list[] = $desc;
+        VehicleMaster::where('is_active', true)->orderBy('variant_name')->get()->each(function ($v) use (&$list, &$prices) {
+            $desc = trim($v->variant_name . ' ' . $v->color_name);
+            $list[] = $desc;
+            if ($v->ex_showroom_price) {
+                $prices[$desc] = $v->ex_showroom_price;
             }
         });
         return ['list' => $list, 'prices' => $prices];

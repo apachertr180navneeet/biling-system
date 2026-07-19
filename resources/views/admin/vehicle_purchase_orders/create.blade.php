@@ -46,7 +46,7 @@
                 @error('items') <div class="text-danger small mb-2">{{ $message }}</div> @enderror
                 <div id="itemsContainer">
                     <div class="item-row row">
-                        <div class="col-md-3">
+                        <div class="col-md-5">
                             <select name="items[0][vehicle_description]" class="form-select vehicle-select">
                                 <option value="">Select Vehicle</option>
                                 @foreach($vehicleList as $opt)
@@ -55,12 +55,6 @@
                             </select>
                         </div>
                         <div class="col-md-2">
-                            <input type="text" name="items[0][color_name]" class="form-control" placeholder="Color" value="{{ old('items.0.color_name') }}">
-                        </div>
-                        <div class="col-md-1">
-                            <input type="number" name="items[0][mfg_year]" class="form-control" placeholder="Year" value="{{ old('items.0.mfg_year') }}">
-                        </div>
-                        <div class="col-md-1">
                             <input type="number" name="items[0][quantity]" class="form-control qty" placeholder="Qty" min="1" value="1">
                         </div>
                         <div class="col-md-2">
@@ -98,10 +92,8 @@ $(document).ready(function() {
         @endforeach
 
         var html = '<div class="item-row row">' +
-            '<div class="col-md-3"><select name="items[' + itemIndex + '][vehicle_description]" class="form-select vehicle-select">' + optionsHtml + '</select></div>' +
-            '<div class="col-md-2"><input type="text" name="items[' + itemIndex + '][color_name]" class="form-control" placeholder="Color"></div>' +
-            '<div class="col-md-1"><input type="number" name="items[' + itemIndex + '][mfg_year]" class="form-control" placeholder="Year"></div>' +
-            '<div class="col-md-1"><input type="number" name="items[' + itemIndex + '][quantity]" class="form-control qty" placeholder="Qty" min="1" value="1"></div>' +
+            '<div class="col-md-5"><select name="items[' + itemIndex + '][vehicle_description]" class="form-select vehicle-select">' + optionsHtml + '</select></div>' +
+            '<div class="col-md-2"><input type="number" name="items[' + itemIndex + '][quantity]" class="form-control qty" placeholder="Qty" min="1" value="1"></div>' +
             '<div class="col-md-2"><input type="number" step="0.01" name="items[' + itemIndex + '][unit_price]" class="form-control unit-price" placeholder="Unit Price" min="0" value="0"></div>' +
             '<div class="col-md-2"><input type="text" class="form-control line-total" readonly value="0.00"></div>' +
             '<div class="col-md-1"><button type="button" class="btn btn-sm btn-danger remove-item">X</button></div>' +
