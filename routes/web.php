@@ -3,12 +3,6 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Web\HomeController;
 use App\Http\Controllers\Admin\AdminAuthController;
-use App\Http\Controllers\Admin\VehicleBrandController;
-use App\Http\Controllers\Admin\VehicleModelController;
-use App\Http\Controllers\Admin\VehicleVariantController;
-use App\Http\Controllers\Admin\VehicleColorController;
-use App\Http\Controllers\Admin\HsnSacMasterController;
-use App\Http\Controllers\Admin\SparePartCategoryController;
 use App\Http\Controllers\Admin\SparePartController;
 use App\Http\Controllers\Admin\SupplierController;
 use App\Http\Controllers\Admin\CustomerController;
@@ -70,18 +64,6 @@ Route::name('admin.')->prefix('admin')->group(function () {
 
         Route::post('profile', [AdminAuthController::class, 'updateAdminProfile'])->name('update.profile');
 
-        Route::resource('vehicle-brands', VehicleBrandController::class)->except(['show']);
-        Route::post('vehicle-brands/{vehicle_brand}/toggle-status', [VehicleBrandController::class, 'toggleStatus'])->name('vehicle-brands.toggle-status');
-        Route::resource('vehicle-models', VehicleModelController::class)->except(['show']);
-        Route::post('vehicle-models/{vehicle_model}/toggle-status', [VehicleModelController::class, 'toggleStatus'])->name('vehicle-models.toggle-status');
-        Route::resource('vehicle-variants', VehicleVariantController::class)->except(['show']);
-        Route::post('vehicle-variants/{vehicle_variant}/toggle-status', [VehicleVariantController::class, 'toggleStatus'])->name('vehicle-variants.toggle-status');
-        Route::resource('vehicle-colors', VehicleColorController::class)->except(['show']);
-        Route::post('vehicle-colors/{vehicle_color}/toggle-status', [VehicleColorController::class, 'toggleStatus'])->name('vehicle-colors.toggle-status');
-        Route::resource('hsn-sac-master', HsnSacMasterController::class)->except(['show']);
-        Route::post('hsn-sac-master/{hsn_sac_master}/toggle-status', [HsnSacMasterController::class, 'toggleStatus'])->name('hsn-sac-master.toggle-status');
-        Route::resource('spare-part-categories', SparePartCategoryController::class)->except(['show']);
-        Route::post('spare-part-categories/{spare_part_category}/toggle-status', [SparePartCategoryController::class, 'toggleStatus'])->name('spare-part-categories.toggle-status');
         Route::resource('spare-parts', SparePartController::class)->except(['show']);
         Route::post('spare-parts/{spare_part}/toggle-status', [SparePartController::class, 'toggleStatus'])->name('spare-parts.toggle-status');
         Route::resource('suppliers', SupplierController::class)->except(['show']);

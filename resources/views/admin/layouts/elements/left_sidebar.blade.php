@@ -73,48 +73,6 @@
 			</a>
 		</li>
 
-		<li class="menu-item {{ request()->routeIs('admin.vehicle-brands.*') ? 'active' : ''}}">
-			<a href="{{route('admin.vehicle-brands.index')}}" class="menu-link">
-				<i class="menu-icon tf-icons bx bx-car"></i>
-				<div data-i18n="Brands">Brands</div>
-			</a>
-		</li>
-
-		<li class="menu-item {{ request()->routeIs('admin.vehicle-models.*') ? 'active' : ''}}">
-			<a href="{{route('admin.vehicle-models.index')}}" class="menu-link">
-				<i class="menu-icon tf-icons bx bx-car"></i>
-				<div data-i18n="Models">Models</div>
-			</a>
-		</li>
-
-		<li class="menu-item {{ request()->routeIs('admin.vehicle-variants.*') ? 'active' : ''}}">
-			<a href="{{route('admin.vehicle-variants.index')}}" class="menu-link">
-				<i class="menu-icon tf-icons bx bx-car"></i>
-				<div data-i18n="Variants">Variants</div>
-			</a>
-		</li>
-
-		<li class="menu-item {{ request()->routeIs('admin.vehicle-colors.*') ? 'active' : ''}}">
-			<a href="{{route('admin.vehicle-colors.index')}}" class="menu-link">
-				<i class="menu-icon tf-icons bx bx-palette"></i>
-				<div data-i18n="Colors">Colors</div>
-			</a>
-		</li>
-
-		<li class="menu-item {{ request()->routeIs('admin.hsn-sac-master.*') ? 'active' : ''}}">
-			<a href="{{route('admin.hsn-sac-master.index')}}" class="menu-link">
-				<i class="menu-icon tf-icons bx bx-barcode"></i>
-				<div data-i18n="HSN/SAC">HSN/SAC</div>
-			</a>
-		</li>
-
-		<li class="menu-item {{ request()->routeIs('admin.spare-part-categories.*') ? 'active' : ''}}">
-			<a href="{{route('admin.spare-part-categories.index')}}" class="menu-link">
-				<i class="menu-icon tf-icons bx bx-category"></i>
-				<div data-i18n="Part Categories">Part Categories</div>
-			</a>
-		</li>
-
 		<li class="menu-item {{ request()->routeIs('admin.spare-parts.*') ? 'active' : ''}}">
 			<a href="{{route('admin.spare-parts.index')}}" class="menu-link">
 				<i class="menu-icon tf-icons bx bx-wrench"></i>
