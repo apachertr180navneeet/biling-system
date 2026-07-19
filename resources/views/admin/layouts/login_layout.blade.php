@@ -21,7 +21,7 @@
         <script src="{{asset('assets/admin/vendor/js/helpers.js')}}"></script>
         <script src="{{asset('assets/admin/js/config.js')}}"></script>
         @yield('style')
-        
+        <link rel="stylesheet" href="{{asset('assets/admin/css/premium-admin.css')}}" />
     </head>
     <body>
         <div class="container-xxl">
