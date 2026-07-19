@@ -48,7 +48,7 @@ $(function(){
         }).then((result) => {
             if (result.isConfirmed) {
                 form.attr('action',url);
-                $.post(url,form.serialize()).done(function(r){
+                $.post(url, form.serialize() + '&_method=DELETE').done(function(r){
                     if(r.success) location.reload();
                 }).fail(function(){
                     Swal.fire('Error', 'Something went wrong!', 'error');

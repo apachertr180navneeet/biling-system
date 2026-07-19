@@ -22,19 +22,40 @@
     $(document).on('change', '.toggle-status', function() {
         var checkbox = $(this);
         var url = checkbox.data('url');
-        $.post(url, { _token: '{{ csrf_token() }}' })
-         .done(function(resp) {
-             if (resp.success) {
-                 setFlesh('success', resp.message || 'Status updated successfully.');
-             } else {
-                 setFlesh('error', resp.message || 'Failed to update status.');
-                 checkbox.prop('checked', !checkbox.prop('checked'));
-             }
-         })
-         .fail(function() {
-             setFlesh('error', 'Error updating status.');
-             checkbox.prop('checked', !checkbox.prop('checked'));
-         });
+        var isChecked = checkbox.prop('checked');
+        
+        // Revert UI first to wait for user confirmation
+        checkbox.prop('checked', !isChecked);
+        
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'Do you want to change the status?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#696cff',
+            cancelButtonColor: '#8592a3',
+            confirmButtonText: 'Yes, change it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Set UI state to the new checked state
+                checkbox.prop('checked', isChecked);
+                
+                // Perform the status change request
+                $.post(url, { _token: '{{ csrf_token() }}' })
+                 .done(function(resp) {
+                     if (resp.success) {
+                         setFlesh('success', resp.message || 'Status updated successfully.');
+                     } else {
+                         setFlesh('error', resp.message || 'Failed to update status.');
+                         checkbox.prop('checked', !isChecked);
+                     }
+                 })
+                 .fail(function() {
+                     setFlesh('error', 'Error updating status.');
+                     checkbox.prop('checked', !isChecked);
+                 });
+            }
+        });
     });
 </script>
 @if(Session::has('success'))
