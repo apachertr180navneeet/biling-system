@@ -80,7 +80,7 @@
                     if (typeof setFlesh === 'function') {
                         setFlesh('error', 'Stock not available for this vehicle.');
                     } else {
-                        alert('Stock not available for this vehicle.');
+                        Swal.fire('Error', 'Stock not available for this vehicle.', 'error');
                     }
                 }
             });

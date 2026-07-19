@@ -103,12 +103,28 @@
 <script>
 $(function(){
     $('.update-status').click(function(){
-        if(!confirm('Change status to '+$(this).data('status')+'?')) return;
-        var form=$('#statusForm');
-        form.append('<input type="hidden" name="status" value="'+$(this).data('status')+'">');
-        $.post('{{ route("admin.sales.update-status", $sale) }}', form.serialize()).done(function(r){
-            if(r.success) location.reload();
-        }).fail(function(){alert('Error updating status');});
+        var btn = $(this);
+        var status = btn.data('status');
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'Change status to ' + status + '?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#696cff',
+            cancelButtonColor: '#8592a3',
+            confirmButtonText: 'Yes, change it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                var form=$('#statusForm');
+                form.find('input[name="status"]').remove(); // clear any previous
+                form.append('<input type="hidden" name="status" value="'+status+'">');
+                $.post('{{ route("admin.sales.update-status", $sale) }}', form.serialize()).done(function(r){
+                    if(r.success) location.reload();
+                }).fail(function(){
+                    Swal.fire('Error', 'Error updating status', 'error');
+                });
+            }
+        });
     });
 
     $('#vehicle_description').on('change', function() {
@@ -126,7 +142,7 @@ $(function(){
             if (typeof setFlesh === 'function') {
                 setFlesh('error', 'Stock not available for this vehicle.');
             } else {
-                alert('Stock not available for this vehicle.');
+                Swal.fire('Error', 'Stock not available for this vehicle.', 'error');
             }
         }
     });

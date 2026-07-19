@@ -41,11 +41,29 @@
 <script>
 $(function(){
     $('.delete-btn').click(function(){
-        if(!confirm('Delete this payment?')) return;
         var form=$('#deleteForm'),url=$(this).data('url');
-        form.attr('action',url);$.post(url,form.serialize()).done(function(r){
-            if(r.success){location.reload();}else{alert(r.message||'Error');}
-        }).fail(function(){alert('Error deleting payment.');});
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "Delete this payment?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#696cff',
+            cancelButtonColor: '#8592a3',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.attr('action',url);
+                $.post(url,form.serialize()).done(function(r){
+                    if(r.success) {
+                        location.reload();
+                    } else {
+                        Swal.fire('Error', r.message || 'Error', 'error');
+                    }
+                }).fail(function(){
+                    Swal.fire('Error', 'Error deleting payment.', 'error');
+                });
+            }
+        });
     });
 });
 </script>

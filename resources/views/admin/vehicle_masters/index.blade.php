@@ -109,12 +109,30 @@
 <script>
 $(function(){
     $('.delete-btn').click(function(){
-        if(!confirm('Delete this vehicle?'))return;
         var form=$('#deleteForm'),url=$(this).data('url');
-        form.attr('action',url);$.post(url,form.serialize()).done(function(r){if(r.success)location.reload();}).fail(function(){alert('Error');});
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "Delete this vehicle?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#696cff',
+            cancelButtonColor: '#8592a3',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.attr('action',url);
+                $.post(url,form.serialize()).done(function(r){
+                    if(r.success) location.reload();
+                }).fail(function(){
+                    Swal.fire('Error', 'Something went wrong!', 'error');
+                });
+            }
+        });
     });
     $('.toggle-status').change(function(){
-        $.post($(this).data('url'),{_token:'{{ csrf_token() }}'}).fail(function(){alert('Error toggling status');});
+        $.post($(this).data('url'),{_token:'{{ csrf_token() }}'}).fail(function(){
+            Swal.fire('Error', 'Error toggling status', 'error');
+        });
     });
 });
 </script>
