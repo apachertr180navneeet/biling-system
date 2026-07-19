@@ -18,6 +18,9 @@ return new class extends Migration
             $table->decimal('rate', 12, 2)->default(0);
             $table->decimal('gst_rate', 5, 2)->default(0);
             $table->decimal('gst_amount', 12, 2)->default(0);
+            $table->decimal('cgst_amount', 12, 2)->default(0);
+            $table->decimal('sgst_amount', 12, 2)->default(0);
+            $table->decimal('igst_amount', 12, 2)->default(0);
             $table->decimal('total', 12, 2)->default(0);
             $table->boolean('is_active')->default(true);
             $table->softDeletes();

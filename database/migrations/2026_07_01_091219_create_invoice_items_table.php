@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('invoice_items', function (Blueprint $table) {
@@ -22,15 +19,15 @@ return new class extends Migration
             $table->decimal('cess_rate', 5, 2)->default(0);
             $table->decimal('taxable_value', 12, 2)->default(0);
             $table->decimal('gst_amount', 12, 2)->default(0);
+            $table->decimal('cgst_amount', 12, 2)->default(0);
+            $table->decimal('sgst_amount', 12, 2)->default(0);
+            $table->decimal('igst_amount', 12, 2)->default(0);
             $table->decimal('cess_amount', 12, 2)->default(0);
             $table->decimal('total', 12, 2)->default(0);
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('invoice_items');

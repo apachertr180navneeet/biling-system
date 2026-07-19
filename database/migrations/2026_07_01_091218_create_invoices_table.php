@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('invoices', function (Blueprint $table) {
@@ -16,12 +13,18 @@ return new class extends Migration
             $table->string('invoice_number')->unique();
             $table->string('invoice_type');
             $table->foreignId('customer_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('vehicle_stock_id')->nullable()->constrained()->nullOnDelete();
+            $table->text('vehicle_description')->nullable();
+            $table->string('chassis_number')->nullable();
+            $table->string('engine_number')->nullable();
+            $table->year('mfg_year')->nullable();
             $table->date('invoice_date');
             $table->boolean('is_gst')->default(true);
             $table->string('gst_type')->nullable();
             $table->decimal('subtotal', 12, 2)->default(0);
             $table->decimal('gst_amount', 12, 2)->default(0);
+            $table->decimal('cgst_amount', 12, 2)->default(0);
+            $table->decimal('sgst_amount', 12, 2)->default(0);
+            $table->decimal('igst_amount', 12, 2)->default(0);
             $table->decimal('cess_amount', 12, 2)->default(0);
             $table->decimal('total_amount', 12, 2)->default(0);
             $table->decimal('round_off', 12, 2)->default(0);
@@ -34,9 +37,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('invoices');

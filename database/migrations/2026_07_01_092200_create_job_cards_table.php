@@ -12,7 +12,6 @@ return new class extends Migration
             $table->id();
             $table->string('job_card_number')->unique();
             $table->foreignId('customer_id')->constrained()->onDelete('cascade');
-            $table->foreignId('vehicle_stock_id')->nullable()->constrained()->onDelete('set null');
             $table->string('vehicle_number')->nullable();
             $table->string('vehicle_model')->nullable();
             $table->string('kilometer_reading')->nullable();

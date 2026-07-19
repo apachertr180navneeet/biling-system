@@ -18,9 +18,6 @@
                         <th>#</th>
                         <th>Part No</th>
                         <th>Name</th>
-                        <th>Category</th>
-                        <th>HSN Code</th>
-                        <th>GST</th>
                         <th>MRP</th>
                         <th>Selling Price</th>
                         <th>Status</th>
@@ -33,9 +30,6 @@
                         <td>{{ $loop->iteration }}</td>
                         <td>{{ $part->part_no }}</td>
                         <td>{{ $part->name }}</td>
-                        <td>{{ $part->category->name ?? '-' }}</td>
-                        <td>{{ $part->hsn_code ?? '-' }}</td>
-                        <td>{{ $part->is_gst_applicable ? 'Yes' : 'No' }}</td>
                         <td>{{ number_format($part->mrp, 2) }}</td>
                         <td>{{ number_format($part->selling_price, 2) }}</td>
                         <td>
@@ -49,7 +43,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="10" class="text-center">No spare parts found.</td></tr>
+                    <tr><td colspan="7" class="text-center">No spare parts found.</td></tr>
                     @endforelse
                 </tbody>
             </table>

@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('sale_number')->unique();
             $table->foreignId('customer_id')->constrained()->onDelete('cascade');
-            $table->foreignId('vehicle_stock_id')->constrained()->onDelete('cascade');
+            $table->text('vehicle_description')->nullable();
             $table->decimal('sale_price', 12, 2)->default(0);
             $table->date('booking_date');
             $table->decimal('booking_amount', 12, 2)->default(0);
