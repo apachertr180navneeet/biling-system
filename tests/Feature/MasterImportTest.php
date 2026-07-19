@@ -96,9 +96,9 @@ class MasterImportTest extends TestCase
 
     public function test_can_import_valid_suppliers(): void
     {
-        $csvContent = "name,type,gstin,address,contact_person,phone,email\n"
-            . "Bosch,parts_vendor,,Germany,,9876543210,bosch@example.com\n"
-            . "Tata Motors,OEM,,,Tata Person,8888888888,\n";
+        $csvContent = "name,gstin,address,contact_person,phone,email\n"
+            . "Bosch,,Germany,,9876543210,bosch@example.com\n"
+            . "Tata Motors,,,Tata Person,8888888888,\n";
 
         $file = UploadedFile::fake()->createWithContent('suppliers.csv', $csvContent);
 
@@ -112,7 +112,6 @@ class MasterImportTest extends TestCase
 
         $this->assertDatabaseHas('suppliers', [
             'name' => 'Bosch',
-            'type' => 'parts_vendor',
             'phone' => '9876543210',
         ]);
     }

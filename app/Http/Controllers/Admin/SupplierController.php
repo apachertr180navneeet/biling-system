@@ -26,7 +26,6 @@ class SupplierController extends Controller
     {
         $data = $request->validate([
             'name' => 'required|string|max:255',
-            'type' => 'required|in:OEM,parts_vendor',
             'gstin' => 'nullable|string|max:15',
             'address' => 'nullable|string',
             'contact_person' => 'nullable|string|max:255',
@@ -46,7 +45,6 @@ class SupplierController extends Controller
     {
         $data = $request->validate([
             'name' => 'required|string|max:255',
-            'type' => 'required|in:OEM,parts_vendor',
             'gstin' => 'nullable|string|max:15',
             'address' => 'nullable|string',
             'contact_person' => 'nullable|string|max:255',
@@ -74,21 +72,19 @@ class SupplierController extends Controller
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setCellValue('A1', 'name');
-        $sheet->setCellValue('B1', 'type');
-        $sheet->setCellValue('C1', 'gstin');
-        $sheet->setCellValue('D1', 'address');
-        $sheet->setCellValue('E1', 'contact_person');
-        $sheet->setCellValue('F1', 'phone');
-        $sheet->setCellValue('G1', 'email');
+        $sheet->setCellValue('B1', 'gstin');
+        $sheet->setCellValue('C1', 'address');
+        $sheet->setCellValue('D1', 'contact_person');
+        $sheet->setCellValue('E1', 'phone');
+        $sheet->setCellValue('F1', 'email');
         
         // Example row
         $sheet->setCellValue('A2', 'Supplier Inc');
-        $sheet->setCellValue('B2', 'OEM');
-        $sheet->setCellValue('C2', '27AAAAA1111A1Z1');
-        $sheet->setCellValue('D2', '123 Main Street');
-        $sheet->setCellValue('E2', 'John Doe');
-        $sheet->setCellValue('F2', '9876543210');
-        $sheet->setCellValue('G2', 'supplier@example.com');
+        $sheet->setCellValue('B2', '27AAAAA1111A1Z1');
+        $sheet->setCellValue('C2', '123 Main Street');
+        $sheet->setCellValue('D2', 'John Doe');
+        $sheet->setCellValue('E2', '9876543210');
+        $sheet->setCellValue('F2', 'supplier@example.com');
 
         $writer = new Xls($spreadsheet);
         $path = storage_path('app/supplier_template.xls');
@@ -137,7 +133,7 @@ class SupplierController extends Controller
             fclose($handle);
         }
 
-        $required = ['name', 'type'];
+        $required = ['name'];
         foreach ($required as $req) {
             if (!in_array($req, $header)) {
                 return redirect()->back()->withErrors(['csv_file' => "Missing required header column: {$req}"]);
@@ -164,28 +160,14 @@ class SupplierController extends Controller
             $data = array_combine($header, $row);
             
             $name = isset($data['name']) ? trim($data['name']) : '';
-            $type = isset($data['type']) ? trim($data['type']) : '';
             $gstin = isset($data['gstin']) ? trim($data['gstin']) : '';
             $address = isset($data['address']) ? trim($data['address']) : '';
             $contactPerson = isset($data['contact_person']) ? trim($data['contact_person']) : '';
             $phone = isset($data['phone']) ? trim($data['phone']) : '';
             $email = isset($data['email']) ? trim($data['email']) : '';
 
-            if (empty($name) || empty($type)) {
-                $errors[] = "Row {$rowCount}: Name and Type are required.";
-                $skipped++;
-                continue;
-            }
-
-            $typeClean = strtolower(str_replace([' ', '_', '-'], '', $type));
-            if ($typeClean === 'oem') {
-                $type = 'OEM';
-            } elseif ($typeClean === 'partsvendor' || $typeClean === 'parts') {
-                $type = 'parts_vendor';
-            }
-
-            if (!in_array($type, ['OEM', 'parts_vendor'])) {
-                $errors[] = "Row {$rowCount}: Type must be 'OEM' or 'parts_vendor'.";
+            if (empty($name)) {
+                $errors[] = "Row {$rowCount}: Name is required.";
                 $skipped++;
                 continue;
             }
@@ -222,7 +204,6 @@ class SupplierController extends Controller
 
             Supplier::create([
                 'name' => $name,
-                'type' => $type,
                 'gstin' => $gstin ?: null,
                 'address' => $address ?: null,
                 'contact_person' => $contactPerson ?: null,

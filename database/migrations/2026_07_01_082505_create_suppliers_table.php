@@ -11,7 +11,6 @@ return new class extends Migration
         Schema::create('suppliers', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->enum('type', ['OEM', 'parts_vendor'])->default('parts_vendor');
             $table->string('gstin', 15)->nullable();
             $table->text('address')->nullable();
             $table->string('contact_person')->nullable();

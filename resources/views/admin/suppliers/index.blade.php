@@ -34,7 +34,6 @@
                     <tr>
                         <th>#</th>
                         <th>Name</th>
-                        <th>Type</th>
                         <th>Contact Person</th>
                         <th>Phone</th>
                         <th>Email</th>
@@ -47,7 +46,6 @@
                     <tr>
                         <td>{{ $loop->iteration }}</td>
                         <td>{{ $supplier->name }}</td>
-                        <td>{{ $supplier->type }}</td>
                         <td>{{ $supplier->contact_person ?? '-' }}</td>
                         <td>{{ $supplier->phone ?? '-' }}</td>
                         <td>{{ $supplier->email ?? '-' }}</td>
@@ -63,7 +61,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="8" class="text-center">No suppliers found.</td></tr>
+                    <tr><td colspan="7" class="text-center">No suppliers found.</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -88,8 +86,7 @@
                         <input type="file" name="csv_file" class="form-control" accept=".csv,.txt,.xls,.xlsx" required>
                         <div class="form-text text-muted mt-2">
                             Please upload a valid CSV/Excel file using the template headers:<br>
-                            <code>name, type, gstin, address, contact_person, phone, email</code><br>
-                            <span class="text-danger">*Note: Type must be either 'OEM' or 'parts_vendor'.</span>
+                            <code>name, gstin, address, contact_person, phone, email</code>
                         </div>
                     </div>
                 </div>

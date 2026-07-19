@@ -16,15 +16,7 @@
                     <input type="text" name="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name') }}">
                     @error('name') <div class="text-danger small">{{ $message }}</div> @enderror
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Type</label>
-                    <select name="type" class="form-control @error('type') is-invalid @enderror">
-                        <option value="">Select Type</option>
-                        <option value="OEM" {{ old('type') == 'OEM' ? 'selected' : '' }}>OEM</option>
-                        <option value="parts_vendor" {{ old('type') == 'parts_vendor' ? 'selected' : '' }}>Parts Vendor</option>
-                    </select>
-                    @error('type') <div class="text-danger small">{{ $message }}</div> @enderror
-                </div>
+
                 <div class="mb-3">
                     <label class="form-label">GSTIN</label>
                     <input type="text" name="gstin" class="form-control @error('gstin') is-invalid @enderror" value="{{ old('gstin') }}">
