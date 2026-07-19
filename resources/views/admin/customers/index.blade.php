@@ -35,9 +35,10 @@
                         <td>{{ $customer->email ?? '-' }}</td>
                         <td>{{ $customer->gstin ?? '-' }}</td>
                         <td>
-                            <div class="form-check form-switch mb-0">
-                                <input type="checkbox" class="form-check-input toggle-status" data-url="{{ route('admin.customers.toggle-status', $customer) }}" {{ $customer->is_active ? 'checked' : '' }}>
-                            </div>
+                            <label class="switch switch-success">
+                                <input type="checkbox" class="toggle-status" data-url="{{ route('admin.customers.toggle-status', $customer) }}" {{ $customer->is_active ? 'checked' : '' }}>
+                                <span class="slider round"></span>
+                            </label>
                         </td>
                         <td>
                             <a href="{{ route('admin.customers.show', $customer) }}" class="btn btn-sm btn-info">View</a>
@@ -57,13 +58,6 @@
 @endsection
 @section('script')
 <script>
-$(document).ready(function() {
-    $('.toggle-status').change(function() {
-        var url = $(this).data('url');
-        $.post(url, { _token: '{{ csrf_token() }}' }, function(resp) {
-            if (resp.success) { setFlesh('success', 'Status updated.'); }
-        });
-    });
     $('.btn-delete').click(function() {
         var url = $(this).data('url');
         var btn = $(this);

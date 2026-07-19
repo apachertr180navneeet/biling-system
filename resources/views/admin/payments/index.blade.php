@@ -6,8 +6,7 @@
         <a href="{{ route('admin.payments.create') }}" class="btn btn-primary"><i class="bx bx-plus"></i> New Payment</a>
     </div>
 
-    @include('admin.layouts.elements.sweet_alerts')
-
+    
     <div class="card">
         <div class="table-responsive">
             <table class="table table-striped">

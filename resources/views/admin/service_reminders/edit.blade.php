@@ -2,8 +2,7 @@
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
     <h4 class="fw-bold mb-4">Edit Service Reminder</h4>
-    @include('admin.layouts.elements.sweet_alerts')
-    <div class="card"><div class="card-body">
+        <div class="card"><div class="card-body">
         <form method="POST" action="{{ route('admin.service-reminders.update', $serviceReminder) }}">
             @csrf @method('PUT')
             <div class="row g-3">

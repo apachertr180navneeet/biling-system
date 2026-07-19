@@ -33,9 +33,10 @@
                         <td>{{ number_format($part->mrp, 2) }}</td>
                         <td>{{ number_format($part->selling_price, 2) }}</td>
                         <td>
-                            <div class="form-check form-switch mb-0">
-                                <input type="checkbox" class="form-check-input toggle-status" data-url="{{ route('admin.spare-parts.toggle-status', $part) }}" {{ $part->is_active ? 'checked' : '' }}>
-                            </div>
+                            <label class="switch switch-success">
+                                <input type="checkbox" class="toggle-status" data-url="{{ route('admin.spare-parts.toggle-status', $part) }}" {{ $part->is_active ? 'checked' : '' }}>
+                                <span class="slider round"></span>
+                            </label>
                         </td>
                         <td>
                             <a href="{{ route('admin.spare-parts.edit', $part) }}" class="btn btn-sm btn-primary">Edit</a>
@@ -54,13 +55,6 @@
 @endsection
 @section('script')
 <script>
-$(document).ready(function() {
-    $('.toggle-status').change(function() {
-        var url = $(this).data('url');
-        $.post(url, { _token: '{{ csrf_token() }}' }, function(resp) {
-            if (resp.success) { setFlesh('success', 'Status updated.'); }
-        });
-    });
     $('.btn-delete').click(function() {
         var url = $(this).data('url');
         var btn = $(this);

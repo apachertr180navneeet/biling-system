@@ -9,8 +9,7 @@
             <a href="{{ route('admin.vehicle-masters.create') }}" class="btn btn-primary"><i class="bx bx-plus"></i> New</a>
         </div>
     </div>
-    @include('admin.layouts.elements.sweet_alerts')
-
+    
     @if(session('import_errors'))
     <div class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
         <strong>Import completed with some skipped rows/warnings:</strong>
@@ -121,17 +120,12 @@ $(function(){
         }).then((result) => {
             if (result.isConfirmed) {
                 form.attr('action',url);
-                $.post(url,form.serialize()).done(function(r){
+                $.post(url, form.serialize() + '&_method=DELETE').done(function(r){
                     if(r.success) location.reload();
                 }).fail(function(){
                     Swal.fire('Error', 'Something went wrong!', 'error');
                 });
             }
-        });
-    });
-    $('.toggle-status').change(function(){
-        $.post($(this).data('url'),{_token:'{{ csrf_token() }}'}).fail(function(){
-            Swal.fire('Error', 'Error toggling status', 'error');
         });
     });
 });

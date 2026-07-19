@@ -22,8 +22,7 @@
             <a href="{{ route('admin.sales.index') }}" class="btn btn-sm btn-secondary">Back</a>
         </div>
     </div>
-    @include('admin.layouts.elements.sweet_alerts')
-    <div class="card"><div class="card-body">
+        <div class="card"><div class="card-body">
         <form method="POST" action="{{ route('admin.sales.update', $sale) }}">
             @csrf @method('PUT')
             <div class="row g-3">

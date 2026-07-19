@@ -5,8 +5,7 @@
         <h4 class="fw-bold">Service Reminders</h4>
         <a href="{{ route('admin.service-reminders.create') }}" class="btn btn-primary"><i class="bx bx-plus"></i> New</a>
     </div>
-    @include('admin.layouts.elements.sweet_alerts')
-    <div class="card">
+        <div class="card">
         <div class="table-responsive">
             <table class="table table-striped">
                 <thead><tr><th>#</th><th>Customer</th><th>Vehicle</th><th>Last Service</th><th>Next Service</th><th>Status</th><th>Actions</th></tr></thead>
@@ -50,7 +49,7 @@ $(function(){
         }).then((result) => {
             if (result.isConfirmed) {
                 form.attr('action',url);
-                $.post(url,form.serialize()).done(function(r){
+                $.post(url, form.serialize() + '&_method=DELETE').done(function(r){
                     if(r.success) location.reload();
                 }).fail(function(){
                     Swal.fire('Error', 'Something went wrong!', 'error');

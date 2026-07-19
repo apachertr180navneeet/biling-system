@@ -2,8 +2,7 @@
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
     <h4 class="fw-bold mb-4">Customer Ledger</h4>
-    @include('admin.layouts.elements.sweet_alerts')
-    <div class="card"><div class="card-body">
+        <div class="card"><div class="card-body">
         <form method="GET" class="row g-3">
             <div class="col-md-6">
                 <label class="form-label">Select Customer</label>

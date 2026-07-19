@@ -19,8 +19,7 @@
             <a href="{{ route('admin.job-cards.index') }}" class="btn btn-sm btn-secondary">Back</a>
         </div>
     </div>
-    @include('admin.layouts.elements.sweet_alerts')
-
+    
     <div class="row">
         <div class="col-md-6 mb-4">
             <div class="card"><div class="card-body">

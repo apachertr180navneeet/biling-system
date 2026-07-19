@@ -2,8 +2,7 @@
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
     <h4 class="fw-bold mb-4">Receive Items - {{ $vehiclePurchaseOrder->po_number }}</h4>
-    @include('admin.layouts.elements.sweet_alerts')
-    <div class="card"><div class="card-body">
+        <div class="card"><div class="card-body">
         <p><strong>Supplier:</strong> {{ $vehiclePurchaseOrder->supplier->name ?? '-' }}</p>
         <p><strong>Order Date:</strong> {{ $vehiclePurchaseOrder->order_date->format('d-m-Y') }}</p>
         <hr>

@@ -5,8 +5,7 @@
         <h4 class="fw-bold">Service Categories</h4>
         <a href="{{ route('admin.service-categories.create') }}" class="btn btn-primary"><i class="bx bx-plus"></i> New</a>
     </div>
-    @include('admin.layouts.elements.sweet_alerts')
-    <div class="card">
+        <div class="card">
         <div class="table-responsive">
             <table class="table table-striped">
                 <thead><tr><th>#</th><th>Name</th><th>Status</th><th>Actions</th></tr></thead>
@@ -53,11 +52,6 @@ $(function(){
                     Swal.fire('Error', 'Something went wrong!', 'error');
                 });
             }
-        });
-    });
-    $('.toggle-status').change(function(){
-        $.post($(this).data('url'),{_token:'{{ csrf_token() }}'}).fail(function(){
-            Swal.fire('Error', 'Error toggling status', 'error');
         });
     });
 });

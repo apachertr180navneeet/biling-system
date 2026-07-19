@@ -18,6 +18,24 @@
             title: message
         })
     }
+    
+    $(document).on('change', '.toggle-status', function() {
+        var checkbox = $(this);
+        var url = checkbox.data('url');
+        $.post(url, { _token: '{{ csrf_token() }}' })
+         .done(function(resp) {
+             if (resp.success) {
+                 setFlesh('success', resp.message || 'Status updated successfully.');
+             } else {
+                 setFlesh('error', resp.message || 'Failed to update status.');
+                 checkbox.prop('checked', !checkbox.prop('checked'));
+             }
+         })
+         .fail(function() {
+             setFlesh('error', 'Error updating status.');
+             checkbox.prop('checked', !checkbox.prop('checked'));
+         });
+    });
 </script>
 @if(Session::has('success'))
 <script>

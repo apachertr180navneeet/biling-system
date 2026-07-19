@@ -8,8 +8,7 @@
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
     <h4 class="fw-bold mb-4">Create Job Card</h4>
-    @include('admin.layouts.elements.sweet_alerts')
-    <div class="card"><div class="card-body">
+        <div class="card"><div class="card-body">
         <form method="POST" action="{{ route('admin.job-cards.store') }}">
             @csrf
             <div class="row g-3">

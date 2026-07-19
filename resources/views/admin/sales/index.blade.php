@@ -5,8 +5,7 @@
         <h4 class="fw-bold">Vehicle Sales</h4>
         <a href="{{ route('admin.sales.create') }}" class="btn btn-primary"><i class="bx bx-plus"></i> New Sale</a>
     </div>
-    @include('admin.layouts.elements.sweet_alerts')
-    <div class="card">
+        <div class="card">
         <div class="table-responsive">
             <table class="table table-striped">
                 <thead><tr><th>#</th><th>Sale No</th><th>Customer</th><th>Vehicle</th><th>Sale Price</th><th>Status</th><th>Booking Date</th><th>Actions</th></tr></thead>

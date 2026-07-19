@@ -5,8 +5,7 @@
         <h4 class="fw-bold">Job Cards</h4>
         <a href="{{ route('admin.job-cards.create') }}" class="btn btn-primary"><i class="bx bx-plus"></i> New Job Card</a>
     </div>
-    @include('admin.layouts.elements.sweet_alerts')
-    <div class="card">
+        <div class="card">
         <div class="table-responsive">
             <table class="table table-striped">
                 <thead><tr><th>#</th><th>Job Card No</th><th>Customer</th><th>Vehicle</th><th>Status</th><th>Total</th><th>Date</th><th>Actions</th></tr></thead>
