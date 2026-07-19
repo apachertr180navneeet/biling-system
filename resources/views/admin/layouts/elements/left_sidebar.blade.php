@@ -124,7 +124,7 @@
 
 		<li class="menu-item {{ request()->routeIs('admin.suppliers.*') ? 'active' : ''}}">
 			<a href="{{route('admin.suppliers.index')}}" class="menu-link">
-				<i class="menu-icon tf-icons bx bx-truck"></i>
+				<i class="menu-icon tf-icons bx bxs-truck"></i>
 				<div data-i18n="Suppliers">Suppliers</div>
 			</a>
 		</li>
