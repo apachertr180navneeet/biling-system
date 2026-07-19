@@ -10,7 +10,8 @@ class InvoiceItem extends Model
     protected $fillable = [
         'invoice_id', 'spare_part_id', 'description', 'quantity',
         'unit_price', 'gst_rate', 'cess_rate', 'taxable_value',
-        'gst_amount', 'cess_amount', 'total',
+        'gst_amount', 'cgst_amount', 'sgst_amount', 'igst_amount',
+        'cess_amount', 'total',
     ];
 
     public function invoice(): BelongsTo

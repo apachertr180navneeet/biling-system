@@ -158,7 +158,7 @@
 </div>
 
 <form id="statusForm" method="POST">@csrf</form>
-@push('scripts')
+@section('script')
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
 $(function(){
@@ -227,12 +227,12 @@ $(function(){
             method: 'POST',
             data: { _token: '{{ csrf_token() }}', items: items },
             success: function(r){
-                if(r.success) { setFlesh('Billing calculated successfully.','success'); setTimeout(function(){ location.reload(); }, 1000); }
+                if(r.success) { setFlesh('success', 'Billing calculated successfully.'); setTimeout(function(){ location.reload(); }, 1000); }
             },
             error: function(xhr){ alert('Error: '+(xhr.responseJSON?.message||'unknown')); }
         });
     });
 });
 </script>
-@endpush
+@endsection
 @endsection

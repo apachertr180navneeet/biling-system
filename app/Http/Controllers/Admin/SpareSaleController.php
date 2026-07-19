@@ -46,12 +46,6 @@ class SpareSaleController extends Controller
 
         $data['is_gst'] = $request->boolean('is_gst', true);
 
-        $data['sale_number'] = DB::transaction(function () {
-            $last = DB::table('spare_sales')->lockForUpdate()->orderBy('id', 'desc')->first();
-            $nextId = $last ? $last->id + 1 : 1;
-            return 'SS-' . date('Ymd') . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
-        });
-
         $customer = !empty($data['customer_id']) ? Customer::find($data['customer_id']) : null;
 
         $gstItems = [];
@@ -69,6 +63,10 @@ class SpareSaleController extends Controller
         $result = $gst->calculateForItems($gstItems, $data['is_gst'], $customer);
 
         DB::transaction(function () use ($data, $request, $result) {
+            $last = DB::table('spare_sales')->lockForUpdate()->orderBy('id', 'desc')->first();
+            $nextId = $last ? $last->id + 1 : 1;
+            $data['sale_number'] = 'SS-' . date('Ymd') . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
+
             $sale = SpareSale::create([
                 'sale_number' => $data['sale_number'],
                 'customer_id' => $data['customer_id'],

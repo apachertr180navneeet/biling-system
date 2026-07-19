@@ -103,9 +103,9 @@ class ReportController extends Controller
         foreach ($invoices as $inv) {
             $customer = $inv->customer;
             $gstRate = $inv->invoice_type === 'vehicle' ? 28 : ($inv->items->first()->gst_rate ?? 0);
-            $igst = $inv->gst_type === 'igst' ? $inv->gst_amount : 0;
-            $cgst = $inv->gst_type === 'cgst_sgst' ? $inv->gst_amount / 2 : 0;
-            $sgst = $inv->gst_type === 'cgst_sgst' ? $inv->gst_amount / 2 : 0;
+            $igst = $inv->igst_amount ?? ($inv->gst_type === 'igst' ? $inv->gst_amount : 0);
+            $cgst = $inv->cgst_amount ?? ($inv->gst_type === 'cgst_sgst' ? round($inv->gst_amount / 2, 2) : 0);
+            $sgst = $inv->sgst_amount ?? ($inv->gst_type === 'cgst_sgst' ? round($inv->gst_amount - $cgst, 2) : 0);
 
             $csv .= implode(',', [
                 $inv->invoice_number,

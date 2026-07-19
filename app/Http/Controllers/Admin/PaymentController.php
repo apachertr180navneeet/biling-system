@@ -50,13 +50,12 @@ class PaymentController extends Controller
             }
         }
 
-        $data['payment_number'] = DB::transaction(function () {
+        DB::transaction(function () use (&$data) {
             $last = DB::table('payments')->lockForUpdate()->orderBy('id', 'desc')->first();
             $nextId = $last ? $last->id + 1 : 1;
-            return 'PAY-' . date('Ymd') . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
+            $data['payment_number'] = 'PAY-' . date('Ymd') . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
+            Payment::create($data);
         });
-
-        Payment::create($data);
         return redirect()->route('admin.payments.index')->withSuccess('Payment recorded successfully.');
     }
 

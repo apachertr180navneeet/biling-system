@@ -1,5 +1,6 @@
 @extends('admin.layouts.app')
 @section('style')
+<style>
 @media print {
     .no-print { display: none !important; }
     .card { box-shadow: none !important; border: none !important; }
@@ -101,10 +102,10 @@
             <div class="row">
                 <div class="col-md-6">
                     @if($invoice->is_gst && $invoice->gst_type == 'cgst_sgst')
-                    <p class="mb-1"><strong>CGST @ {{ $invoice->invoice_type == 'vehicle' ? '14%' : '' }}:</strong> {{ number_format($invoice->gst_amount / 2, 2) }}</p>
-                    <p class="mb-1"><strong>SGST @ {{ $invoice->invoice_type == 'vehicle' ? '14%' : '' }}:</strong> {{ number_format($invoice->gst_amount / 2, 2) }}</p>
+                    <p class="mb-1"><strong>CGST @ {{ $invoice->invoice_type == 'vehicle' ? '14%' : '' }}:</strong> {{ number_format($invoice->cgst_amount, 2) }}</p>
+                    <p class="mb-1"><strong>SGST @ {{ $invoice->invoice_type == 'vehicle' ? '14%' : '' }}:</strong> {{ number_format($invoice->sgst_amount, 2) }}</p>
                     @elseif($invoice->is_gst && $invoice->gst_type == 'igst')
-                    <p class="mb-1"><strong>IGST @ {{ $invoice->invoice_type == 'vehicle' ? '28%' : '' }}:</strong> {{ number_format($invoice->gst_amount, 2) }}</p>
+                    <p class="mb-1"><strong>IGST @ {{ $invoice->invoice_type == 'vehicle' ? '28%' : '' }}:</strong> {{ number_format($invoice->igst_amount, 2) }}</p>
                     @endif
                     @if($invoice->cess_amount > 0)
                     <p class="mb-1"><strong>Cess:</strong> {{ number_format($invoice->cess_amount, 2) }}</p>

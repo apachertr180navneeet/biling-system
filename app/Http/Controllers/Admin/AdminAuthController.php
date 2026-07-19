@@ -77,9 +77,15 @@ class AdminAuthController extends Controller
     public function create(array $data)
     {
         return User::create([
-            "name" => $data["name"],
+            "first_name" => $data["first_name"] ?? $data["name"] ?? '',
+            "last_name" => $data["last_name"] ?? '',
+            "full_name" => ($data["first_name"] ?? $data["name"] ?? '') . ' ' . ($data["last_name"] ?? ''),
             "email" => $data["email"],
+            "phone" => $data["phone"] ?? '',
             "password" => Hash::make($data["password"]),
+            "role" => 'admin',
+            "status" => 'active',
+            "country" => $data["country"] ?? 'India',
         ]);
     }
 
@@ -97,7 +103,7 @@ class AdminAuthController extends Controller
 
             $token = Str::random(64);
 
-            DB::table("password_resets")->insert([
+            DB::table("password_reset_tokens")->insert([
                 "email" => $request->email,
                 "token" => $token,
                 "created_at" => Carbon::now(),
@@ -121,7 +127,7 @@ class AdminAuthController extends Controller
     public function showResetPasswordForm($token)
     {
         try{    
-            $user = DB::table("password_resets")->where("token", $token)->first();
+            $user = DB::table("password_reset_tokens")->where("token", $token)->first();
             if (!$user) {
                 return redirect()->route("admin.login")->with("error", "Invalid or expired reset link.");
             }
@@ -142,7 +148,7 @@ class AdminAuthController extends Controller
                 "password_confirmation" => "required",
             ]);
 
-            $updatePassword = DB::table("password_resets")->where(["email" => $request->email,"token" => $request->token])->first();
+            $updatePassword = DB::table("password_reset_tokens")->where(["email" => $request->email,"token" => $request->token])->first();
 
             if (!$updatePassword) {
                 return back()->withInput()->with("error", "Invalid token!");
@@ -150,7 +156,7 @@ class AdminAuthController extends Controller
 
             $user = User::where("email", $request->email)->update(["password" => Hash::make($request->password)]);
 
-            DB::table("password_resets")->where(["email" => $request->email])->delete();
+            DB::table("password_reset_tokens")->where(["email" => $request->email])->delete();
 
             return redirect()->route("admin.login")->with("success","Your password has been changed successfully!");
         }

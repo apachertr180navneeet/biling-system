@@ -43,14 +43,14 @@ class SaleController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        $data['sale_number'] = DB::transaction(function () {
-            $last = DB::table('sales')->lockForUpdate()->orderBy('id', 'desc')->first();
-            $nextId = $last ? $last->id + 1 : 1;
-            return 'SL-' . date('Ymd') . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
-        });
         $data['status'] = 'booking';
 
-        Sale::create($data);
+        DB::transaction(function () use ($data) {
+            $last = DB::table('sales')->lockForUpdate()->orderBy('id', 'desc')->first();
+            $nextId = $last ? $last->id + 1 : 1;
+            $data['sale_number'] = 'SL-' . date('Ymd') . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
+            Sale::create($data);
+        });
         return redirect()->route('admin.sales.index')->withSuccess('Sale created successfully.');
     }
 

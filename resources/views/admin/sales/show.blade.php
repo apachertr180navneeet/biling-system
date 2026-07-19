@@ -107,7 +107,7 @@
 </div>
 
 <form id="statusForm" method="POST">@csrf</form>
-@push('scripts')
+@section('script')
 <script>
 $(function(){
     $('.update-status').click(function(){
@@ -120,5 +120,5 @@ $(function(){
     });
 });
 </script>
-@endpush
+@endsection
 @endsection

@@ -15,6 +15,13 @@ class User extends Authenticatable
 
     protected $appends = ['avatar_full_path'];
 
+    protected $fillable = [
+        'first_name', 'last_name', 'full_name', 'slug', 'email', 'phone',
+        'password', 'role', 'role_id', 'address', 'area', 'city', 'state',
+        'country', 'country_code', 'zipcode', 'latitude', 'longitude',
+        'timezone', 'avatar', 'bio', 'device_token', 'device_type', 'status',
+    ];
+
     protected $hidden = [
         'password',
         'remember_token',

@@ -42,11 +42,6 @@ class VehiclePurchaseOrderController extends Controller
             'items.*.unit_price' => 'required|numeric|min:0',
         ]);
 
-        $data['po_number'] = DB::transaction(function () {
-            $last = DB::table('vehicle_purchase_orders')->lockForUpdate()->orderBy('id', 'desc')->first();
-            $nextId = $last ? $last->id + 1 : 1;
-            return 'VPO-' . date('Ymd') . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
-        });
         $data['status'] = 'pending';
 
         $total = 0;
@@ -67,6 +62,9 @@ class VehiclePurchaseOrderController extends Controller
         $data['total_amount'] = $total;
 
         $order = DB::transaction(function () use ($data, $items) {
+            $last = DB::table('vehicle_purchase_orders')->lockForUpdate()->orderBy('id', 'desc')->first();
+            $nextId = $last ? $last->id + 1 : 1;
+            $data['po_number'] = 'VPO-' . date('Ymd') . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
             $order = VehiclePurchaseOrder::create($data);
             $order->items()->saveMany($items);
             return $order;

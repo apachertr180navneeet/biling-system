@@ -40,11 +40,6 @@ class PurchaseOrderController extends Controller
             'items.*.unit_price' => 'required|numeric|min:0',
         ]);
 
-        $data['order_number'] = DB::transaction(function () {
-            $lastOrder = DB::table('purchase_orders')->lockForUpdate()->orderBy('id', 'desc')->first();
-            $nextId = $lastOrder ? $lastOrder->id + 1 : 1;
-            return 'PO-' . date('Ymd') . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
-        });
         $data['created_by'] = Auth::id();
 
         $total = 0;
@@ -62,8 +57,14 @@ class PurchaseOrderController extends Controller
         $data['total_amount'] = $total;
         unset($data['items']);
 
-        $order = PurchaseOrder::create($data);
-        $order->items()->saveMany($items);
+        $order = DB::transaction(function () use ($data, $items) {
+            $lastOrder = DB::table('purchase_orders')->lockForUpdate()->orderBy('id', 'desc')->first();
+            $nextId = $lastOrder ? $lastOrder->id + 1 : 1;
+            $data['order_number'] = 'PO-' . date('Ymd') . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
+            $order = PurchaseOrder::create($data);
+            $order->items()->saveMany($items);
+            return $order;
+        });
 
         return redirect()->route('admin.purchase-orders.index')->withSuccess('Purchase order created successfully.');
     }

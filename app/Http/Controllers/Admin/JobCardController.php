@@ -41,11 +41,6 @@ class JobCardController extends Controller
             'is_gst' => 'nullable|boolean',
         ]);
 
-        $data['job_card_number'] = DB::transaction(function () {
-            $last = DB::table('job_cards')->lockForUpdate()->orderBy('id', 'desc')->first();
-            $nextId = $last ? $last->id + 1 : 1;
-            return 'JC-' . date('Ymd') . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
-        });
         $data['status'] = 'pending';
         $data['is_gst'] = $request->boolean('is_gst');
 
@@ -56,7 +51,12 @@ class JobCardController extends Controller
         $data['cess_amount'] = 0;
         $data['grand_total'] = 0;
 
-        $jobCard = JobCard::create($data);
+        $jobCard = DB::transaction(function () use ($data) {
+            $last = DB::table('job_cards')->lockForUpdate()->orderBy('id', 'desc')->first();
+            $nextId = $last ? $last->id + 1 : 1;
+            $data['job_card_number'] = 'JC-' . date('Ymd') . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
+            return JobCard::create($data);
+        });
 
         if ($request->filled('service_ids')) {
             foreach ($request->service_ids as $i => $serviceId) {
@@ -163,7 +163,7 @@ class JobCardController extends Controller
                 'unit_price' => $item['rate'],
                 'gst_rate' => $item['gst_rate'] ?? 0,
                 'cess_rate' => 0,
-                'spare_part_id' => null,
+                'spare_part_id' => $item['spare_part_id'] ?? null,
             ];
         }
         $result = $gstCalc->calculateForItems($gstItems, $jobCard->is_gst, $jobCard->customer);
@@ -198,6 +198,7 @@ class JobCardController extends Controller
                 } else {
                     $totalPartsTotal += $ci['total'];
                     $jobCard->parts()->create([
+                        'spare_part_id' => $item['spare_part_id'] ?? null,
                         'part_name' => $item['name'],
                         'quantity' => $ci['quantity'],
                         'rate' => $item['rate'],
@@ -208,6 +209,13 @@ class JobCardController extends Controller
                         'igst_amount' => $ci['igst_amount'],
                         'total' => $ci['total'],
                     ]);
+
+                    if (!empty($item['spare_part_id'])) {
+                        $stock = SparePartStock::where('spare_part_id', $item['spare_part_id'])->lockForUpdate()->first();
+                        if ($stock && $stock->quantity >= $ci['quantity']) {
+                            $stock->decrement('quantity', $ci['quantity']);
+                        }
+                    }
                 }
             }
 

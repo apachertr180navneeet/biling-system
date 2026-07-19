@@ -93,7 +93,7 @@
     </div></div>
 </div>
 
-@push('scripts')
+@section('script')
 <script>
 function recalc() {
     var subtotal=0, gst=0;
@@ -143,5 +143,5 @@ $(document).on('change', '.part-select', function(){
 $('#gstToggle').change(recalc);
 $(document).on('input', '.qty, .rate, .gst-rate', recalc);
 </script>
-@endpush
+@endsection
 @endsection

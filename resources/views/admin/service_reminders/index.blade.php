@@ -34,7 +34,7 @@
     </div>
 </div>
 <form id="deleteForm" method="POST">@csrf</form>
-@push('scripts')
+@section('script')
 <script>
 $(function(){
     $('.delete-btn').click(function(){
@@ -44,5 +44,5 @@ $(function(){
     });
 });
 </script>
-@endpush
+@endsection
 @endsection
