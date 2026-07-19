@@ -65,6 +65,8 @@ Route::name('admin.')->prefix('admin')->group(function () {
 
         Route::post('profile', [AdminAuthController::class, 'updateAdminProfile'])->name('update.profile');
 
+        Route::get('vehicle-masters/import-template', [VehicleMasterController::class, 'downloadTemplate'])->name('vehicle-masters.import-template');
+        Route::post('vehicle-masters/import', [VehicleMasterController::class, 'import'])->name('vehicle-masters.import');
         Route::resource('vehicle-masters', VehicleMasterController::class)->except(['show']);
         Route::post('vehicle-masters/{vehicle_master}/toggle-status', [VehicleMasterController::class, 'toggleStatus'])->name('vehicle-masters.toggle-status');
 
