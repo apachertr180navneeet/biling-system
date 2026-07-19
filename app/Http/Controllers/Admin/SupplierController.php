@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
 
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xls;
+
 class SupplierController extends Controller
 {
     public function index()
@@ -64,5 +67,174 @@ class SupplierController extends Controller
     {
         $supplier->update(['is_active' => !$supplier->is_active]);
         return response()->json(['success' => true, 'is_active' => $supplier->fresh()->is_active]);
+    }
+
+    public function downloadTemplate()
+    {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setCellValue('A1', 'name');
+        $sheet->setCellValue('B1', 'type');
+        $sheet->setCellValue('C1', 'gstin');
+        $sheet->setCellValue('D1', 'address');
+        $sheet->setCellValue('E1', 'contact_person');
+        $sheet->setCellValue('F1', 'phone');
+        $sheet->setCellValue('G1', 'email');
+        
+        // Example row
+        $sheet->setCellValue('A2', 'Supplier Inc');
+        $sheet->setCellValue('B2', 'OEM');
+        $sheet->setCellValue('C2', '27AAAAA1111A1Z1');
+        $sheet->setCellValue('D2', '123 Main Street');
+        $sheet->setCellValue('E2', 'John Doe');
+        $sheet->setCellValue('F2', '9876543210');
+        $sheet->setCellValue('G2', 'supplier@example.com');
+
+        $writer = new Xls($spreadsheet);
+        $path = storage_path('app/supplier_template.xls');
+        $writer->save($path);
+
+        return response()->download($path, 'supplier_template.xls')->deleteFileAfterSend(true);
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'csv_file' => 'required|file|mimes:csv,txt,xls,xlsx|max:2048',
+        ]);
+
+        $file = $request->file('csv_file');
+        $ext = strtolower($file->getClientOriginalExtension());
+
+        if (in_array($ext, ['xls', 'xlsx'])) {
+            $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file->getRealPath());
+            $sheet = $spreadsheet->getActiveSheet();
+            $rows = $sheet->toArray();
+            if (count($rows) < 2) {
+                return redirect()->back()->withErrors(['csv_file' => 'The uploaded file is empty.']);
+            }
+            $header = array_map(function($h) {
+                return trim(strtolower($h));
+            }, array_shift($rows));
+            $dataRows = $rows;
+        } else {
+            $handle = fopen($file->getRealPath(), 'r');
+            if (!$handle) {
+                return redirect()->back()->withErrors(['csv_file' => 'Failed to open the uploaded file.']);
+            }
+            $header = fgetcsv($handle);
+            if (!$header) {
+                fclose($handle);
+                return redirect()->back()->withErrors(['csv_file' => 'The uploaded file is empty.']);
+            }
+            $header = array_map(function($h) {
+                return trim(strtolower($h));
+            }, $header);
+            $dataRows = [];
+            while (($row = fgetcsv($handle)) !== false) {
+                $dataRows[] = $row;
+            }
+            fclose($handle);
+        }
+
+        $required = ['name', 'type'];
+        foreach ($required as $req) {
+            if (!in_array($req, $header)) {
+                return redirect()->back()->withErrors(['csv_file' => "Missing required header column: {$req}"]);
+            }
+        }
+
+        $imported = 0;
+        $skipped = 0;
+        $errors = [];
+        $rowCount = 0;
+        $seenInFile = [];
+
+        foreach ($dataRows as $row) {
+            $rowCount++;
+            if (count($row) !== count($header)) {
+                if (count(array_filter($row)) === 0) {
+                    continue;
+                }
+                $errors[] = "Row {$rowCount}: Column count mismatch.";
+                $skipped++;
+                continue;
+            }
+
+            $data = array_combine($header, $row);
+            
+            $name = isset($data['name']) ? trim($data['name']) : '';
+            $type = isset($data['type']) ? trim($data['type']) : '';
+            $gstin = isset($data['gstin']) ? trim($data['gstin']) : '';
+            $address = isset($data['address']) ? trim($data['address']) : '';
+            $contactPerson = isset($data['contact_person']) ? trim($data['contact_person']) : '';
+            $phone = isset($data['phone']) ? trim($data['phone']) : '';
+            $email = isset($data['email']) ? trim($data['email']) : '';
+
+            if (empty($name) || empty($type)) {
+                $errors[] = "Row {$rowCount}: Name and Type are required.";
+                $skipped++;
+                continue;
+            }
+
+            if (!in_array($type, ['OEM', 'parts_vendor'])) {
+                $errors[] = "Row {$rowCount}: Type must be 'OEM' or 'parts_vendor'.";
+                $skipped++;
+                continue;
+            }
+
+            if (!empty($phone) && (!is_numeric($phone) || strlen($phone) !== 10)) {
+                $errors[] = "Row {$rowCount}: Phone must be a 10-digit number.";
+                $skipped++;
+                continue;
+            }
+
+            if (!empty($email) && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $errors[] = "Row {$rowCount}: Email format is invalid.";
+                $skipped++;
+                continue;
+            }
+
+            $nameKey = strtolower($name);
+
+            if (in_array($nameKey, $seenInFile)) {
+                $errors[] = "Row {$rowCount}: Duplicate Supplier name '{$name}' in the CSV file.";
+                $skipped++;
+                continue;
+            }
+
+            $exists = Supplier::whereRaw('LOWER(name) = ?', [$nameKey])->exists();
+
+            if ($exists) {
+                $errors[] = "Row {$rowCount}: Duplicate Supplier name '{$name}' already exists in the database.";
+                $skipped++;
+                continue;
+            }
+
+            $seenInFile[] = $nameKey;
+
+            Supplier::create([
+                'name' => $name,
+                'type' => $type,
+                'gstin' => $gstin ?: null,
+                'address' => $address ?: null,
+                'contact_person' => $contactPerson ?: null,
+                'phone' => $phone ?: null,
+                'email' => $email ?: null,
+                'is_active' => true,
+            ]);
+
+            $imported++;
+        }
+
+        $msg = "Import complete. Successfully imported: {$imported} record(s). Skipped: {$skipped} record(s).";
+        
+        if (!empty($errors)) {
+            return redirect()->route('admin.suppliers.index')
+                ->withSuccess($msg)
+                ->with('import_errors', $errors);
+        }
+
+        return redirect()->route('admin.suppliers.index')->withSuccess($msg);
     }
 }

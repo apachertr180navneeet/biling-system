@@ -75,6 +75,7 @@
 @endsection
 @section('script')
 <script>
+$(function(){
     $('.btn-delete').click(function() {
         var url = $(this).data('url');
         var btn = $(this);

@@ -70,10 +70,18 @@ Route::name('admin.')->prefix('admin')->group(function () {
         Route::resource('vehicle-masters', VehicleMasterController::class)->except(['show']);
         Route::post('vehicle-masters/{vehicle_master}/toggle-status', [VehicleMasterController::class, 'toggleStatus'])->name('vehicle-masters.toggle-status');
 
+        Route::get('spare-parts/import-template', [SparePartController::class, 'downloadTemplate'])->name('spare-parts.import-template');
+        Route::post('spare-parts/import', [SparePartController::class, 'import'])->name('spare-parts.import');
         Route::resource('spare-parts', SparePartController::class)->except(['show']);
         Route::post('spare-parts/{spare_part}/toggle-status', [SparePartController::class, 'toggleStatus'])->name('spare-parts.toggle-status');
+
+        Route::get('suppliers/import-template', [SupplierController::class, 'downloadTemplate'])->name('suppliers.import-template');
+        Route::post('suppliers/import', [SupplierController::class, 'import'])->name('suppliers.import');
         Route::resource('suppliers', SupplierController::class)->except(['show']);
         Route::post('suppliers/{supplier}/toggle-status', [SupplierController::class, 'toggleStatus'])->name('suppliers.toggle-status');
+
+        Route::get('customers/import-template', [CustomerController::class, 'downloadTemplate'])->name('customers.import-template');
+        Route::post('customers/import', [CustomerController::class, 'import'])->name('customers.import');
         Route::resource('customers', CustomerController::class);
         Route::post('customers/{customer}/toggle-status', [CustomerController::class, 'toggleStatus'])->name('customers.toggle-status');
 
@@ -110,6 +118,8 @@ Route::name('admin.')->prefix('admin')->group(function () {
         // Service Module
         Route::resource('service-categories', ServiceCategoryController::class)->except(['show']);
         Route::post('service-categories/{service_category}/toggle-status', [ServiceCategoryController::class, 'toggleStatus'])->name('service-categories.toggle-status');
+        Route::get('services/import-template', [ServiceController::class, 'downloadTemplate'])->name('services.import-template');
+        Route::post('services/import', [ServiceController::class, 'import'])->name('services.import');
         Route::resource('services', ServiceController::class)->except(['show']);
         Route::post('services/{service}/toggle-status', [ServiceController::class, 'toggleStatus'])->name('services.toggle-status');
 
