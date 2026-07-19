@@ -66,13 +66,6 @@
 
 		<li class="menu-header small text-uppercase"><span class="menu-header-text">Master Data</span></li>
 
-		<li class="menu-item {{ request()->routeIs('admin.invoices.*') ? 'active' : ''}}">
-			<a href="{{route('admin.invoices.index')}}" class="menu-link">
-				<i class="menu-icon tf-icons bx bx-receipt"></i>
-				<div data-i18n="Invoices">Invoices</div>
-			</a>
-		</li>
-
 		<li class="menu-item {{ request()->routeIs('admin.customers.*') ? 'active' : ''}}">
 			<a href="{{route('admin.customers.index')}}" class="menu-link">
 				<i class="menu-icon tf-icons bx bx-user"></i>
@@ -197,6 +190,13 @@
 		</li>
 
 		<li class="menu-header small text-uppercase"><span class="menu-header-text">Sales</span></li>
+
+		<li class="menu-item {{ request()->routeIs('admin.invoices.*') ? 'active' : ''}}">
+			<a href="{{route('admin.invoices.index')}}" class="menu-link">
+				<i class="menu-icon tf-icons bx bx-receipt"></i>
+				<div data-i18n="Invoices">Invoices</div>
+			</a>
+		</li>
 
 		<li class="menu-item {{ request()->routeIs('admin.sales.*') ? 'active' : ''}}">
 			<a href="{{route('admin.sales.index')}}" class="menu-link">
