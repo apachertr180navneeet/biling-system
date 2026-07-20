@@ -16,13 +16,14 @@ class VehicleMasterController extends Controller
         $query = VehicleMaster::orderBy('variant_name');
 
         if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('variant_name', 'like', "%{$search}%")
-                  ->orWhere('color_name', 'like', "%{$search}%")
-                  ->orWhere('fuel_type', 'like', "%{$search}%")
-                  ->orWhere('transmission', 'like', "%{$search}%")
-                  ->orWhere('battery_type', 'like', "%{$search}%")
-                  ->orWhere('battery_make', 'like', "%{$search}%");
+            $escapedSearch = '%' . addcslashes($search, '%_') . '%';
+            $query->where(function($q) use ($escapedSearch) {
+                $q->where('variant_name', 'like', $escapedSearch)
+                  ->orWhere('color_name', 'like', $escapedSearch)
+                  ->orWhere('fuel_type', 'like', $escapedSearch)
+                  ->orWhere('transmission', 'like', $escapedSearch)
+                  ->orWhere('battery_type', 'like', $escapedSearch)
+                  ->orWhere('battery_make', 'like', $escapedSearch);
             });
         }
 
@@ -36,13 +37,14 @@ class VehicleMasterController extends Controller
         $query = VehicleMaster::orderBy('variant_name');
 
         if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('variant_name', 'like', "%{$search}%")
-                  ->orWhere('color_name', 'like', "%{$search}%")
-                  ->orWhere('fuel_type', 'like', "%{$search}%")
-                  ->orWhere('transmission', 'like', "%{$search}%")
-                  ->orWhere('battery_type', 'like', "%{$search}%")
-                  ->orWhere('battery_make', 'like', "%{$search}%");
+            $escapedSearch = '%' . addcslashes($search, '%_') . '%';
+            $query->where(function($q) use ($escapedSearch) {
+                $q->where('variant_name', 'like', $escapedSearch)
+                  ->orWhere('color_name', 'like', $escapedSearch)
+                  ->orWhere('fuel_type', 'like', $escapedSearch)
+                  ->orWhere('transmission', 'like', $escapedSearch)
+                  ->orWhere('battery_type', 'like', $escapedSearch)
+                  ->orWhere('battery_make', 'like', $escapedSearch);
             });
         }
 

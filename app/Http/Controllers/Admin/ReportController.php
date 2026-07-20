@@ -30,7 +30,8 @@ class ReportController extends Controller
         )->groupBy('vehicle_description');
 
         if ($search) {
-            $summaryQuery->where('vehicle_description', 'like', "%{$search}%");
+            $escapedSearch = '%' . addcslashes($search, '%_') . '%';
+            $summaryQuery->where('vehicle_description', 'like', $escapedSearch);
         }
         $summaries = $summaryQuery->get();
 
@@ -38,13 +39,16 @@ class ReportController extends Controller
         $ledgerQuery = VehicleInventory::with('purchaseOrder')->orderBy('created_at', 'desc');
 
         if ($search) {
-            $ledgerQuery->where('vehicle_description', 'like', "%{$search}%");
+            $escapedSearch = '%' . addcslashes($search, '%_') . '%';
+            $ledgerQuery->where('vehicle_description', 'like', $escapedSearch);
         }
         if ($chassis) {
-            $ledgerQuery->where('chassis_number', 'like', "%{$chassis}%");
+            $escapedChassis = '%' . addcslashes($chassis, '%_') . '%';
+            $ledgerQuery->where('chassis_number', 'like', $escapedChassis);
         }
         if ($engine) {
-            $ledgerQuery->where('engine_number', 'like', "%{$engine}%");
+            $escapedEngine = '%' . addcslashes($engine, '%_') . '%';
+            $ledgerQuery->where('engine_number', 'like', $escapedEngine);
         }
 
         $ledger = $ledgerQuery->paginate(20)->withQueryString();
@@ -72,9 +76,10 @@ class ReportController extends Controller
             ->groupBy('spare_parts.id', 'spare_parts.part_no', 'spare_parts.name', 'spare_parts.unit');
 
         if ($search) {
-            $summaryQuery->where(function ($q) use ($search) {
-                $q->where('spare_parts.name', 'like', "%{$search}%")
-                  ->orWhere('spare_parts.part_no', 'like', "%{$search}%");
+            $escapedSearch = '%' . addcslashes($search, '%_') . '%';
+            $summaryQuery->where(function ($q) use ($escapedSearch) {
+                $q->where('spare_parts.name', 'like', $escapedSearch)
+                  ->orWhere('spare_parts.part_no', 'like', $escapedSearch);
             });
         }
         $summaries = $summaryQuery->get();
@@ -83,9 +88,10 @@ class ReportController extends Controller
         $ledgerQuery = SparePartStockTransaction::with('sparePart')->orderBy('created_at', 'desc');
 
         if ($search) {
-            $ledgerQuery->whereHas('sparePart', function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('part_no', 'like', "%{$search}%");
+            $escapedSearch = '%' . addcslashes($search, '%_') . '%';
+            $ledgerQuery->whereHas('sparePart', function ($q) use ($escapedSearch) {
+                $q->where('name', 'like', $escapedSearch)
+                  ->orWhere('part_no', 'like', $escapedSearch);
             });
         }
         if ($type) {
@@ -134,10 +140,11 @@ class ReportController extends Controller
                         DB::raw("'vehicle' as sub_type")
                     );
                 if ($search) {
-                    $q->where(function($sq) use ($search) {
-                        $sq->where('invoice_number', 'like', "%{$search}%")
-                           ->orWhere('customer_name', 'like', "%{$search}%")
-                           ->orWhere('customer_mobile', 'like', "%{$search}%");
+                    $escapedSearch = '%' . addcslashes($search, '%_') . '%';
+                    $q->where(function($sq) use ($escapedSearch) {
+                        $sq->where('invoice_number', 'like', $escapedSearch)
+                           ->orWhere('customer_name', 'like', $escapedSearch)
+                           ->orWhere('customer_mobile', 'like', $escapedSearch);
                     });
                 }
                 if ($fromDate) {
@@ -163,10 +170,11 @@ class ReportController extends Controller
                         DB::raw("'part' as sub_type")
                     );
                 if ($search) {
-                    $q->where(function($sq) use ($search) {
-                        $sq->where('invoice_number', 'like', "%{$search}%")
-                           ->orWhere('customer_name', 'like', "%{$search}%")
-                           ->orWhere('customer_mobile', 'like', "%{$search}%");
+                    $escapedSearch = '%' . addcslashes($search, '%_') . '%';
+                    $q->where(function($sq) use ($escapedSearch) {
+                        $sq->where('invoice_number', 'like', $escapedSearch)
+                           ->orWhere('customer_name', 'like', $escapedSearch)
+                           ->orWhere('customer_mobile', 'like', $escapedSearch);
                     });
                 }
                 if ($fromDate) {
@@ -212,10 +220,11 @@ class ReportController extends Controller
                         DB::raw("'vehicle' as sub_type")
                     );
                 if ($search) {
-                    $q->where(function($sq) use ($search) {
-                        $sq->where('po_number', 'like', "%{$search}%")
-                           ->orWhereHas('supplier', function($supq) use ($search) {
-                               $supq->where('name', 'like', "%{$search}%");
+                    $escapedSearch = '%' . addcslashes($search, '%_') . '%';
+                    $q->where(function($sq) use ($escapedSearch) {
+                        $sq->where('po_number', 'like', $escapedSearch)
+                           ->orWhereHas('supplier', function($supq) use ($escapedSearch) {
+                               $supq->where('name', 'like', $escapedSearch);
                            });
                     });
                 }
@@ -242,10 +251,11 @@ class ReportController extends Controller
                         DB::raw("'part' as sub_type")
                     );
                 if ($search) {
-                    $q->where(function($sq) use ($search) {
-                        $sq->where('order_number', 'like', "%{$search}%")
-                           ->orWhereHas('supplier', function($supq) use ($search) {
-                               $supq->where('name', 'like', "%{$search}%");
+                    $escapedSearch = '%' . addcslashes($search, '%_') . '%';
+                    $q->where(function($sq) use ($escapedSearch) {
+                        $sq->where('order_number', 'like', $escapedSearch)
+                           ->orWhereHas('supplier', function($supq) use ($escapedSearch) {
+                               $supq->where('name', 'like', $escapedSearch);
                            });
                     });
                 }

@@ -17,13 +17,14 @@ class CustomerController extends Controller
         $query = Customer::orderBy('first_name');
 
         if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('first_name', 'like', "%{$search}%")
-                  ->orWhere('last_name', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('gstin', 'like', "%{$search}%")
-                  ->orWhere('company_name', 'like', "%{$search}%");
+            $escapedSearch = '%' . addcslashes($search, '%_') . '%';
+            $query->where(function($q) use ($escapedSearch) {
+                $q->where('first_name', 'like', $escapedSearch)
+                  ->orWhere('last_name', 'like', $escapedSearch)
+                  ->orWhere('phone', 'like', $escapedSearch)
+                  ->orWhere('email', 'like', $escapedSearch)
+                  ->orWhere('gstin', 'like', $escapedSearch)
+                  ->orWhere('company_name', 'like', $escapedSearch);
             });
         }
 
@@ -37,13 +38,14 @@ class CustomerController extends Controller
         $query = Customer::orderBy('first_name');
 
         if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('first_name', 'like', "%{$search}%")
-                  ->orWhere('last_name', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('gstin', 'like', "%{$search}%")
-                  ->orWhere('company_name', 'like', "%{$search}%");
+            $escapedSearch = '%' . addcslashes($search, '%_') . '%';
+            $query->where(function($q) use ($escapedSearch) {
+                $q->where('first_name', 'like', $escapedSearch)
+                  ->orWhere('last_name', 'like', $escapedSearch)
+                  ->orWhere('phone', 'like', $escapedSearch)
+                  ->orWhere('email', 'like', $escapedSearch)
+                  ->orWhere('gstin', 'like', $escapedSearch)
+                  ->orWhere('company_name', 'like', $escapedSearch);
             });
         }
 

@@ -6,23 +6,14 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::table('vehicle_tables', function (Blueprint $table) {
-            //
-        });
+        // Intentionally left empty - color_name and mfg_year are now handled
+        // via separate alter migrations on the correct tables.
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::table('vehicle_tables', function (Blueprint $table) {
-            //
-        });
+        //
     }
 };

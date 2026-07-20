@@ -24,10 +24,11 @@ class PartSalesInvoiceController extends Controller
             ->orderBy('id', 'desc');
 
         if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('invoice_number', 'like', "%{$search}%")
-                  ->orWhere('customer_name', 'like', "%{$search}%")
-                  ->orWhere('customer_mobile', 'like', "%{$search}%");
+            $escapedSearch = '%' . addcslashes($search, '%_') . '%';
+            $query->where(function($q) use ($escapedSearch) {
+                $q->where('invoice_number', 'like', $escapedSearch)
+                  ->orWhere('customer_name', 'like', $escapedSearch)
+                  ->orWhere('customer_mobile', 'like', $escapedSearch);
             });
         }
 
@@ -45,10 +46,11 @@ class PartSalesInvoiceController extends Controller
             ->orderBy('id', 'desc');
 
         if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('invoice_number', 'like', "%{$search}%")
-                  ->orWhere('customer_name', 'like', "%{$search}%")
-                  ->orWhere('customer_mobile', 'like', "%{$search}%");
+            $escapedSearch = '%' . addcslashes($search, '%_') . '%';
+            $query->where(function($q) use ($escapedSearch) {
+                $q->where('invoice_number', 'like', $escapedSearch)
+                  ->orWhere('customer_name', 'like', $escapedSearch)
+                  ->orWhere('customer_mobile', 'like', $escapedSearch);
             });
         }
 
@@ -65,10 +67,11 @@ class PartSalesInvoiceController extends Controller
             ->orderBy('id', 'desc');
 
         if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('invoice_number', 'like', "%{$search}%")
-                  ->orWhere('customer_name', 'like', "%{$search}%")
-                  ->orWhere('customer_mobile', 'like', "%{$search}%");
+            $escapedSearch = '%' . addcslashes($search, '%_') . '%';
+            $query->where(function($q) use ($escapedSearch) {
+                $q->where('invoice_number', 'like', $escapedSearch)
+                  ->orWhere('customer_name', 'like', $escapedSearch)
+                  ->orWhere('customer_mobile', 'like', $escapedSearch);
             });
         }
 
@@ -115,10 +118,11 @@ class PartSalesInvoiceController extends Controller
             ->orderBy('id', 'desc');
 
         if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('invoice_number', 'like', "%{$search}%")
-                  ->orWhere('customer_name', 'like', "%{$search}%")
-                  ->orWhere('customer_mobile', 'like', "%{$search}%");
+            $escapedSearch = '%' . addcslashes($search, '%_') . '%';
+            $query->where(function($q) use ($escapedSearch) {
+                $q->where('invoice_number', 'like', $escapedSearch)
+                  ->orWhere('customer_name', 'like', $escapedSearch)
+                  ->orWhere('customer_mobile', 'like', $escapedSearch);
             });
         }
 

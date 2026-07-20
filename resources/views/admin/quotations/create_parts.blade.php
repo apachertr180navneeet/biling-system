@@ -264,8 +264,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         removeBtn.addEventListener('click', function() {
-            tr.remove();
-            calculateTotals();
+            const rows = tableBody.querySelectorAll('tr');
+            if (rows.length > 1) {
+                tr.remove();
+                calculateTotals();
+            } else {
+                alert('At least one item is required.');
+            }
         });
 
         rowIndex++;
@@ -361,6 +366,7 @@ document.addEventListener('DOMContentLoaded', function() {
             method: 'POST',
             body: formData,
             headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                 'X-Requested-With': 'XMLHttpRequest',
                 'Accept': 'application/json'
             }

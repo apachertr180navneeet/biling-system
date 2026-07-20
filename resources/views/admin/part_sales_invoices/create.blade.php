@@ -195,11 +195,11 @@
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Previous Balance (INR)</label>
-                        <input type="number" step="0.01" name="previous_balance" id="previous_balance" class="form-control" value="0.00">
+                        <input type="number" step="0.01" name="previous_balance" id="previous_balance" class="form-control" value="0.00" min="0">
                     </div>
                     <div class="col-md-3">
                         <label class="form-label fw-bold">Received Amount (INR) <span class="text-danger">*</span></label>
-                        <input type="number" step="0.01" name="received_amount" id="received_amount" class="form-control fw-bold" value="0.00" required>
+                        <input type="number" step="0.01" name="received_amount" id="received_amount" class="form-control fw-bold" value="0.00" required min="0">
                     </div>
                     <div class="col-md-3">
                         <label class="form-label fw-bold text-danger">Current Balance (INR)</label>
@@ -606,6 +606,7 @@ document.addEventListener('DOMContentLoaded', function() {
             method: 'POST',
             body: formData,
             headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                 'X-Requested-With': 'XMLHttpRequest',
                 'Accept': 'application/json'
             }

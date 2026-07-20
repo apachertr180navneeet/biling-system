@@ -16,7 +16,7 @@
                 @csrf @method('PUT')
                 <div class="mb-3">
                     <label class="form-label">Supplier</label>
-                    <select name="supplier_id" class="form-control @error('supplier_id') is-invalid @enderror">
+                    <select name="supplier_id" class="form-control @error('supplier_id') is-invalid @enderror" required>
                         <option value="">Select Supplier</option>
                         @foreach($suppliers as $supplier)
                         <option value="{{ $supplier->id }}" {{ old('supplier_id', $purchaseOrder->supplier_id) == $supplier->id ? 'selected' : '' }}>{{ $supplier->name }}</option>
@@ -47,7 +47,7 @@
                     @foreach($purchaseOrder->items as $i => $item)
                     <div class="item-row row">
                         <div class="col-md-5">
-                            <select name="items[{{ $i }}][spare_part_id]" class="form-control">
+                            <select name="items[{{ $i }}][spare_part_id]" class="form-control" required>
                                 <option value="">Select Part</option>
                                 @foreach($spareParts as $part)
                                 <option value="{{ $part->id }}" data-price="{{ $part->selling_price }}" {{ $item->spare_part_id == $part->id ? 'selected' : '' }}>{{ $part->part_no }} - {{ $part->name }}</option>
@@ -55,13 +55,13 @@
                             </select>
                         </div>
                         <div class="col-md-2">
-                            <input type="number" name="items[{{ $i }}][quantity]" class="form-control qty" min="1" value="{{ $item->quantity }}">
+                            <input type="number" name="items[{{ $i }}][quantity]" class="form-control qty" min="1" value="{{ $item->quantity }}" required>
                         </div>
                         <div class="col-md-2">
                             <input type="number" step="0.01" name="items[{{ $i }}][unit_price]" class="form-control unit-price" min="0" value="{{ $item->unit_price }}">
                         </div>
                         <div class="col-md-2">
-                            <input type="text" class="form-control line-total" readonly value="{{ number_format($item->total_price, 2) }}">
+                            <input type="text" class="form-control line-total" readonly value="{{ $item->total_price }}">
                         </div>
                         <div class="col-md-1">
                             <button type="button" class="btn btn-sm btn-danger remove-item">X</button>
@@ -73,7 +73,7 @@
 
                 <hr>
                 <div class="text-end">
-                    <h5>Total: <span id="grandTotal">{{ number_format($purchaseOrder->total_amount, 2) }}</span></h5>
+                    <h5>Total: <span id="grandTotal">{{ $purchaseOrder->total_amount }}</span></h5>
                 </div>
                 <button type="submit" class="btn btn-primary">Update Order</button>
                 <a href="{{ route('admin.purchase-orders.index') }}" class="btn btn-secondary">Cancel</a>
@@ -120,6 +120,36 @@ $(document).ready(function() {
         var total = 0;
         $('.line-total').each(function() { total += parseFloat($(this).val()) || 0; });
         $('#grandTotal').text(total.toFixed(2));
+    }
+    calcTotal();
+});
+document.getElementById('poForm').addEventListener('submit', function(e) {
+    var valid = true;
+    var items = document.querySelectorAll('.item-row');
+    if (items.length === 0) {
+        alert('Please add at least one item.');
+        e.preventDefault();
+        return;
+    }
+    items.forEach(function(row) {
+        var partSelect = row.querySelector('select[name*="spare_part_id"]');
+        var qtyInput = row.querySelector('input[name*="quantity"]');
+        if (partSelect && !partSelect.value) {
+            valid = false;
+            partSelect.classList.add('is-invalid');
+        } else if (partSelect) {
+            partSelect.classList.remove('is-invalid');
+        }
+        if (qtyInput && (parseInt(qtyInput.value) || 0) < 1) {
+            valid = false;
+            qtyInput.classList.add('is-invalid');
+        } else if (qtyInput) {
+            qtyInput.classList.remove('is-invalid');
+        }
+    });
+    if (!valid) {
+        e.preventDefault();
+        alert('Please fill in all required fields for each item.');
     }
 });
 </script>

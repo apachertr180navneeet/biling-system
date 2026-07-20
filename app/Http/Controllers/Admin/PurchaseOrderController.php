@@ -25,10 +25,11 @@ class PurchaseOrderController extends Controller
         $query = PurchaseOrder::with('supplier', 'items')->orderBy('created_at', 'desc');
 
         if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('order_number', 'like', "%{$search}%")
-                  ->orWhereHas('supplier', function($sq) use ($search) {
-                      $sq->where('name', 'like', "%{$search}%");
+            $escapedSearch = '%' . addcslashes($search, '%_') . '%';
+            $query->where(function($q) use ($escapedSearch) {
+                $q->where('order_number', 'like', $escapedSearch)
+                  ->orWhereHas('supplier', function($sq) use ($escapedSearch) {
+                      $sq->where('name', 'like', $escapedSearch);
                   });
             });
         }
@@ -45,10 +46,11 @@ class PurchaseOrderController extends Controller
             ->orderBy('created_at', 'desc');
 
         if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('order_number', 'like', "%{$search}%")
-                  ->orWhereHas('supplier', function($sq) use ($search) {
-                      $sq->where('name', 'like', "%{$search}%");
+            $escapedSearch = '%' . addcslashes($search, '%_') . '%';
+            $query->where(function($q) use ($escapedSearch) {
+                $q->where('order_number', 'like', $escapedSearch)
+                  ->orWhereHas('supplier', function($sq) use ($escapedSearch) {
+                      $sq->where('name', 'like', $escapedSearch);
                   });
             });
         }
@@ -65,10 +67,11 @@ class PurchaseOrderController extends Controller
             ->orderBy('created_at', 'desc');
 
         if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('order_number', 'like', "%{$search}%")
-                  ->orWhereHas('supplier', function($sq) use ($search) {
-                      $sq->where('name', 'like', "%{$search}%");
+            $escapedSearch = '%' . addcslashes($search, '%_') . '%';
+            $query->where(function($q) use ($escapedSearch) {
+                $q->where('order_number', 'like', $escapedSearch)
+                  ->orWhereHas('supplier', function($sq) use ($escapedSearch) {
+                      $sq->where('name', 'like', $escapedSearch);
                   });
             });
         }
@@ -122,10 +125,11 @@ class PurchaseOrderController extends Controller
         $query = PurchaseOrder::with('supplier', 'items')->orderBy('created_at', 'desc');
 
         if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('order_number', 'like', "%{$search}%")
-                  ->orWhereHas('supplier', function($sq) use ($search) {
-                      $sq->where('name', 'like', "%{$search}%");
+            $escapedSearch = '%' . addcslashes($search, '%_') . '%';
+            $query->where(function($q) use ($escapedSearch) {
+                $q->where('order_number', 'like', $escapedSearch)
+                  ->orWhereHas('supplier', function($sq) use ($escapedSearch) {
+                      $sq->where('name', 'like', $escapedSearch);
                   });
             });
         }

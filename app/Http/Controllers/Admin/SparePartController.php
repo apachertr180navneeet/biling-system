@@ -17,9 +17,10 @@ class SparePartController extends Controller
         $query = SparePart::orderBy('name');
 
         if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('part_no', 'like', "%{$search}%")
-                  ->orWhere('name', 'like', "%{$search}%");
+            $escapedSearch = '%' . addcslashes($search, '%_') . '%';
+            $query->where(function($q) use ($escapedSearch) {
+                $q->where('part_no', 'like', $escapedSearch)
+                  ->orWhere('name', 'like', $escapedSearch);
             });
         }
 
@@ -33,9 +34,10 @@ class SparePartController extends Controller
         $query = SparePart::orderBy('name');
 
         if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('part_no', 'like', "%{$search}%")
-                  ->orWhere('name', 'like', "%{$search}%");
+            $escapedSearch = '%' . addcslashes($search, '%_') . '%';
+            $query->where(function($q) use ($escapedSearch) {
+                $q->where('part_no', 'like', $escapedSearch)
+                  ->orWhere('name', 'like', $escapedSearch);
             });
         }
 

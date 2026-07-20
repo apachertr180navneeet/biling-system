@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
-use Carbon\Carbon;
-use Illuminate\Support\Str;
-use Mail, DB, Hash, Validator, Session, File,Exception;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\File;
+use Exception;
 use App\Models\Customer;
 use App\Models\VehicleInventory;
 use App\Models\VehiclePurchaseOrder;
@@ -150,6 +152,12 @@ class AdminAuthController extends Controller
 
             if (!$updatePassword) {
                 return back()->withInput()->with("error", "Invalid token!");
+            }
+
+            $tokenCreatedAt = \Carbon\Carbon::parse($updatePassword->created_at);
+            if ($tokenCreatedAt->diffInMinutes(now()) > 60) {
+                DB::table("password_reset_tokens")->where(["email" => $request->email])->delete();
+                return back()->withInput()->with("error", "Reset link has expired. Please request a new one.");
             }
 
             $user = User::where("email", $request->email)->update(["password" => Hash::make($request->password)]);

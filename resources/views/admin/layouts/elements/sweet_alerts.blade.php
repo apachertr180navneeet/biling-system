@@ -12,7 +12,7 @@
             toast.addEventListener('mouseleave', Swal.resumeTimer)
         }
     })
-    function setFlesh(status, message = '') {
+    function setFlash(status, message = '') {
         Toast.fire({
             icon: status,
             title: message
@@ -44,14 +44,14 @@
                 $.post(url, { _token: '{{ csrf_token() }}' })
                  .done(function(resp) {
                      if (resp.success) {
-                         setFlesh('success', resp.message || 'Status updated successfully.');
+                         setFlash('success', resp.message || 'Status updated successfully.');
                      } else {
-                         setFlesh('error', resp.message || 'Failed to update status.');
+                         setFlash('error', resp.message || 'Failed to update status.');
                          checkbox.prop('checked', !isChecked);
                      }
                  })
                  .fail(function() {
-                     setFlesh('error', 'Error updating status.');
+                     setFlash('error', 'Error updating status.');
                      checkbox.prop('checked', !isChecked);
                  });
             }

@@ -111,7 +111,7 @@ $(function(){
         Swal.fire({ title: 'Are you sure?', text: 'This will be soft deleted.', icon: 'warning', showCancelButton: true, confirmButtonText: 'Yes, delete!' }).then(function(result) {
             if (result.isConfirmed) {
                 $.ajax({ url: url, type: 'POST', data: { _token: '{{ csrf_token() }}', _method: 'DELETE' }, success: function(resp) {
-                    if (resp.success) { btn.closest('tr').remove(); setFlesh('success', resp.message); }
+                    if (resp.success) { btn.closest('tr').remove(); setFlash('success', resp.message); }
                 }});
             }
         });

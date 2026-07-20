@@ -17,7 +17,7 @@
         <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-bordered">
-                    <tr><th style="width:200px">Name</th><td>{{ $financeMaster->name }}</td></tr>
+                    <tr><th style="width:35%">Name</th><td>{{ $financeMaster->name }}</td></tr>
                     <tr><th>Description</th><td>{{ $financeMaster->description ?? '-' }}</td></tr>
                     <tr><th>Status</th><td>{{ $financeMaster->is_active ? 'Active' : 'Inactive' }}</td></tr>
                 </table>

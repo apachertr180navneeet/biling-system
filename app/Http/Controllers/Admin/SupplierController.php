@@ -17,12 +17,13 @@ class SupplierController extends Controller
         $query = Supplier::orderBy('name');
 
         if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('contact_person', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('gstin', 'like', "%{$search}%");
+            $escapedSearch = '%' . addcslashes($search, '%_') . '%';
+            $query->where(function($q) use ($escapedSearch) {
+                $q->where('name', 'like', $escapedSearch)
+                  ->orWhere('contact_person', 'like', $escapedSearch)
+                  ->orWhere('phone', 'like', $escapedSearch)
+                  ->orWhere('email', 'like', $escapedSearch)
+                  ->orWhere('gstin', 'like', $escapedSearch);
             });
         }
 
@@ -36,12 +37,13 @@ class SupplierController extends Controller
         $query = Supplier::orderBy('name');
 
         if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('contact_person', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('gstin', 'like', "%{$search}%");
+            $escapedSearch = '%' . addcslashes($search, '%_') . '%';
+            $query->where(function($q) use ($escapedSearch) {
+                $q->where('name', 'like', $escapedSearch)
+                  ->orWhere('contact_person', 'like', $escapedSearch)
+                  ->orWhere('phone', 'like', $escapedSearch)
+                  ->orWhere('email', 'like', $escapedSearch)
+                  ->orWhere('gstin', 'like', $escapedSearch);
             });
         }
 

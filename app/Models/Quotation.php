@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 
 class Quotation extends Model
 {
@@ -57,19 +58,22 @@ class Quotation extends Model
             if (empty($quotation->quotation_number)) {
                 $dateStr = date('Ymd');
                 $prefix = 'QT-' . $dateStr . '-';
-                
-                $lastQuotation = static::where('quotation_number', 'like', $prefix . '%')
-                    ->orderBy('id', 'desc')
-                    ->first();
 
-                $nextNumber = 1;
-                if ($lastQuotation) {
-                    $parts = explode('-', $lastQuotation->quotation_number);
-                    $lastNum = (int) end($parts);
-                    $nextNumber = $lastNum + 1;
-                }
+                $quotation->quotation_number = DB::transaction(function () use ($prefix) {
+                    $lastQuotation = static::where('quotation_number', 'like', $prefix . '%')
+                        ->lockForUpdate()
+                        ->orderBy('id', 'desc')
+                        ->first();
 
-                $quotation->quotation_number = $prefix . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+                    $nextNumber = 1;
+                    if ($lastQuotation) {
+                        $parts = explode('-', $lastQuotation->quotation_number);
+                        $lastNum = (int) end($parts);
+                        $nextNumber = $lastNum + 1;
+                    }
+
+                    return $prefix . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+                });
             }
         });
     }

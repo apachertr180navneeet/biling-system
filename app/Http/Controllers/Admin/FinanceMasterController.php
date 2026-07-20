@@ -17,9 +17,10 @@ class FinanceMasterController extends Controller
         $query = FinanceMaster::orderBy('name');
 
         if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+            $escapedSearch = '%' . addcslashes($search, '%_') . '%';
+            $query->where(function($q) use ($escapedSearch) {
+                $q->where('name', 'like', $escapedSearch)
+                  ->orWhere('description', 'like', $escapedSearch);
             });
         }
 
@@ -33,9 +34,10 @@ class FinanceMasterController extends Controller
         $query = FinanceMaster::orderBy('name');
 
         if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+            $escapedSearch = '%' . addcslashes($search, '%_') . '%';
+            $query->where(function($q) use ($escapedSearch) {
+                $q->where('name', 'like', $escapedSearch)
+                  ->orWhere('description', 'like', $escapedSearch);
             });
         }
 

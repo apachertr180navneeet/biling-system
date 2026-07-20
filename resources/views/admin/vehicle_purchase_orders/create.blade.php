@@ -16,7 +16,7 @@
                 @csrf
                 <div class="mb-3">
                     <label class="form-label">Supplier</label>
-                    <select name="supplier_id" class="form-control @error('supplier_id') is-invalid @enderror">
+                    <select name="supplier_id" class="form-control @error('supplier_id') is-invalid @enderror" required>
                         <option value="">Select Supplier</option>
                         @foreach($suppliers as $s)
                         <option value="{{ $s->id }}" {{ old('supplier_id') == $s->id ? 'selected' : '' }}>{{ $s->name }}</option>
@@ -47,7 +47,7 @@
                 <div id="itemsContainer">
                     <div class="item-row row">
                         <div class="col-md-5">
-                            <select name="items[0][vehicle_description]" class="form-select vehicle-select">
+                            <select name="items[0][vehicle_description]" class="form-select vehicle-select" required>
                                 <option value="">Select Vehicle</option>
                                 @foreach($vehicleList as $opt)
                                 <option value="{{ $opt }}" {{ old('items.0.vehicle_description') == $opt ? 'selected' : '' }}>{{ $opt }}</option>
@@ -55,7 +55,7 @@
                             </select>
                         </div>
                         <div class="col-md-2">
-                            <input type="number" name="items[0][quantity]" class="form-control qty" placeholder="Qty" min="1" value="1">
+                            <input type="number" name="items[0][quantity]" class="form-control qty" placeholder="Qty" min="1" value="1" required>
                         </div>
                         <div class="col-md-2">
                             <input type="number" step="0.01" name="items[0][unit_price]" class="form-control unit-price" placeholder="Unit Price" min="0" value="0">
@@ -125,6 +125,35 @@ $(document).ready(function() {
         var total = 0;
         $('.line-total').each(function() { total += parseFloat($(this).val()) || 0; });
         $('#grandTotal').text(total.toFixed(2));
+    }
+});
+document.getElementById('poForm').addEventListener('submit', function(e) {
+    var valid = true;
+    var items = document.querySelectorAll('.item-row');
+    if (items.length === 0) {
+        alert('Please add at least one item.');
+        e.preventDefault();
+        return;
+    }
+    items.forEach(function(row) {
+        var partSelect = row.querySelector('select[name*="vehicle_description"]');
+        var qtyInput = row.querySelector('input[name*="quantity"]');
+        if (partSelect && !partSelect.value) {
+            valid = false;
+            partSelect.classList.add('is-invalid');
+        } else if (partSelect) {
+            partSelect.classList.remove('is-invalid');
+        }
+        if (qtyInput && (parseInt(qtyInput.value) || 0) < 1) {
+            valid = false;
+            qtyInput.classList.add('is-invalid');
+        } else if (qtyInput) {
+            qtyInput.classList.remove('is-invalid');
+        }
+    });
+    if (!valid) {
+        e.preventDefault();
+        alert('Please fill in all required fields for each item.');
     }
 });
 </script>

@@ -18,9 +18,10 @@ class SparePartStockController extends Controller
         $query = SparePartStock::with('sparePart', 'purchaseOrder')->orderBy('created_at', 'desc');
 
         if ($search) {
-            $query->whereHas('sparePart', function($q) use ($search) {
-                $q->where('part_no', 'like', "%{$search}%")
-                  ->orWhere('name', 'like', "%{$search}%");
+            $escapedSearch = '%' . addcslashes($search, '%_') . '%';
+            $query->whereHas('sparePart', function($q) use ($escapedSearch) {
+                $q->where('part_no', 'like', $escapedSearch)
+                  ->orWhere('name', 'like', $escapedSearch);
             });
         }
 
@@ -35,9 +36,10 @@ class SparePartStockController extends Controller
         $query = SparePartStock::with('sparePart', 'purchaseOrder')->orderBy('created_at', 'desc');
 
         if ($search) {
-            $query->whereHas('sparePart', function($q) use ($search) {
-                $q->where('part_no', 'like', "%{$search}%")
-                  ->orWhere('name', 'like', "%{$search}%");
+            $escapedSearch = '%' . addcslashes($search, '%_') . '%';
+            $query->whereHas('sparePart', function($q) use ($escapedSearch) {
+                $q->where('part_no', 'like', $escapedSearch)
+                  ->orWhere('name', 'like', $escapedSearch);
             });
         }
 

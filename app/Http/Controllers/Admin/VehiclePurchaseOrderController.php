@@ -23,10 +23,11 @@ class VehiclePurchaseOrderController extends Controller
         $query = VehiclePurchaseOrder::with('supplier')->withCount('items')->orderBy('created_at', 'desc');
 
         if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('po_number', 'like', "%{$search}%")
-                  ->orWhereHas('supplier', function($sq) use ($search) {
-                      $sq->where('name', 'like', "%{$search}%");
+            $escapedSearch = '%' . addcslashes($search, '%_') . '%';
+            $query->where(function($q) use ($escapedSearch) {
+                $q->where('po_number', 'like', $escapedSearch)
+                  ->orWhereHas('supplier', function($sq) use ($escapedSearch) {
+                      $sq->where('name', 'like', $escapedSearch);
                   });
             });
         }
@@ -43,10 +44,11 @@ class VehiclePurchaseOrderController extends Controller
             ->orderBy('created_at', 'desc');
 
         if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('po_number', 'like', "%{$search}%")
-                  ->orWhereHas('supplier', function($sq) use ($search) {
-                      $sq->where('name', 'like', "%{$search}%");
+            $escapedSearch = '%' . addcslashes($search, '%_') . '%';
+            $query->where(function($q) use ($escapedSearch) {
+                $q->where('po_number', 'like', $escapedSearch)
+                  ->orWhereHas('supplier', function($sq) use ($escapedSearch) {
+                      $sq->where('name', 'like', $escapedSearch);
                   });
             });
         }
@@ -63,10 +65,11 @@ class VehiclePurchaseOrderController extends Controller
             ->orderBy('created_at', 'desc');
 
         if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('po_number', 'like', "%{$search}%")
-                  ->orWhereHas('supplier', function($sq) use ($search) {
-                      $sq->where('name', 'like', "%{$search}%");
+            $escapedSearch = '%' . addcslashes($search, '%_') . '%';
+            $query->where(function($q) use ($escapedSearch) {
+                $q->where('po_number', 'like', $escapedSearch)
+                  ->orWhereHas('supplier', function($sq) use ($escapedSearch) {
+                      $sq->where('name', 'like', $escapedSearch);
                   });
             });
         }
@@ -118,10 +121,11 @@ class VehiclePurchaseOrderController extends Controller
         $query = VehiclePurchaseOrder::with('supplier')->withCount('items')->orderBy('created_at', 'desc');
 
         if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('po_number', 'like', "%{$search}%")
-                  ->orWhereHas('supplier', function($sq) use ($search) {
-                      $sq->where('name', 'like', "%{$search}%");
+            $escapedSearch = '%' . addcslashes($search, '%_') . '%';
+            $query->where(function($q) use ($escapedSearch) {
+                $q->where('po_number', 'like', $escapedSearch)
+                  ->orWhereHas('supplier', function($sq) use ($escapedSearch) {
+                      $sq->where('name', 'like', $escapedSearch);
                   });
             });
         }
@@ -275,7 +279,7 @@ class VehiclePurchaseOrderController extends Controller
         DB::transaction(function () use ($vehiclePurchaseOrder) {
             VehicleInventory::where('vehicle_po_id', $vehiclePurchaseOrder->id)
                 ->where('status', 'available')
-                ->update(['status' => 'sold']);
+                ->update(['status' => 'unlinked']);
             $vehiclePurchaseOrder->items()->delete();
             $vehiclePurchaseOrder->delete();
         });
@@ -515,11 +519,12 @@ class VehiclePurchaseOrderController extends Controller
         $query = VehicleInventory::where('is_active', true)->orderBy('created_at', 'desc');
 
         if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('vehicle_description', 'like', "%{$search}%")
-                  ->orWhere('chassis_number', 'like', "%{$search}%")
-                  ->orWhere('motor_number', 'like', "%{$search}%")
-                  ->orWhere('battery_number', 'like', "%{$search}%");
+            $escapedSearch = '%' . addcslashes($search, '%_') . '%';
+            $query->where(function($q) use ($escapedSearch) {
+                $q->where('vehicle_description', 'like', $escapedSearch)
+                  ->orWhere('chassis_number', 'like', $escapedSearch)
+                  ->orWhere('motor_number', 'like', $escapedSearch)
+                  ->orWhere('battery_number', 'like', $escapedSearch);
             });
         }
 
@@ -533,11 +538,12 @@ class VehiclePurchaseOrderController extends Controller
         $query = VehicleInventory::where('is_active', true)->orderBy('created_at', 'desc');
 
         if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('vehicle_description', 'like', "%{$search}%")
-                  ->orWhere('chassis_number', 'like', "%{$search}%")
-                  ->orWhere('motor_number', 'like', "%{$search}%")
-                  ->orWhere('battery_number', 'like', "%{$search}%");
+            $escapedSearch = '%' . addcslashes($search, '%_') . '%';
+            $query->where(function($q) use ($escapedSearch) {
+                $q->where('vehicle_description', 'like', $escapedSearch)
+                  ->orWhere('chassis_number', 'like', $escapedSearch)
+                  ->orWhere('motor_number', 'like', $escapedSearch)
+                  ->orWhere('battery_number', 'like', $escapedSearch);
             });
         }
 

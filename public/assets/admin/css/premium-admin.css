@@ -134,7 +134,7 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 /* Tables */
 .table-responsive {
     border-radius: 12px !important;
-    overflow: hidden !important;
+    overflow-x: auto !important;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.01) !important;
     border: 1px solid var(--border-color) !important;
     background: var(--bg-surface) !important;

@@ -12,6 +12,7 @@
 
 .invoice-card {
     width: 794px; /* A4 Portrait width */
+    max-width: 100%;
     background: #fff;
     box-shadow: 0 15px 35px rgba(22, 101, 52, 0.05);
     border-radius: 12px;

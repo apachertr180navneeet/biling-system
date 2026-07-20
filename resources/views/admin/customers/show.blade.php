@@ -17,7 +17,7 @@
         <div class="card-body">
             <div class="table-responsive">
             <table class="table table-bordered">
-                <tr><th style="width:200px">Type</th><td>{{ ucfirst($customer->type) }}</td></tr>
+                <tr><th style="width:35%">Type</th><td>{{ ucfirst($customer->type) }}</td></tr>
                 <tr><th>First Name</th><td>{{ $customer->first_name }}</td></tr>
                 <tr><th>Last Name</th><td>{{ $customer->last_name }}</td></tr>
                 <tr><th>Company Name</th><td>{{ $customer->company_name ?? '-' }}</td></tr>

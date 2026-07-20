@@ -30,7 +30,7 @@ use App\Http\Controllers\Admin\QuotationController;
 */
 
 
-Route::get('/', [HomeController::class, 'index'])->name('/');
+Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/home', [HomeController::class, 'index'])->name('home');
 
 Route::name('admin.')->prefix('admin')->group(function () {
@@ -38,7 +38,7 @@ Route::name('admin.')->prefix('admin')->group(function () {
 
     Route::get('login', [AdminAuthController::class, 'login'])->name('login');
 
-    Route::post('login', [AdminAuthController::class, 'postLogin'])->name('login.post');
+    Route::post('login', [AdminAuthController::class, 'postLogin'])->name('login.post')->middleware('throttle:5,1');
 
     Route::get('forget-password', [AdminAuthController::class, 'showForgetPasswordForm'])->name('forget.password.get');
 
@@ -152,10 +152,4 @@ Route::name('admin.')->prefix('admin')->group(function () {
 
 
 });
-
-Route::middleware(['auth'])->group(function () {
-
-});
-
-
 
