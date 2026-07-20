@@ -88,7 +88,7 @@ class VehicleSalesInvoiceController extends Controller
         
         $grand_total = $total - $nemmp - $discount;
 
-        $invoice = DB::transaction(function () use ($request, $vehicle, $sub_total, $cgst_rate, $cgst_amount, $sgst_rate, $sgst_amount, $total, $nemmp, $discount, $grand_total) {
+        $invoice = DB::transaction(function () use ($request, $vehicle, $rate, $sub_total, $cgst_rate, $cgst_amount, $sgst_rate, $sgst_amount, $total, $nemmp, $discount, $grand_total) {
             // Generate invoice number
             $last = DB::table('vehicle_sales_invoices')->lockForUpdate()->orderBy('id', 'desc')->first();
             $nextId = $last ? $last->id + 1 : 1;
