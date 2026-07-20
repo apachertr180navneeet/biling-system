@@ -80,6 +80,8 @@
                             @if($order->status == 'pending')
                             <a href="{{ route('admin.purchase-orders.edit', $order) }}" class="btn btn-sm btn-primary">Edit</a>
                             @endif
+                            <a href="{{ route('admin.purchase-orders.pdf', $order) }}" class="btn btn-sm btn-danger" target="_blank"><i class="bx bx-file-pdf"></i></a>
+                            <a href="{{ route('admin.purchase-orders.whatsapp', $order) }}" class="btn btn-sm btn-success" target="_blank"><i class="bx bxl-whatsapp"></i></a>
                             <button class="btn btn-sm btn-danger btn-delete" data-url="{{ route('admin.purchase-orders.destroy', $order) }}">Delete</button>
                         </td>
                     </tr>

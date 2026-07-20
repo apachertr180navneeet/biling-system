@@ -95,6 +95,8 @@ Route::name('admin.')->prefix('admin')->group(function () {
         Route::post('purchase-orders/{purchase_order}/toggle-status', [PurchaseOrderController::class, 'toggleStatus'])->name('purchase-orders.toggle-status');
         Route::get('purchase-orders/{purchase_order}/receive', [PurchaseOrderController::class, 'receive'])->name('purchase-orders.receive');
         Route::post('purchase-orders/{purchase_order}/receive-store', [PurchaseOrderController::class, 'receiveStore'])->name('purchase-orders.receive-store');
+        Route::get('purchase-orders/{purchase_order}/pdf', [PurchaseOrderController::class, 'generatePdf'])->name('purchase-orders.pdf');
+        Route::get('purchase-orders/{purchase_order}/whatsapp', [PurchaseOrderController::class, 'sendWhatsapp'])->name('purchase-orders.whatsapp');
 
         Route::resource('vehicle-purchase-orders', VehiclePurchaseOrderController::class);
         Route::get('vehicle-purchase-orders/export', [VehiclePurchaseOrderController::class, 'export'])->name('vehicle-purchase-orders.export');

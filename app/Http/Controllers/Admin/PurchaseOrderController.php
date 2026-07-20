@@ -12,8 +12,10 @@ use App\Models\SparePartStockTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Response;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xls;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class PurchaseOrderController extends Controller
 {
@@ -282,5 +284,39 @@ class PurchaseOrderController extends Controller
         });
 
         return redirect()->route('admin.purchase-orders.show', $purchaseOrder)->withSuccess('Items received successfully.');
+    }
+
+    public function generatePdf(PurchaseOrder $purchaseOrder)
+    {
+        $purchaseOrder->load('supplier', 'items.sparePart', 'createdBy');
+
+        $pdf = Pdf::loadView('admin.purchase_orders.pdf', ['order' => $purchaseOrder]);
+        $pdf->setPaper('a4');
+        $pdf->setOption('isRemoteEnabled', true);
+
+        return $pdf->download('PO-' . $purchaseOrder->order_number . '.pdf');
+    }
+
+    public function sendWhatsapp(PurchaseOrder $purchaseOrder)
+    {
+        $purchaseOrder->load('supplier');
+
+        $phone = $purchaseOrder->supplier->phone ?? '';
+        $phone = preg_replace('/[^0-9]/', '', $phone);
+
+        if (strlen($phone) == 10) {
+            $phone = '91' . $phone;
+        }
+
+        $message = "Purchase Order: {$purchaseOrder->order_number}\n"
+            . "Date: {$purchaseOrder->order_date->format('d/m/Y')}\n"
+            . "Supplier: " . ($purchaseOrder->supplier->name ?? '-') . "\n"
+            . "Total: ₹" . number_format($purchaseOrder->total_amount, 2) . "\n"
+            . "Status: " . ucfirst($purchaseOrder->status) . "\n\n"
+            . "Please find the attached Purchase Order PDF.";
+
+        $whatsappUrl = "https://wa.me/{$phone}?text=" . urlencode($message);
+
+        return redirect($whatsappUrl);
     }
 }
