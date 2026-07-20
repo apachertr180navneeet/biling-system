@@ -142,8 +142,9 @@ class SalesInvoiceController extends Controller
             
         $battery_type = $master ? $master->battery_type : 'LITHIUM';
         $battery_make = $master ? $master->battery_make : 'LITHIUM';
+        $color_name = $master ? $master->color_name : '-';
 
-        return view('admin.sales_invoices.show', compact('salesInvoice', 'battery_type', 'battery_make'));
+        return view('admin.sales_invoices.show', compact('salesInvoice', 'battery_type', 'battery_make', 'color_name'));
     }
 
     public function destroy(SalesInvoice $salesInvoice)

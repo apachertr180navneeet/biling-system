@@ -146,7 +146,7 @@
                                 </tr>
                                 <tr>
                                     <td><strong>Colour</strong></td>
-                                    <td>{{ $salesInvoice->vehicleInventory->color_name ?? '-' }}</td>
+                                    <td>{{ $color_name }}</td>
                                 </tr>
                                 <tr>
                                     <td><strong>CHASSIS No :</strong></td>

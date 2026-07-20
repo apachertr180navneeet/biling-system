@@ -269,8 +269,6 @@ class VehiclePurchaseOrderController extends Controller
                     if ($vehicle) {
                         $poItem = $vehiclePurchaseOrder->items()
                             ->where('vehicle_description', $vehicle->vehicle_description)
-                            ->where('color_name', $vehicle->color_name)
-                            ->where('mfg_year', $vehicle->mfg_year)
                             ->first();
                         if ($poItem) {
                             $poItem->decrement('received_quantity');
@@ -317,8 +315,6 @@ class VehiclePurchaseOrderController extends Controller
                                 VehicleInventory::create([
                                     'vehicle_po_id' => $vehiclePurchaseOrder->id,
                                     'vehicle_description' => $poItem->vehicle_description,
-                                    'color_name' => $poItem->color_name,
-                                    'mfg_year' => $poItem->mfg_year,
                                     'chassis_number' => $vehicle['chassis_number'],
                                     'engine_number' => $vehicle['motor_number'],
                                     'motor_number' => $vehicle['motor_number'],
