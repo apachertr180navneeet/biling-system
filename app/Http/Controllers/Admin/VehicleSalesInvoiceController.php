@@ -128,6 +128,7 @@ class VehicleSalesInvoiceController extends Controller
             'discount' => 'nullable|numeric|min:0',
             'payment_mode' => 'nullable|string|max:255',
             'finance_name' => 'nullable|string|max:255',
+            'tax_regime' => 'required|string|in:cgst_sgst,igst',
             'previous_balance' => 'nullable|numeric|min:0',
             'received_amount' => 'nullable|numeric|min:0',
             'warranty_notes' => 'nullable|string',
@@ -141,20 +142,36 @@ class VehicleSalesInvoiceController extends Controller
         // Calculations
         $rate_input = floatval($request->rate);
         $gst_type = $request->input('gst_type', 'exclusive');
+        $tax_regime = $request->input('tax_regime', 'cgst_sgst');
         $cgst_rate = 2.50;
         $sgst_rate = 2.50;
+        $igst_rate = 5.00;
         
         if ($gst_type === 'inclusive') {
             $sub_total = round($rate_input / 1.05, 2);
-            $cgst_amount = round(($sub_total * $cgst_rate) / 100, 2);
-            $sgst_amount = round(($sub_total * $sgst_rate) / 100, 2);
+            if ($tax_regime === 'igst') {
+                $cgst_amount = 0;
+                $sgst_amount = 0;
+                $igst_amount = round(($sub_total * $igst_rate) / 100, 2);
+            } else {
+                $cgst_amount = round(($sub_total * $cgst_rate) / 100, 2);
+                $sgst_amount = round(($sub_total * $sgst_rate) / 100, 2);
+                $igst_amount = 0;
+            }
             $total = $rate_input;
-            $rate = $sub_total; // Save base rate excl gst as rate in database
+            $rate = $sub_total;
         } else {
             $sub_total = $rate_input;
-            $cgst_amount = round(($sub_total * $cgst_rate) / 100, 2);
-            $sgst_amount = round(($sub_total * $sgst_rate) / 100, 2);
-            $total = $sub_total + $cgst_amount + $sgst_amount;
+            if ($tax_regime === 'igst') {
+                $cgst_amount = 0;
+                $sgst_amount = 0;
+                $igst_amount = round(($sub_total * $igst_rate) / 100, 2);
+            } else {
+                $cgst_amount = round(($sub_total * $cgst_rate) / 100, 2);
+                $sgst_amount = round(($sub_total * $sgst_rate) / 100, 2);
+                $igst_amount = 0;
+            }
+            $total = $sub_total + $cgst_amount + $sgst_amount + $igst_amount;
             $rate = $rate_input;
         }
         
@@ -168,7 +185,7 @@ class VehicleSalesInvoiceController extends Controller
         $balance = $grand_total - $received;
         $curr_bal = $prev_bal + $balance;
 
-        $invoice = DB::transaction(function () use ($request, $vehicle, $rate, $sub_total, $cgst_rate, $cgst_amount, $sgst_rate, $sgst_amount, $total, $nemmp, $discount, $grand_total, $prev_bal, $received, $balance, $curr_bal) {
+        $invoice = DB::transaction(function () use ($request, $vehicle, $rate, $sub_total, $cgst_rate, $cgst_amount, $sgst_rate, $sgst_amount, $igst_amount, $tax_regime, $total, $nemmp, $discount, $grand_total, $prev_bal, $received, $balance, $curr_bal) {
             // Generate invoice number
             $last = DB::table('vehicle_sales_invoices')->lockForUpdate()->orderBy('id', 'desc')->first();
             $nextId = $last ? $last->id + 1 : 1;
@@ -200,6 +217,8 @@ class VehicleSalesInvoiceController extends Controller
                 'grand_total' => $grand_total,
                 'payment_mode' => $request->payment_mode,
                 'finance_name' => $request->input('finance_name'),
+                'tax_regime' => $tax_regime,
+                'igst_amount' => $igst_amount,
                 'received_amount' => $received,
                 'balance' => $balance,
                 'previous_balance' => $prev_bal,

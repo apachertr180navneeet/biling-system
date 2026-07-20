@@ -118,6 +118,7 @@ class PartSalesInvoiceController extends Controller
             'customer_pan' => 'nullable|string|max:10',
             'place_of_supply' => 'required|string|max:255',
             'payment_mode' => 'required|string|max:255',
+            'tax_regime' => 'required|string|in:cgst_sgst,igst',
             'previous_balance' => 'nullable|numeric|min:0',
             'received_amount' => 'required|numeric|min:0',
             'items' => 'required|array|min:1',
@@ -145,7 +146,9 @@ class PartSalesInvoiceController extends Controller
         $taxable_amount = 0;
         $cgst_amount = 0;
         $sgst_amount = 0;
+        $igst_amount = 0;
         $subtotal = 0;
+        $tax_regime = $request->input('tax_regime', 'cgst_sgst');
 
         foreach ($request->items as $itemData) {
             $qty = intval($itemData['quantity']);
@@ -162,8 +165,12 @@ class PartSalesInvoiceController extends Controller
             $line_tax = ($line_taxable * $tax_pct) / 100;
             
             $taxable_amount += $line_taxable;
-            $cgst_amount += round($line_tax / 2, 2);
-            $sgst_amount += round($line_tax / 2, 2);
+            if ($tax_regime === 'igst') {
+                $igst_amount += round($line_tax, 2);
+            } else {
+                $cgst_amount += round($line_tax / 2, 2);
+                $sgst_amount += round($line_tax / 2, 2);
+            }
             $subtotal += ($line_taxable + $line_tax);
         }
 
@@ -178,7 +185,7 @@ class PartSalesInvoiceController extends Controller
         $balance = $grand_total - $received;
         $curr_bal = $prev_bal + $balance;
 
-        $invoice = DB::transaction(function () use ($request, $taxable_amount, $cgst_amount, $sgst_amount, $round_off, $total_rounded, $received, $balance, $prev_bal, $curr_bal) {
+        $invoice = DB::transaction(function () use ($request, $taxable_amount, $cgst_amount, $sgst_amount, $igst_amount, $tax_regime, $round_off, $total_rounded, $received, $balance, $prev_bal, $curr_bal) {
             // Generate Invoice number
             $last = DB::table('part_sales_invoices')->lockForUpdate()->orderBy('id', 'desc')->first();
             $nextId = $last ? $last->id + 1 : 1;
@@ -194,9 +201,11 @@ class PartSalesInvoiceController extends Controller
                 'customer_gstin' => $request->customer_gstin,
                 'customer_pan' => $request->customer_pan,
                 'place_of_supply' => $request->place_of_supply,
+                'tax_regime' => $tax_regime,
                 'taxable_amount' => $taxable_amount,
                 'cgst_amount' => $cgst_amount,
                 'sgst_amount' => $sgst_amount,
+                'igst_amount' => $igst_amount,
                 'round_off' => $round_off,
                 'total_amount' => $total_rounded,
                 'received_amount' => $received,

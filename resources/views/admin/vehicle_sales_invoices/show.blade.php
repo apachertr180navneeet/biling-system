@@ -686,6 +686,12 @@
                                 <td class="summary-label">Others</td>
                                 <td class="summary-value">0.00</td>
                             </tr>
+                            @if(($vehicleSalesInvoice->tax_regime ?? 'cgst_sgst') === 'igst')
+                            <tr>
+                                <td class="summary-label">IGST @ 5%</td>
+                                <td class="summary-value">{{ number_format($vehicleSalesInvoice->igst_amount ?? 0, 2) }}</td>
+                            </tr>
+                            @else
                             <tr>
                                 <td class="summary-label">SGST @ 2.5%</td>
                                 <td class="summary-value">{{ number_format($vehicleSalesInvoice->sgst_amount, 2) }}</td>
@@ -694,6 +700,7 @@
                                 <td class="summary-label">CGST @ 2.5%</td>
                                 <td class="summary-value">{{ number_format($vehicleSalesInvoice->cgst_amount, 2) }}</td>
                             </tr>
+                            @endif
                             <tr>
                                 <td class="summary-label">Total</td>
                                 <td class="summary-value">{{ number_format($vehicleSalesInvoice->total, 2) }}</td>

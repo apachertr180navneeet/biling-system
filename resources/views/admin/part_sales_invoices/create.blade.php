@@ -72,12 +72,12 @@
 
                 <h5 class="card-title text-primary mb-3">Invoice Details</h5>
                 <div class="row g-3 mb-4">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="form-label">Invoice Date <span class="text-danger">*</span></label>
                         <input type="date" name="invoice_date" class="form-control @error('invoice_date') is-invalid @enderror" value="{{ old('invoice_date', date('Y-m-d')) }}" required>
                         @error('invoice_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="form-label">Payment Mode <span class="text-danger">*</span></label>
                         <select name="payment_mode" class="form-select no-select2 @error('payment_mode') is-invalid @enderror" required>
                             <option value="Cash" {{ old('payment_mode') === 'Cash' ? 'selected' : '' }}>Cash</option>
@@ -86,6 +86,14 @@
                         </select>
                         @error('payment_mode')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Tax Regime <span class="text-danger">*</span></label>
+                        <select name="tax_regime" id="tax_regime" class="form-select no-select2" required>
+                            <option value="cgst_sgst" {{ old('tax_regime', 'cgst_sgst') === 'cgst_sgst' ? 'selected' : '' }}>CGST + SGST</option>
+                            <option value="igst" {{ old('tax_regime') === 'igst' ? 'selected' : '' }}>IGST</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3"></div>
                 </div>
 
                 <h5 class="card-title text-primary mb-3">Invoice Items (Parts)</h5>
@@ -165,13 +173,17 @@
                         <label class="form-label">Taxable Amount (INR)</label>
                         <input type="text" id="summary_taxable" class="form-control bg-white" readonly value="0.00">
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-3" id="summary_cgst_sgst_fields">
                         <label class="form-label">CGST Amount (INR)</label>
                         <input type="text" id="summary_cgst" class="form-control bg-white" readonly value="0.00">
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-3" id="summary_cgst_sgst_fields2">
                         <label class="form-label">SGST Amount (INR)</label>
                         <input type="text" id="summary_sgst" class="form-control bg-white" readonly value="0.00">
+                    </div>
+                    <div class="col-md-3 d-none" id="summary_igst_field">
+                        <label class="form-label">IGST Amount (INR)</label>
+                        <input type="text" id="summary_igst" class="form-control bg-white" readonly value="0.00">
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Round Off (INR)</label>
@@ -484,16 +496,32 @@ document.addEventListener('DOMContentLoaded', function() {
     var summaryTaxable = document.getElementById('summary_taxable');
     var summaryCgst = document.getElementById('summary_cgst');
     var summarySgst = document.getElementById('summary_sgst');
+    var summaryIgst = document.getElementById('summary_igst');
+    var taxRegimeSelect = document.getElementById('tax_regime');
     var summaryRound = document.getElementById('summary_round');
     var summaryGrand = document.getElementById('summary_grand');
     var prevBalanceInput = document.getElementById('previous_balance');
     var receivedAmountInput = document.getElementById('received_amount');
     var summaryCurrentBalance = document.getElementById('summary_current_balance');
 
+    function toggleRegimeFields() {
+        var isIgst = taxRegimeSelect.value === 'igst';
+        document.getElementById('summary_cgst_sgst_fields').classList.toggle('d-none', isIgst);
+        document.getElementById('summary_cgst_sgst_fields2').classList.toggle('d-none', isIgst);
+        document.getElementById('summary_igst_field').classList.toggle('d-none', !isIgst);
+    }
+
+    taxRegimeSelect.addEventListener('change', function() {
+        toggleRegimeFields();
+        calculateSummary();
+    });
+
     function calculateSummary() {
         var taxableTotal = 0;
         var cgstTotal = 0;
         var sgstTotal = 0;
+        var igstTotal = 0;
+        var taxRegime = taxRegimeSelect.value;
 
         var rows = itemsContainer.querySelectorAll('.item-row');
         rows.forEach(function(row) {
@@ -521,18 +549,22 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             taxableTotal += taxable;
-            cgstTotal += tax / 2;
-            sgstTotal += tax / 2;
+            if (taxRegime === 'igst') {
+                igstTotal += tax;
+            } else {
+                cgstTotal += tax / 2;
+                sgstTotal += tax / 2;
+            }
         });
 
-        // Round off calculations
-        var netTotalBeforeRound = taxableTotal + cgstTotal + sgstTotal;
+        var netTotalBeforeRound = taxableTotal + cgstTotal + sgstTotal + igstTotal;
         var netTotalRounded = Math.round(netTotalBeforeRound);
         var roundOff = netTotalRounded - netTotalBeforeRound;
 
         summaryTaxable.value = taxableTotal.toFixed(2);
         summaryCgst.value = cgstTotal.toFixed(2);
         summarySgst.value = sgstTotal.toFixed(2);
+        summaryIgst.value = igstTotal.toFixed(2);
         summaryRound.value = roundOff.toFixed(2);
         summaryGrand.value = netTotalRounded.toFixed(2);
 

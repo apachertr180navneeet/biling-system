@@ -586,6 +586,12 @@ if (!function_exists('getIndianRupeesInWords')) {
                                     <td class="summary-label">Taxable Amount</td>
                                     <td class="summary-value">₹ {{ number_format($partSalesInvoice->taxable_amount, 2) }}</td>
                                 </tr>
+                                @if(($partSalesInvoice->tax_regime ?? 'cgst_sgst') === 'igst')
+                                <tr>
+                                    <td class="summary-label">IGST Amount</td>
+                                    <td class="summary-value">₹ {{ number_format($partSalesInvoice->igst_amount ?? 0, 2) }}</td>
+                                </tr>
+                                @else
                                 <tr>
                                     <td class="summary-label">CGST Amount</td>
                                     <td class="summary-value">₹ {{ number_format($partSalesInvoice->cgst_amount, 2) }}</td>
@@ -594,6 +600,7 @@ if (!function_exists('getIndianRupeesInWords')) {
                                     <td class="summary-label">SGST Amount</td>
                                     <td class="summary-value">₹ {{ number_format($partSalesInvoice->sgst_amount, 2) }}</td>
                                 </tr>
+                                @endif
                                 <tr>
                                     <td class="summary-label">Round Off</td>
                                     <td class="summary-value">₹ {{ number_format($partSalesInvoice->round_off, 2) }}</td>
