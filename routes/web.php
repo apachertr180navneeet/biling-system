@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\SparePartStockController;
 use App\Http\Controllers\Admin\VehicleMasterController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\FinanceMasterController;
+use App\Http\Controllers\Admin\QuotationController;
 
 
 /*
@@ -133,6 +134,12 @@ Route::name('admin.')->prefix('admin')->group(function () {
         Route::get('part-sales-invoices/outstanding/list', [PartSalesInvoiceController::class, 'outstanding'])->name('part-sales-invoices.outstanding');
         Route::get('part-sales-invoices/outstanding/export', [PartSalesInvoiceController::class, 'exportOutstanding'])->name('part-sales-invoices.outstanding.export');
         Route::post('part-sales-invoices/{part_sales_invoice}/receive-payment', [PartSalesInvoiceController::class, 'receivePayment'])->name('part-sales-invoices.receive-payment');
+
+        Route::get('quotations/create/vehicle', [QuotationController::class, 'createVehicle'])->name('quotations.create-vehicle');
+        Route::get('quotations/create/parts', [QuotationController::class, 'createParts'])->name('quotations.create-parts');
+        Route::get('quotations/{quotation}/pdf', [QuotationController::class, 'generatePdf'])->name('quotations.pdf');
+        Route::get('quotations/{quotation}/whatsapp', [QuotationController::class, 'sendWhatsapp'])->name('quotations.whatsapp');
+        Route::resource('quotations', QuotationController::class)->except(['edit', 'update']);
 
         Route::get('reports/vehicle-ledger', [ReportController::class, 'vehicleLedger'])->name('reports.vehicle-ledger');
         Route::get('reports/part-ledger', [ReportController::class, 'partLedger'])->name('reports.part-ledger');

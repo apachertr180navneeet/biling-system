@@ -138,6 +138,13 @@
 			</a>
 		</li>
 
+		<li class="menu-item {{ request()->routeIs('admin.quotations.*') ? 'active' : ''}}">
+			<a href="{{route('admin.quotations.index')}}" class="menu-link">
+				<i class="menu-icon tf-icons bx bx-file"></i>
+				<div data-i18n="Quotation Master">Quotation Master</div>
+			</a>
+		</li>
+
 		<li class="menu-item {{ request()->routeIs('admin.spare-part-stocks.*') ? 'active' : ''}}">
 			<a href="{{route('admin.spare-part-stocks.index')}}" class="menu-link">
 				<i class="menu-icon tf-icons bx bx-box"></i>
