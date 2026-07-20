@@ -155,7 +155,7 @@ class VehiclePurchaseOrderController extends Controller
             return redirect()->route('admin.vehicle-purchase-orders.show', $vehiclePurchaseOrder)->with('error', 'Already fully received.');
         }
         $vehiclePurchaseOrder->load('items');
-        $receivedVehicles = \App\Models\VehicleInventory::where('vehicle_po_id', $vehiclePurchaseOrder->id)->get();
+        $receivedVehicles = VehicleInventory::where('vehicle_po_id', $vehiclePurchaseOrder->id)->get();
         return view('admin.vehicle_purchase_orders.receive', compact('vehiclePurchaseOrder', 'receivedVehicles'));
     }
 
