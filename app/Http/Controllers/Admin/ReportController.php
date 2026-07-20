@@ -6,6 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\VehicleInventory;
 use App\Models\SparePart;
 use App\Models\SparePartStockTransaction;
+use App\Models\VehicleSalesInvoice;
+use App\Models\PartSalesInvoice;
+use App\Models\VehiclePurchaseOrder;
+use App\Models\PurchaseOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -91,5 +95,199 @@ class ReportController extends Controller
         $ledger = $ledgerQuery->paginate(20)->withQueryString();
 
         return view('admin.reports.part_ledger', compact('summaries', 'ledger', 'search', 'type'));
+    }
+
+    public function outstandingLedger(Request $request)
+    {
+        $tab = $request->input('tab', 'sales');
+        $search = $request->input('search');
+        $type = $request->input('type', 'all');
+        $fromDate = $request->input('from_date');
+        $toDate = $request->input('to_date');
+
+        // Calculate total summaries
+        $totalOutstandingSalesVehicle = VehicleSalesInvoice::where('balance', '>', 0)->sum('balance');
+        $totalOutstandingSalesParts = PartSalesInvoice::where('balance', '>', 0)->sum('balance');
+        $totalOutstandingSales = $totalOutstandingSalesVehicle + $totalOutstandingSalesParts;
+
+        $totalOutstandingPurchasesVehicle = VehiclePurchaseOrder::where('balance', '>', 0)->sum('balance');
+        $totalOutstandingPurchasesParts = PurchaseOrder::where('balance', '>', 0)->sum('balance');
+        $totalOutstandingPurchases = $totalOutstandingPurchasesVehicle + $totalOutstandingPurchasesParts;
+
+        $ledger = null;
+
+        if ($tab === 'sales') {
+            $salesQuery1 = null;
+            $salesQuery2 = null;
+
+            if ($type === 'all' || $type === 'vehicle') {
+                $q = VehicleSalesInvoice::with('customer')
+                    ->where('balance', '>', 0)
+                    ->select(
+                        'id',
+                        'invoice_number as doc_number',
+                        'invoice_date as doc_date',
+                        'customer_name as party_name',
+                        'grand_total as total_amount',
+                        'received_amount',
+                        'balance',
+                        DB::raw("'vehicle' as sub_type")
+                    );
+                if ($search) {
+                    $q->where(function($sq) use ($search) {
+                        $sq->where('invoice_number', 'like', "%{$search}%")
+                           ->orWhere('customer_name', 'like', "%{$search}%")
+                           ->orWhere('customer_mobile', 'like', "%{$search}%");
+                    });
+                }
+                if ($fromDate) {
+                    $q->whereDate('invoice_date', '>=', $fromDate);
+                }
+                if ($toDate) {
+                    $q->whereDate('invoice_date', '<=', $toDate);
+                }
+                $salesQuery1 = $q;
+            }
+
+            if ($type === 'all' || $type === 'part') {
+                $q = PartSalesInvoice::with('customer')
+                    ->where('balance', '>', 0)
+                    ->select(
+                        'id',
+                        'invoice_number as doc_number',
+                        'invoice_date as doc_date',
+                        'customer_name as party_name',
+                        'total_amount',
+                        'received_amount',
+                        'balance',
+                        DB::raw("'part' as sub_type")
+                    );
+                if ($search) {
+                    $q->where(function($sq) use ($search) {
+                        $sq->where('invoice_number', 'like', "%{$search}%")
+                           ->orWhere('customer_name', 'like', "%{$search}%")
+                           ->orWhere('customer_mobile', 'like', "%{$search}%");
+                    });
+                }
+                if ($fromDate) {
+                    $q->whereDate('invoice_date', '>=', $fromDate);
+                }
+                if ($toDate) {
+                    $q->whereDate('invoice_date', '<=', $toDate);
+                }
+                $salesQuery2 = $q;
+            }
+
+            if ($salesQuery1 && $salesQuery2) {
+                $unionQuery = $salesQuery1->union($salesQuery2);
+                $unionSql = $unionQuery->toSql();
+                
+                $finalQuery = DB::table(DB::raw("({$unionSql}) as union_table"))
+                    ->mergeBindings($unionQuery->getQuery())
+                    ->orderBy('doc_date', 'desc')
+                    ->orderBy('id', 'desc');
+                
+                $ledger = $finalQuery->paginate(20)->withQueryString();
+            } elseif ($salesQuery1) {
+                $ledger = $salesQuery1->orderBy('invoice_date', 'desc')->orderBy('id', 'desc')->paginate(20)->withQueryString();
+            } elseif ($salesQuery2) {
+                $ledger = $salesQuery2->orderBy('invoice_date', 'desc')->orderBy('id', 'desc')->paginate(20)->withQueryString();
+            }
+        } else {
+            // tab === 'purchases'
+            $purchaseQuery1 = null;
+            $purchaseQuery2 = null;
+
+            if ($type === 'all' || $type === 'vehicle') {
+                $q = VehiclePurchaseOrder::with('supplier')
+                    ->where('balance', '>', 0)
+                    ->select(
+                        'id',
+                        'po_number as doc_number',
+                        'order_date as doc_date',
+                        DB::raw("(SELECT name FROM suppliers WHERE suppliers.id = vehicle_purchase_orders.supplier_id) as party_name"),
+                        'total_amount',
+                        'received_amount',
+                        'balance',
+                        DB::raw("'vehicle' as sub_type")
+                    );
+                if ($search) {
+                    $q->where(function($sq) use ($search) {
+                        $sq->where('po_number', 'like', "%{$search}%")
+                           ->orWhereHas('supplier', function($supq) use ($search) {
+                               $supq->where('name', 'like', "%{$search}%");
+                           });
+                    });
+                }
+                if ($fromDate) {
+                    $q->whereDate('order_date', '>=', $fromDate);
+                }
+                if ($toDate) {
+                    $q->whereDate('order_date', '<=', $toDate);
+                }
+                $purchaseQuery1 = $q;
+            }
+
+            if ($type === 'all' || $type === 'part') {
+                $q = PurchaseOrder::with('supplier')
+                    ->where('balance', '>', 0)
+                    ->select(
+                        'id',
+                        'order_number as doc_number',
+                        'order_date as doc_date',
+                        DB::raw("(SELECT name FROM suppliers WHERE suppliers.id = purchase_orders.supplier_id) as party_name"),
+                        'total_amount',
+                        'received_amount',
+                        'balance',
+                        DB::raw("'part' as sub_type")
+                    );
+                if ($search) {
+                    $q->where(function($sq) use ($search) {
+                        $sq->where('order_number', 'like', "%{$search}%")
+                           ->orWhereHas('supplier', function($supq) use ($search) {
+                               $supq->where('name', 'like', "%{$search}%");
+                           });
+                    });
+                }
+                if ($fromDate) {
+                    $q->whereDate('order_date', '>=', $fromDate);
+                }
+                if ($toDate) {
+                    $q->whereDate('order_date', '<=', $toDate);
+                }
+                $purchaseQuery2 = $q;
+            }
+
+            if ($purchaseQuery1 && $purchaseQuery2) {
+                $unionQuery = $purchaseQuery1->union($purchaseQuery2);
+                $unionSql = $unionQuery->toSql();
+                
+                $finalQuery = DB::table(DB::raw("({$unionSql}) as union_table"))
+                    ->mergeBindings($unionQuery->getQuery())
+                    ->orderBy('doc_date', 'desc')
+                    ->orderBy('id', 'desc');
+                
+                $ledger = $finalQuery->paginate(20)->withQueryString();
+            } elseif ($purchaseQuery1) {
+                $ledger = $purchaseQuery1->orderBy('order_date', 'desc')->orderBy('id', 'desc')->paginate(20)->withQueryString();
+            } elseif ($purchaseQuery2) {
+                $ledger = $purchaseQuery2->orderBy('order_date', 'desc')->orderBy('id', 'desc')->paginate(20)->withQueryString();
+            }
+        }
+
+        return view('admin.reports.outstanding_ledger', compact(
+            'tab',
+            'search',
+            'type',
+            'fromDate',
+            'toDate',
+            'totalOutstandingSales',
+            'totalOutstandingSalesVehicle',
+            'totalOutstandingSalesParts',
+            'totalOutstandingPurchases',
+            'totalOutstandingPurchasesVehicle',
+            'totalOutstandingPurchasesParts',
+            'ledger'
+        ));
     }
 }

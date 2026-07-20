@@ -160,5 +160,12 @@
 				<div data-i18n="Part Ledger">Part Ledger</div>
 			</a>
 		</li>
+
+		<li class="menu-item {{ request()->routeIs('admin.reports.outstanding-ledger') ? 'active' : ''}}">
+			<a href="{{route('admin.reports.outstanding-ledger')}}" class="menu-link">
+				<i class="menu-icon tf-icons bx bx-list-check"></i>
+				<div data-i18n="Outstanding Ledger">Outstanding Ledger</div>
+			</a>
+		</li>
 	</ul>
 </aside>

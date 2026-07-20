@@ -136,6 +136,7 @@ Route::name('admin.')->prefix('admin')->group(function () {
 
         Route::get('reports/vehicle-ledger', [ReportController::class, 'vehicleLedger'])->name('reports.vehicle-ledger');
         Route::get('reports/part-ledger', [ReportController::class, 'partLedger'])->name('reports.part-ledger');
+        Route::get('reports/outstanding-ledger', [ReportController::class, 'outstandingLedger'])->name('reports.outstanding-ledger');
 
 
 
