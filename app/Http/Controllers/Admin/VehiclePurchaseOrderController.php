@@ -377,6 +377,15 @@ class VehiclePurchaseOrderController extends Controller
         return view('admin.vehicle_inventories.index', compact('inventories'));
     }
 
+    public function toggleInventoryStatus(Request $request, $id)
+    {
+        $vehicle = VehicleInventory::findOrFail($id);
+        $newStatus = $vehicle->status === 'available' ? 'sold' : 'available';
+        $vehicle->update(['status' => $newStatus]);
+
+        return back()->withSuccess("Vehicle status updated to {$newStatus}.");
+    }
+
     private function getVehicleOptions(): array
     {
         $list = [];

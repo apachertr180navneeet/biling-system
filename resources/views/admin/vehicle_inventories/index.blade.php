@@ -20,6 +20,7 @@
                         <th>Purchase Price</th>
                         <th>Status</th>
                         <th>PO Ref</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -44,9 +45,19 @@
                             -
                             @endif
                         </td>
+                        <td>
+                            <form action="{{ route('admin.vehicle-inventories.toggle-status-sold', $i->id) }}" method="POST" class="d-inline">
+                                @csrf
+                                @if($i->status == 'available')
+                                <button type="submit" class="btn btn-xs btn-outline-danger" onclick="return confirm('Mark this vehicle as Sold?')">Mark Sold</button>
+                                @else
+                                <button type="submit" class="btn btn-xs btn-outline-success" onclick="return confirm('Mark this vehicle as Available?')">Mark Available</button>
+                                @endif
+                            </form>
+                        </td>
                     </tr>
                     @empty
-                    <tr><td colspan="7" class="text-center">No vehicles in inventory.</td></tr>
+                    <tr><td colspan="8" class="text-center">No vehicles in inventory.</td></tr>
                     @endforelse
                 </tbody>
             </table>

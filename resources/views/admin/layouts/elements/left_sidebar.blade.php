@@ -124,9 +124,20 @@
 			</a>
 		</li>
 
+		<li class="menu-header small text-uppercase"><span class="menu-header-text">Reports</span></li>
 
+		<li class="menu-item {{ request()->routeIs('admin.reports.vehicle-ledger') ? 'active' : ''}}">
+			<a href="{{route('admin.reports.vehicle-ledger')}}" class="menu-link">
+				<i class="menu-icon tf-icons bx bxs-report"></i>
+				<div data-i18n="Vehicle Ledger">Vehicle Ledger</div>
+			</a>
+		</li>
 
-	</ul>
-
+		<li class="menu-item {{ request()->routeIs('admin.reports.part-ledger') ? 'active' : ''}}">
+			<a href="{{route('admin.reports.part-ledger')}}" class="menu-link">
+				<i class="menu-icon tf-icons bx bx-receipt"></i>
+				<div data-i18n="Part Ledger">Part Ledger</div>
+			</a>
+		</li>
 	</ul>
 </aside>

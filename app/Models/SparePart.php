@@ -14,4 +14,9 @@ class SparePart extends Model
         'part_no', 'name',
         'selling_price', 'mrp', 'unit', 'is_active',
     ];
+
+    public function transactions(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(SparePartStockTransaction::class, 'spare_part_id');
+    }
 }

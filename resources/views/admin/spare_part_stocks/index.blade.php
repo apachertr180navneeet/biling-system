@@ -5,7 +5,10 @@
         <span class="text-muted fw-light">Admin /</span> Spare Part Inventory
     </h4>
     <div class="card">
-        <div class="card-header"><h5 class="mb-0">Stock Levels</h5></div>
+        <div class="card-header d-flex align-items-center justify-content-between">
+            <h5 class="mb-0">Stock Levels</h5>
+            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#adjustStockModal">Adjust Stock</button>
+        </div>
         <div class="table-responsive text-nowrap">
             <table class="table table-hover">
                 <thead>
@@ -53,6 +56,51 @@
             </table>
         </div>
         <div class="card-footer">{{ $stocks->links() }}</div>
+    </div>
+</div>
+
+<!-- Adjust Stock Modal -->
+<div class="modal fade" id="adjustStockModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form action="{{ route('admin.spare-part-stocks.adjust') }}" method="POST">
+            @csrf
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Adjust Part Stock</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="spare_part_id" class="form-label">Select Part</label>
+                        <select name="spare_part_id" id="spare_part_id" class="form-select" required>
+                            <option value="">-- Select Spare Part --</option>
+                            @foreach($spareParts as $p)
+                            <option value="{{ $p->id }}">{{ $p->part_no }} - {{ $p->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="adjustment_type" class="form-label">Adjustment Type</label>
+                        <select name="adjustment_type" id="adjustment_type" class="form-select" required>
+                            <option value="in">Stock In (+)</option>
+                            <option value="out">Stock Out (-)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="quantity" class="form-label">Quantity</label>
+                        <input type="number" name="quantity" id="quantity" class="form-control" min="1" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Notes / Reference</label>
+                        <input type="text" name="notes" id="notes" class="form-control" placeholder="e.g. Sold to customer, Manual count adjustment">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </div>
+        </form>
     </div>
 </div>
 @endsection

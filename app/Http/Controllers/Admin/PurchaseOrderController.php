@@ -8,6 +8,7 @@ use App\Models\PurchaseOrderItem;
 use App\Models\Supplier;
 use App\Models\SparePart;
 use App\Models\SparePartStock;
+use App\Models\SparePartStockTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -134,6 +135,13 @@ class PurchaseOrderController extends Controller
                     $stock = SparePartStock::where('spare_part_id', $item->spare_part_id)->lockForUpdate()->first();
                     if ($stock) {
                         $stock->decrement('quantity', $item->received_quantity);
+                        SparePartStockTransaction::create([
+                            'spare_part_id' => $item->spare_part_id,
+                            'transaction_type' => 'out',
+                            'quantity' => $item->received_quantity,
+                            'reference_no' => $purchaseOrder->order_number,
+                            'notes' => 'Stock out due to Purchase Order deletion',
+                        ]);
                     }
                 }
             }
@@ -190,6 +198,14 @@ class PurchaseOrderController extends Controller
                     );
                     $stock->increment('quantity', $delta);
                     $stock->update(['purchase_price' => $poItem->unit_price, 'purchase_order_id' => $purchaseOrder->id]);
+                    
+                    SparePartStockTransaction::create([
+                        'spare_part_id' => $poItem->spare_part_id,
+                        'transaction_type' => 'in',
+                        'quantity' => $delta,
+                        'reference_no' => $purchaseOrder->order_number,
+                        'notes' => 'Received via Purchase Order',
+                    ]);
                 }
 
                 if ($newReceived < $poItem->quantity) {

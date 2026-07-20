@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\PurchaseOrderController;
 use App\Http\Controllers\Admin\VehiclePurchaseOrderController;
 use App\Http\Controllers\Admin\SparePartStockController;
 use App\Http\Controllers\Admin\VehicleMasterController;
+use App\Http\Controllers\Admin\ReportController;
 
 
 /*
@@ -90,6 +91,12 @@ Route::name('admin.')->prefix('admin')->group(function () {
         Route::get('spare-part-stocks', [SparePartStockController::class, 'index'])->name('spare-part-stocks.index');
         Route::post('spare-part-stocks/{spare_part_stock}/toggle-status', [SparePartStockController::class, 'toggleStatus'])->name('spare-part-stocks.toggle-status');
         Route::post('spare-part-stocks/{spare_part_stock}/destroy', [SparePartStockController::class, 'destroy'])->name('spare-part-stocks.destroy');
+        Route::post('spare-part-stocks/adjust', [SparePartStockController::class, 'adjust'])->name('spare-part-stocks.adjust');
+
+        Route::post('vehicle-inventories/{vehicle_inventory}/toggle-status-sold', [VehiclePurchaseOrderController::class, 'toggleInventoryStatus'])->name('vehicle-inventories.toggle-status-sold');
+
+        Route::get('reports/vehicle-ledger', [ReportController::class, 'vehicleLedger'])->name('reports.vehicle-ledger');
+        Route::get('reports/part-ledger', [ReportController::class, 'partLedger'])->name('reports.part-ledger');
 
 
 
