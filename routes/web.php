@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\PurchaseOrderController;
 use App\Http\Controllers\Admin\VehiclePurchaseOrderController;
 use App\Http\Controllers\Admin\VehicleSalesInvoiceController;
+use App\Http\Controllers\Admin\PartSalesInvoiceController;
 use App\Http\Controllers\Admin\SparePartStockController;
 use App\Http\Controllers\Admin\VehicleMasterController;
 use App\Http\Controllers\Admin\ReportController;
@@ -97,6 +98,7 @@ Route::name('admin.')->prefix('admin')->group(function () {
         Route::post('vehicle-inventories/{vehicle_inventory}/toggle-status-sold', [VehiclePurchaseOrderController::class, 'toggleInventoryStatus'])->name('vehicle-inventories.toggle-status-sold');
 
         Route::resource('vehicle-sales-invoices', VehicleSalesInvoiceController::class)->except(['edit', 'update']);
+        Route::resource('part-sales-invoices', PartSalesInvoiceController::class)->except(['edit', 'update']);
 
         Route::get('reports/vehicle-ledger', [ReportController::class, 'vehicleLedger'])->name('reports.vehicle-ledger');
         Route::get('reports/part-ledger', [ReportController::class, 'partLedger'])->name('reports.part-ledger');
