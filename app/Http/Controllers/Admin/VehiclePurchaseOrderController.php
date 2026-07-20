@@ -509,6 +509,42 @@ class VehiclePurchaseOrderController extends Controller
         return back()->withSuccess("Vehicle status updated to {$newStatus}.");
     }
 
+    public function sendWhatsapp(VehiclePurchaseOrder $vehiclePurchaseOrder)
+    {
+        $vehiclePurchaseOrder->load('supplier', 'items');
+
+        $phone = $vehiclePurchaseOrder->supplier->phone ?? '';
+        $phone = preg_replace('/[^0-9]/', '', $phone);
+
+        if (empty($phone)) {
+            return back()->with('error', 'Supplier phone number is not available.');
+        }
+
+        if (strlen($phone) == 10) {
+            $phone = '91' . $phone;
+        }
+
+        $itemsList = '';
+        foreach ($vehiclePurchaseOrder->items as $i => $item) {
+            $itemsList .= ($i + 1) . ". " . $item->vehicle_description . " x " . $item->quantity . "\n";
+        }
+
+        $message = "*VEHICLE PURCHASE ORDER - {$vehiclePurchaseOrder->po_number}*\n"
+            . "━━━━━━━━━━━━━━━━━━━━━━\n"
+            . "📅 *Date:* {$vehiclePurchaseOrder->order_date->format('d/m/Y')}\n"
+            . "🏢 *Supplier:* " . ($vehiclePurchaseOrder->supplier->name ?? '-') . "\n"
+            . "📦 *Items:*\n{$itemsList}"
+            . "━━━━━━━━━━━━━━━━━━━━━━\n"
+            . "💰 *Total:* ₹" . number_format($vehiclePurchaseOrder->total_amount, 2) . "\n"
+            . "📌 *Status:* " . ucfirst($vehiclePurchaseOrder->status) . "\n"
+            . "━━━━━━━━━━━━━━━━━━━━━━\n\n"
+            . "Please find the attached PO details. Kindly confirm.";
+
+        $whatsappUrl = "https://wa.me/{$phone}?text=" . urlencode($message);
+
+        return redirect($whatsappUrl);
+    }
+
     private function getVehicleOptions(): array
     {
         $list = [];

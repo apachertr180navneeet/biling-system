@@ -290,7 +290,10 @@ class PurchaseOrderController extends Controller
     {
         $purchaseOrder->load('supplier', 'items.sparePart', 'createdBy');
 
-        $pdf = Pdf::loadView('admin.purchase_orders.pdf', ['order' => $purchaseOrder]);
+        $pdf = Pdf::loadView('admin.purchase_orders.pdf', [
+            'purchaseOrder' => $purchaseOrder,
+            'order' => $purchaseOrder
+        ]);
         $pdf->setPaper('a4');
         $pdf->setOption('isRemoteEnabled', true);
 
@@ -299,21 +302,40 @@ class PurchaseOrderController extends Controller
 
     public function sendWhatsapp(PurchaseOrder $purchaseOrder)
     {
-        $purchaseOrder->load('supplier');
+        $purchaseOrder->load('supplier', 'items.sparePart');
 
         $phone = $purchaseOrder->supplier->phone ?? '';
         $phone = preg_replace('/[^0-9]/', '', $phone);
+
+        if (empty($phone)) {
+            return back()->with('error', 'Supplier phone number is not available.');
+        }
 
         if (strlen($phone) == 10) {
             $phone = '91' . $phone;
         }
 
-        $message = "Purchase Order: {$purchaseOrder->order_number}\n"
-            . "Date: {$purchaseOrder->order_date->format('d/m/Y')}\n"
-            . "Supplier: " . ($purchaseOrder->supplier->name ?? '-') . "\n"
-            . "Total: ₹" . number_format($purchaseOrder->total_amount, 2) . "\n"
-            . "Status: " . ucfirst($purchaseOrder->status) . "\n\n"
-            . "Please find the attached Purchase Order PDF.";
+        $itemsList = '';
+        foreach ($purchaseOrder->items as $i => $item) {
+            $sparePart = $item->sparePart;
+            $partName = $sparePart ? ($sparePart->name ?? 'N/A') : 'N/A';
+            $partNo = $sparePart ? ($sparePart->part_no ?? '') : '';
+            $itemsList .= ($i + 1) . ". " . $partName . " (" . $partNo . ") x " . $item->quantity . "\n";
+        }
+
+        $pdfUrl = route('admin.purchase-orders.pdf', $purchaseOrder);
+
+        $message = "*PURCHASE ORDER - {$purchaseOrder->order_number}*\n"
+            . "━━━━━━━━━━━━━━━━━━━━━━\n"
+            . "📅 *Date:* {$purchaseOrder->order_date->format('d/m/Y')}\n"
+            . "🏢 *Supplier:* " . ($purchaseOrder->supplier->name ?? '-') . "\n"
+            . "📦 *Items:*\n{$itemsList}"
+            . "━━━━━━━━━━━━━━━━━━━━━━\n"
+            . "💰 *Total:* ₹" . number_format($purchaseOrder->total_amount, 2) . "\n"
+            . "📌 *Status:* " . ucfirst($purchaseOrder->status) . "\n"
+            . "━━━━━━━━━━━━━━━━━━━━━━\n\n"
+            . "📄 *PDF Link:* {$pdfUrl}\n\n"
+            . "Please find the attached PO document. Kindly confirm.";
 
         $whatsappUrl = "https://wa.me/{$phone}?text=" . urlencode($message);
 

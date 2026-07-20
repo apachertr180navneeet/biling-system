@@ -13,7 +13,7 @@
                 @if($purchaseOrder->status != 'received')
                 <a href="{{ route('admin.purchase-orders.receive', $purchaseOrder) }}" class="btn btn-sm btn-primary"><i class="bx bx-import"></i> Receive Items</a>
                 @endif
-                <a href="{{ route('admin.purchase-orders.pdf', $purchaseOrder) }}" class="btn btn-sm btn-danger" target="_blank"><i class="bx bx-file-pdf"></i> Download PDF</a>
+                <a href="{{ route('admin.purchase-orders.pdf', $purchaseOrder) }}" class="btn btn-sm btn-danger" target="_blank"><i class="bx bxs-file-pdf"></i> Download PDF</a>
                 <a href="{{ route('admin.purchase-orders.whatsapp', $purchaseOrder) }}" class="btn btn-sm btn-success" target="_blank"><i class="bx bxl-whatsapp"></i> Send to WhatsApp</a>
                 <a href="{{ route('admin.purchase-orders.index') }}" class="btn btn-secondary">Back</a>
             </div>
