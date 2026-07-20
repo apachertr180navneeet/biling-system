@@ -19,7 +19,10 @@
                         <input type="text" name="search" class="form-control" placeholder="Search by PO No or Supplier Name" value="{{ $search ?? '' }}">
                     </div>
                     <div class="col-md-3">
-                        <button type="submit" class="btn btn-primary w-100"><i class="bx bx-search"></i> Search</button>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary flex-grow-1"><i class="bx bx-search"></i> Search</button>
+                            <a href="{{ route('admin.vehicle-purchase-orders.index') }}" class="btn btn-outline-secondary"><i class="bx bx-reset"></i> Reset</a>
+                        </div>
                     </div>
                 </div>
             </form>
@@ -29,7 +32,10 @@
     <div class="card">
         <div class="card-header d-flex align-items-center justify-content-between">
             <h5 class="mb-0">Vehicle Purchase Orders</h5>
-            <a href="{{ route('admin.vehicle-purchase-orders.create') }}" class="btn btn-primary">Add New</a>
+            <div>
+                <a href="{{ route('admin.vehicle-purchase-orders.export', ['search' => request('search')]) }}" class="btn btn-outline-success me-2"><i class="bx bx-file-export"></i> Export</a>
+                <a href="{{ route('admin.vehicle-purchase-orders.create') }}" class="btn btn-primary">Add New</a>
+            </div>
         </div>
         <div class="table-responsive text-nowrap">
             <table class="table table-hover">

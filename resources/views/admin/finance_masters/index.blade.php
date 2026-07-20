@@ -8,6 +8,7 @@
         <div>
             <a href="{{ route('admin.finance-masters.import-template') }}" class="btn btn-outline-secondary me-2"><i class="bx bx-download"></i> Template</a>
             <button class="btn btn-outline-primary me-2" data-bs-toggle="modal" data-bs-target="#importModal"><i class="bx bx-upload"></i> Import</button>
+            <a href="{{ route('admin.finance-masters.export', ['search' => request('search')]) }}" class="btn btn-outline-success me-2"><i class="bx bx-file-export"></i> Export</a>
             <a href="{{ route('admin.finance-masters.create') }}" class="btn btn-primary"><i class="bx bx-plus"></i> New</a>
         </div>
     </div>
@@ -33,7 +34,10 @@
                         <input type="text" name="search" class="form-control" placeholder="Search by Name or Description" value="{{ $search ?? '' }}">
                     </div>
                     <div class="col-md-3">
-                        <button type="submit" class="btn btn-primary w-100"><i class="bx bx-search"></i> Search</button>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary flex-grow-1"><i class="bx bx-search"></i> Search</button>
+                            <a href="{{ route('admin.finance-masters.index') }}" class="btn btn-outline-secondary"><i class="bx bx-reset"></i> Reset</a>
+                        </div>
                     </div>
                 </div>
             </form>

@@ -11,6 +11,8 @@ use App\Models\SparePartStock;
 use App\Models\SparePartStockTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xls;
 
 class PartSalesInvoiceController extends Controller
 {
@@ -32,6 +34,60 @@ class PartSalesInvoiceController extends Controller
         $invoices = $query->paginate(20);
 
         return view('admin.part_sales_invoices.index', compact('invoices', 'search'));
+    }
+
+    public function export(Request $request)
+    {
+        $search = $request->input('search');
+        $query = PartSalesInvoice::with('customer', 'items')
+            ->orderBy('invoice_date', 'desc')
+            ->orderBy('id', 'desc');
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('invoice_number', 'like', "%{$search}%")
+                  ->orWhere('customer_name', 'like', "%{$search}%")
+                  ->orWhere('customer_mobile', 'like', "%{$search}%");
+            });
+        }
+
+        $invoices = $query->get();
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setCellValue('A1', 'Invoice No');
+        $sheet->setCellValue('B1', 'Date');
+        $sheet->setCellValue('C1', 'Customer Name');
+        $sheet->setCellValue('D1', 'Customer Mobile');
+        $sheet->setCellValue('E1', 'GSTIN');
+        $sheet->setCellValue('F1', 'Items');
+        $sheet->setCellValue('G1', 'Taxable Amount');
+        $sheet->setCellValue('H1', 'CGST');
+        $sheet->setCellValue('I1', 'SGST');
+        $sheet->setCellValue('J1', 'Total');
+        $sheet->setCellValue('K1', 'Payment Mode');
+
+        $row = 2;
+        foreach ($invoices as $inv) {
+            $sheet->setCellValue('A' . $row, $inv->invoice_number);
+            $sheet->setCellValue('B' . $row, $inv->invoice_date->format('d-m-Y'));
+            $sheet->setCellValue('C' . $row, $inv->customer_name);
+            $sheet->setCellValue('D' . $row, $inv->customer_mobile);
+            $sheet->setCellValue('E' . $row, $inv->customer_gstin);
+            $sheet->setCellValue('F' . $row, $inv->items->count());
+            $sheet->setCellValue('G' . $row, $inv->taxable_amount);
+            $sheet->setCellValue('H' . $row, $inv->cgst_amount);
+            $sheet->setCellValue('I' . $row, $inv->sgst_amount);
+            $sheet->setCellValue('J' . $row, $inv->total_amount);
+            $sheet->setCellValue('K' . $row, $inv->payment_mode);
+            $row++;
+        }
+
+        $writer = new Xls($spreadsheet);
+        $path = storage_path('app/part_sales_invoices_export.xls');
+        $writer->save($path);
+
+        return response()->download($path, 'part_sales_invoices_' . date('Ymd_His') . '.xls')->deleteFileAfterSend(true);
     }
 
     public function create()

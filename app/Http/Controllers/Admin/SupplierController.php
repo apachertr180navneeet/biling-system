@@ -30,6 +30,52 @@ class SupplierController extends Controller
         return view('admin.suppliers.index', compact('suppliers', 'search'));
     }
 
+    public function export(Request $request)
+    {
+        $search = $request->input('search');
+        $query = Supplier::orderBy('name');
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('contact_person', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('gstin', 'like', "%{$search}%");
+            });
+        }
+
+        $suppliers = $query->get();
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setCellValue('A1', 'Name');
+        $sheet->setCellValue('B1', 'GSTIN');
+        $sheet->setCellValue('C1', 'Address');
+        $sheet->setCellValue('D1', 'Contact Person');
+        $sheet->setCellValue('E1', 'Phone');
+        $sheet->setCellValue('F1', 'Email');
+        $sheet->setCellValue('G1', 'Status');
+
+        $row = 2;
+        foreach ($suppliers as $s) {
+            $sheet->setCellValue('A' . $row, $s->name);
+            $sheet->setCellValue('B' . $row, $s->gstin);
+            $sheet->setCellValue('C' . $row, $s->address);
+            $sheet->setCellValue('D' . $row, $s->contact_person);
+            $sheet->setCellValue('E' . $row, $s->phone);
+            $sheet->setCellValue('F' . $row, $s->email);
+            $sheet->setCellValue('G' . $row, $s->is_active ? 'Active' : 'Inactive');
+            $row++;
+        }
+
+        $writer = new Xls($spreadsheet);
+        $path = storage_path('app/suppliers_export.xls');
+        $writer->save($path);
+
+        return response()->download($path, 'suppliers_' . date('Ymd_His') . '.xls')->deleteFileAfterSend(true);
+    }
+
     public function create()
     {
         return view('admin.suppliers.create');

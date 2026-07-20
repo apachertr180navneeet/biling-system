@@ -12,6 +12,8 @@ use App\Models\SparePartStockTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xls;
 
 class PurchaseOrderController extends Controller
 {
@@ -31,6 +33,51 @@ class PurchaseOrderController extends Controller
 
         $orders = $query->paginate(20);
         return view('admin.purchase_orders.index', compact('orders', 'search'));
+    }
+
+    public function export(Request $request)
+    {
+        $search = $request->input('search');
+        $query = PurchaseOrder::with('supplier', 'items')->orderBy('created_at', 'desc');
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('order_number', 'like', "%{$search}%")
+                  ->orWhereHas('supplier', function($sq) use ($search) {
+                      $sq->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $orders = $query->get();
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setCellValue('A1', 'Order No');
+        $sheet->setCellValue('B1', 'Supplier');
+        $sheet->setCellValue('C1', 'Order Date');
+        $sheet->setCellValue('D1', 'Items');
+        $sheet->setCellValue('E1', 'Total Amount');
+        $sheet->setCellValue('F1', 'Status');
+        $sheet->setCellValue('G1', 'Active');
+
+        $row = 2;
+        foreach ($orders as $o) {
+            $sheet->setCellValue('A' . $row, $o->order_number);
+            $sheet->setCellValue('B' . $row, $o->supplier->name ?? '-');
+            $sheet->setCellValue('C' . $row, $o->order_date->format('d-m-Y'));
+            $sheet->setCellValue('D' . $row, $o->items->count());
+            $sheet->setCellValue('E' . $row, $o->total_amount);
+            $sheet->setCellValue('F' . $row, ucfirst($o->status));
+            $sheet->setCellValue('G' . $row, $o->is_active ? 'Active' : 'Inactive');
+            $row++;
+        }
+
+        $writer = new Xls($spreadsheet);
+        $path = storage_path('app/purchase_orders_export.xls');
+        $writer->save($path);
+
+        return response()->download($path, 'purchase_orders_' . date('Ymd_His') . '.xls')->deleteFileAfterSend(true);
     }
 
     public function create()

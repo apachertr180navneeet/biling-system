@@ -27,6 +27,47 @@ class SparePartController extends Controller
         return view('admin.spare_parts.index', compact('parts', 'search'));
     }
 
+    public function export(Request $request)
+    {
+        $search = $request->input('search');
+        $query = SparePart::orderBy('name');
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('part_no', 'like', "%{$search}%")
+                  ->orWhere('name', 'like', "%{$search}%");
+            });
+        }
+
+        $parts = $query->get();
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setCellValue('A1', 'Part No');
+        $sheet->setCellValue('B1', 'Name');
+        $sheet->setCellValue('C1', 'MRP');
+        $sheet->setCellValue('D1', 'Selling Price');
+        $sheet->setCellValue('E1', 'Unit');
+        $sheet->setCellValue('F1', 'Status');
+
+        $row = 2;
+        foreach ($parts as $p) {
+            $sheet->setCellValue('A' . $row, $p->part_no);
+            $sheet->setCellValue('B' . $row, $p->name);
+            $sheet->setCellValue('C' . $row, $p->mrp);
+            $sheet->setCellValue('D' . $row, $p->selling_price);
+            $sheet->setCellValue('E' . $row, $p->unit);
+            $sheet->setCellValue('F' . $row, $p->is_active ? 'Active' : 'Inactive');
+            $row++;
+        }
+
+        $writer = new Xls($spreadsheet);
+        $path = storage_path('app/spare_parts_export.xls');
+        $writer->save($path);
+
+        return response()->download($path, 'spare_parts_' . date('Ymd_His') . '.xls')->deleteFileAfterSend(true);
+    }
+
     public function create()
     {
         return view('admin.spare_parts.create');

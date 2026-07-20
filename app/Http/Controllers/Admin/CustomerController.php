@@ -31,6 +31,63 @@ class CustomerController extends Controller
         return view('admin.customers.index', compact('customers', 'search'));
     }
 
+    public function export(Request $request)
+    {
+        $search = $request->input('search');
+        $query = Customer::orderBy('first_name');
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('first_name', 'like', "%{$search}%")
+                  ->orWhere('last_name', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('gstin', 'like', "%{$search}%")
+                  ->orWhere('company_name', 'like', "%{$search}%");
+            });
+        }
+
+        $customers = $query->get();
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setCellValue('A1', 'Type');
+        $sheet->setCellValue('B1', 'First Name');
+        $sheet->setCellValue('C1', 'Last Name');
+        $sheet->setCellValue('D1', 'Company Name');
+        $sheet->setCellValue('E1', 'Phone');
+        $sheet->setCellValue('F1', 'Email');
+        $sheet->setCellValue('G1', 'Address');
+        $sheet->setCellValue('H1', 'State');
+        $sheet->setCellValue('I1', 'GSTIN');
+        $sheet->setCellValue('J1', 'PAN No');
+        $sheet->setCellValue('K1', 'Aadhaar No');
+        $sheet->setCellValue('L1', 'Status');
+
+        $row = 2;
+        foreach ($customers as $c) {
+            $sheet->setCellValue('A' . $row, $c->type);
+            $sheet->setCellValue('B' . $row, $c->first_name);
+            $sheet->setCellValue('C' . $row, $c->last_name);
+            $sheet->setCellValue('D' . $row, $c->company_name);
+            $sheet->setCellValue('E' . $row, $c->phone);
+            $sheet->setCellValue('F' . $row, $c->email);
+            $sheet->setCellValue('G' . $row, $c->address);
+            $sheet->setCellValue('H' . $row, $c->state);
+            $sheet->setCellValue('I' . $row, $c->gstin);
+            $sheet->setCellValue('J' . $row, $c->pan_no);
+            $sheet->setCellValue('K' . $row, $c->aadhaar_no);
+            $sheet->setCellValue('L' . $row, $c->is_active ? 'Active' : 'Inactive');
+            $row++;
+        }
+
+        $writer = new Xls($spreadsheet);
+        $path = storage_path('app/customers_export.xls');
+        $writer->save($path);
+
+        return response()->download($path, 'customers_' . date('Ymd_His') . '.xls')->deleteFileAfterSend(true);
+    }
+
     public function create()
     {
         return view('admin.customers.create');

@@ -14,7 +14,10 @@
                         <input type="text" name="search" class="form-control" placeholder="Search by Part No or Part Name" value="{{ $search ?? '' }}">
                     </div>
                     <div class="col-md-3">
-                        <button type="submit" class="btn btn-primary w-100"><i class="bx bx-search"></i> Search</button>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary flex-grow-1"><i class="bx bx-search"></i> Search</button>
+                            <a href="{{ route('admin.spare-part-stocks.index') }}" class="btn btn-outline-secondary"><i class="bx bx-reset"></i> Reset</a>
+                        </div>
                     </div>
                 </div>
             </form>
@@ -24,7 +27,10 @@
     <div class="card">
         <div class="card-header d-flex align-items-center justify-content-between">
             <h5 class="mb-0">Stock Levels</h5>
-            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#adjustStockModal">Adjust Stock</button>
+            <div>
+                <a href="{{ route('admin.spare-part-stocks.export', ['search' => request('search')]) }}" class="btn btn-outline-success btn-sm me-2"><i class="bx bx-file-export"></i> Export</a>
+                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#adjustStockModal">Adjust Stock</button>
+            </div>
         </div>
         <div class="table-responsive text-nowrap">
             <table class="table table-hover">

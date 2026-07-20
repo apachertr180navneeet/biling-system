@@ -11,6 +11,8 @@ use App\Models\VehicleMaster;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xls;
 
 class VehiclePurchaseOrderController extends Controller
 {
@@ -30,6 +32,51 @@ class VehiclePurchaseOrderController extends Controller
 
         $orders = $query->paginate(20);
         return view('admin.vehicle_purchase_orders.index', compact('orders', 'search'));
+    }
+
+    public function export(Request $request)
+    {
+        $search = $request->input('search');
+        $query = VehiclePurchaseOrder::with('supplier')->withCount('items')->orderBy('created_at', 'desc');
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('po_number', 'like', "%{$search}%")
+                  ->orWhereHas('supplier', function($sq) use ($search) {
+                      $sq->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $orders = $query->get();
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setCellValue('A1', 'PO No');
+        $sheet->setCellValue('B1', 'Supplier');
+        $sheet->setCellValue('C1', 'Order Date');
+        $sheet->setCellValue('D1', 'Items');
+        $sheet->setCellValue('E1', 'Total Amount');
+        $sheet->setCellValue('F1', 'Status');
+        $sheet->setCellValue('G1', 'Active');
+
+        $row = 2;
+        foreach ($orders as $o) {
+            $sheet->setCellValue('A' . $row, $o->po_number);
+            $sheet->setCellValue('B' . $row, $o->supplier->name ?? '-');
+            $sheet->setCellValue('C' . $row, $o->order_date->format('d-m-Y'));
+            $sheet->setCellValue('D' . $row, $o->items_count);
+            $sheet->setCellValue('E' . $row, $o->total_amount);
+            $sheet->setCellValue('F' . $row, ucfirst($o->status));
+            $sheet->setCellValue('G' . $row, $o->is_active ? 'Active' : 'Inactive');
+            $row++;
+        }
+
+        $writer = new Xls($spreadsheet);
+        $path = storage_path('app/vehicle_purchase_orders_export.xls');
+        $writer->save($path);
+
+        return response()->download($path, 'vehicle_purchase_orders_' . date('Ymd_His') . '.xls')->deleteFileAfterSend(true);
     }
 
     public function create()
@@ -398,6 +445,59 @@ class VehiclePurchaseOrderController extends Controller
 
         $inventories = $query->paginate(20);
         return view('admin.vehicle_inventories.index', compact('inventories', 'search'));
+    }
+
+    public function exportInventory(Request $request)
+    {
+        $search = $request->input('search');
+        $query = VehicleInventory::where('is_active', true)->orderBy('created_at', 'desc');
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('vehicle_description', 'like', "%{$search}%")
+                  ->orWhere('chassis_number', 'like', "%{$search}%")
+                  ->orWhere('motor_number', 'like', "%{$search}%")
+                  ->orWhere('battery_number', 'like', "%{$search}%");
+            });
+        }
+
+        $inventories = $query->get();
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setCellValue('A1', 'Vehicle');
+        $sheet->setCellValue('B1', 'Chassis No');
+        $sheet->setCellValue('C1', 'Motor No');
+        $sheet->setCellValue('D1', 'Battery No');
+        $sheet->setCellValue('E1', 'Charger No');
+        $sheet->setCellValue('F1', 'Controller No');
+        $sheet->setCellValue('G1', 'Convertor No');
+        $sheet->setCellValue('H1', 'Manual No');
+        $sheet->setCellValue('I1', 'Purchase Price');
+        $sheet->setCellValue('J1', 'Status');
+        $sheet->setCellValue('K1', 'PO Ref');
+
+        $row = 2;
+        foreach ($inventories as $i) {
+            $sheet->setCellValue('A' . $row, $i->vehicle_description);
+            $sheet->setCellValue('B' . $row, $i->chassis_number);
+            $sheet->setCellValue('C' . $row, $i->motor_number);
+            $sheet->setCellValue('D' . $row, $i->battery_number);
+            $sheet->setCellValue('E' . $row, $i->charger_number);
+            $sheet->setCellValue('F' . $row, $i->controller_number);
+            $sheet->setCellValue('G' . $row, $i->convertor_number);
+            $sheet->setCellValue('H' . $row, $i->manual_number);
+            $sheet->setCellValue('I' . $row, $i->purchase_price);
+            $sheet->setCellValue('J' . $row, ucfirst($i->status));
+            $sheet->setCellValue('K' . $row, $i->purchaseOrder->po_number ?? '-');
+            $row++;
+        }
+
+        $writer = new Xls($spreadsheet);
+        $path = storage_path('app/vehicle_inventories_export.xls');
+        $writer->save($path);
+
+        return response()->download($path, 'vehicle_inventories_' . date('Ymd_His') . '.xls')->deleteFileAfterSend(true);
     }
 
     public function toggleInventoryStatus(Request $request, $id)

@@ -27,6 +27,41 @@ class FinanceMasterController extends Controller
         return view('admin.finance_masters.index', compact('financeMasters', 'search'));
     }
 
+    public function export(Request $request)
+    {
+        $search = $request->input('search');
+        $query = FinanceMaster::orderBy('name');
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        $financeMasters = $query->get();
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setCellValue('A1', 'Name');
+        $sheet->setCellValue('B1', 'Description');
+        $sheet->setCellValue('C1', 'Status');
+
+        $row = 2;
+        foreach ($financeMasters as $f) {
+            $sheet->setCellValue('A' . $row, $f->name);
+            $sheet->setCellValue('B' . $row, $f->description);
+            $sheet->setCellValue('C' . $row, $f->is_active ? 'Active' : 'Inactive');
+            $row++;
+        }
+
+        $writer = new Xls($spreadsheet);
+        $path = storage_path('app/finance_masters_export.xls');
+        $writer->save($path);
+
+        return response()->download($path, 'finance_masters_' . date('Ymd_His') . '.xls')->deleteFileAfterSend(true);
+    }
+
     public function create()
     {
         return view('admin.finance_masters.create');

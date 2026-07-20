@@ -7,6 +7,8 @@ use App\Models\SparePartStock;
 use App\Models\SparePartStockTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xls;
 
 class SparePartStockController extends Controller
 {
@@ -25,6 +27,54 @@ class SparePartStockController extends Controller
         $stocks = $query->paginate(20);
         $spareParts = \App\Models\SparePart::where('is_active', true)->orderBy('name')->get();
         return view('admin.spare_part_stocks.index', compact('stocks', 'spareParts', 'search'));
+    }
+
+    public function export(Request $request)
+    {
+        $search = $request->input('search');
+        $query = SparePartStock::with('sparePart', 'purchaseOrder')->orderBy('created_at', 'desc');
+
+        if ($search) {
+            $query->whereHas('sparePart', function($q) use ($search) {
+                $q->where('part_no', 'like', "%{$search}%")
+                  ->orWhere('name', 'like', "%{$search}%");
+            });
+        }
+
+        $stocks = $query->get();
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setCellValue('A1', 'Part No');
+        $sheet->setCellValue('B1', 'Part Name');
+        $sheet->setCellValue('C1', 'Quantity');
+        $sheet->setCellValue('D1', 'Purchase Price');
+        $sheet->setCellValue('E1', 'Status');
+        $sheet->setCellValue('F1', 'PO Ref');
+
+        $row = 2;
+        foreach ($stocks as $s) {
+            $status = 'Available';
+            if ($s->min_quantity > 0 && $s->quantity < $s->min_quantity) {
+                $status = 'Low Stock';
+            } elseif ($s->quantity < 1) {
+                $status = 'Out of Stock';
+            }
+
+            $sheet->setCellValue('A' . $row, $s->sparePart->part_no ?? '-');
+            $sheet->setCellValue('B' . $row, $s->sparePart->name ?? '-');
+            $sheet->setCellValue('C' . $row, $s->quantity);
+            $sheet->setCellValue('D' . $row, $s->purchase_price);
+            $sheet->setCellValue('E' . $row, $status);
+            $sheet->setCellValue('F' . $row, $s->purchaseOrder->order_number ?? '-');
+            $row++;
+        }
+
+        $writer = new Xls($spreadsheet);
+        $path = storage_path('app/spare_part_stocks_export.xls');
+        $writer->save($path);
+
+        return response()->download($path, 'spare_part_stocks_' . date('Ymd_His') . '.xls')->deleteFileAfterSend(true);
     }
 
     public function toggleStatus(SparePartStock $sparePartStock)

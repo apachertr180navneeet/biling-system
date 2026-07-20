@@ -3,7 +3,10 @@
 <div class="container-xxl flex-grow-1 container-p-y">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h4 class="fw-bold mb-0">Part Sales Invoices</h4>
-        <a href="{{ route('admin.part-sales-invoices.create') }}" class="btn btn-primary"><i class="bx bx-plus"></i> New Part Sales Invoice</a>
+        <div>
+            <a href="{{ route('admin.part-sales-invoices.export', ['search' => request('search')]) }}" class="btn btn-outline-success me-2"><i class="bx bx-file-export"></i> Export</a>
+            <a href="{{ route('admin.part-sales-invoices.create') }}" class="btn btn-primary"><i class="bx bx-plus"></i> New Part Sales Invoice</a>
+        </div>
     </div>
 
     <!-- Search filter -->
@@ -15,7 +18,10 @@
                         <input type="text" name="search" class="form-control" placeholder="Search by Invoice No, Customer Name or Mobile" value="{{ request('search') }}">
                     </div>
                     <div class="col-md-3">
-                        <button type="submit" class="btn btn-primary w-100"><i class="bx bx-search"></i> Search</button>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary flex-grow-1"><i class="bx bx-search"></i> Search</button>
+                            <a href="{{ route('admin.part-sales-invoices.index') }}" class="btn btn-outline-secondary"><i class="bx bx-reset"></i> Reset</a>
+                        </div>
                     </div>
                 </div>
             </form>

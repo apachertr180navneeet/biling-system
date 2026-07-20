@@ -30,6 +30,55 @@ class VehicleMasterController extends Controller
         return view('admin.vehicle_masters.index', compact('vehicles', 'search'));
     }
 
+    public function export(Request $request)
+    {
+        $search = $request->input('search');
+        $query = VehicleMaster::orderBy('variant_name');
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('variant_name', 'like', "%{$search}%")
+                  ->orWhere('color_name', 'like', "%{$search}%")
+                  ->orWhere('fuel_type', 'like', "%{$search}%")
+                  ->orWhere('transmission', 'like', "%{$search}%")
+                  ->orWhere('battery_type', 'like', "%{$search}%")
+                  ->orWhere('battery_make', 'like', "%{$search}%");
+            });
+        }
+
+        $vehicles = $query->get();
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setCellValue('A1', 'Variant Name');
+        $sheet->setCellValue('B1', 'Color Name');
+        $sheet->setCellValue('C1', 'Fuel Type');
+        $sheet->setCellValue('D1', 'Transmission');
+        $sheet->setCellValue('E1', 'Ex-Showroom Price');
+        $sheet->setCellValue('F1', 'Battery Type');
+        $sheet->setCellValue('G1', 'Battery Make');
+        $sheet->setCellValue('H1', 'Status');
+
+        $row = 2;
+        foreach ($vehicles as $v) {
+            $sheet->setCellValue('A' . $row, $v->variant_name);
+            $sheet->setCellValue('B' . $row, $v->color_name);
+            $sheet->setCellValue('C' . $row, $v->fuel_type);
+            $sheet->setCellValue('D' . $row, $v->transmission);
+            $sheet->setCellValue('E' . $row, $v->ex_showroom_price);
+            $sheet->setCellValue('F' . $row, $v->battery_type);
+            $sheet->setCellValue('G' . $row, $v->battery_make);
+            $sheet->setCellValue('H' . $row, $v->is_active ? 'Active' : 'Inactive');
+            $row++;
+        }
+
+        $writer = new Xls($spreadsheet);
+        $path = storage_path('app/vehicle_masters_export.xls');
+        $writer->save($path);
+
+        return response()->download($path, 'vehicle_masters_' . date('Ymd_His') . '.xls')->deleteFileAfterSend(true);
+    }
+
     public function create()
     {
         return view('admin.vehicle_masters.create');
