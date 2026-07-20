@@ -8,6 +8,7 @@ use App\Models\Supplier;
 use App\Models\Customer;
 use App\Models\Service;
 use App\Models\ServiceCategory;
+use App\Models\Role;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
@@ -23,7 +24,7 @@ class MasterImportTest extends TestCase
         parent::setUp();
 
         $this->seed(\Database\Seeders\RoleSeeder::class);
-        $role = \App\Models\Role::where('name', 'admin')->first();
+        $role = Role::where('name', 'admin')->first();
 
         // Create the admin user
         $this->admin = User::create([

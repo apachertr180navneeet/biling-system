@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use App\Models\VehicleMaster;
+use App\Models\Role;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
@@ -19,7 +20,7 @@ class VehicleImportTest extends TestCase
         parent::setUp();
 
         $this->seed(\Database\Seeders\RoleSeeder::class);
-        $role = \App\Models\Role::where('name', 'admin')->first();
+        $role = Role::where('name', 'admin')->first();
 
         // Create the admin user
         $this->admin = User::create([

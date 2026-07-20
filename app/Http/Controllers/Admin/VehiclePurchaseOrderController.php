@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\VehiclePurchaseOrder;
 use App\Models\VehicleInventory;
+use App\Models\VehiclePoItem;
 use App\Models\Supplier;
 use App\Models\VehicleMaster;
 use Illuminate\Http\Request;
@@ -48,7 +49,7 @@ class VehiclePurchaseOrderController extends Controller
         foreach ($data['items'] as $item) {
             $lineTotal = $item['quantity'] * $item['unit_price'];
             $total += $lineTotal;
-            $items[] = new \App\Models\VehiclePoItem([
+            $items[] = new VehiclePoItem([
                 'vehicle_description' => $item['vehicle_description'],
                 'quantity' => $item['quantity'],
                 'unit_price' => $item['unit_price'],
@@ -111,7 +112,7 @@ class VehiclePurchaseOrderController extends Controller
         foreach ($data['items'] as $item) {
             $lineTotal = $item['quantity'] * $item['unit_price'];
             $total += $lineTotal;
-            $newItems[] = new \App\Models\VehiclePoItem([
+            $newItems[] = new VehiclePoItem([
                 'vehicle_description' => $item['vehicle_description'],
                 'quantity' => $item['quantity'],
                 'unit_price' => $item['unit_price'],
