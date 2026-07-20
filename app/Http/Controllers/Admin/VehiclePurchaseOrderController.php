@@ -39,7 +39,7 @@ class VehiclePurchaseOrderController extends Controller
     {
         $search = $request->input('search');
         $query = VehiclePurchaseOrder::with('supplier', 'items')
-            ->whereIn('status', ['pending', 'partial'])
+            ->where('balance', '>', 0)
             ->orderBy('created_at', 'desc');
 
         if ($search) {
@@ -59,7 +59,7 @@ class VehiclePurchaseOrderController extends Controller
     {
         $search = $request->input('search');
         $query = VehiclePurchaseOrder::with('supplier', 'items')
-            ->whereIn('status', ['pending', 'partial'])
+            ->where('balance', '>', 0)
             ->orderBy('created_at', 'desc');
 
         if ($search) {

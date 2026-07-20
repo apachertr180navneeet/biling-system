@@ -41,7 +41,7 @@ class PurchaseOrderController extends Controller
     {
         $search = $request->input('search');
         $query = PurchaseOrder::with('supplier', 'items.sparePart')
-            ->whereIn('status', ['pending', 'partial'])
+            ->where('balance', '>', 0)
             ->orderBy('created_at', 'desc');
 
         if ($search) {
@@ -61,7 +61,7 @@ class PurchaseOrderController extends Controller
     {
         $search = $request->input('search');
         $query = PurchaseOrder::with('supplier', 'items.sparePart')
-            ->whereIn('status', ['pending', 'partial'])
+            ->where('balance', '>', 0)
             ->orderBy('created_at', 'desc');
 
         if ($search) {
