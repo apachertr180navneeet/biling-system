@@ -22,6 +22,25 @@
     border: 1px solid #e2e8f0;
 }
 
+.watermark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0.08;
+    z-index: 0;
+    pointer-events: none;
+    width: 70%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.watermark img {
+    width: 100%;
+    height: auto;
+}
+
 /* Dynamic eco-accent top border */
 .invoice-card::before {
     content: "";
@@ -432,6 +451,11 @@ if (!function_exists('getIndianRupeesInWords')) {
 
     <div class="invoice-wrapper">
         <div class="invoice-card">
+            <!-- Background Watermark -->
+            <div class="watermark">
+                <img src="{{ asset('assets/admin/img/logo.jpg') }}" alt="Watermark Logo">
+            </div>
+            
             <div class="invoice-padding">
                 
                 <!-- Company Header -->
@@ -443,9 +467,8 @@ if (!function_exists('getIndianRupeesInWords')) {
                         <p>PAN Number : ANQPD4555N</p>
                         <p>Email: vijay.deora429@gmail.com | Mobile: 7568899148</p>
                     </div>
-                    <div class="invoice-title-block">
-                        <h1>TAX INVOICE</h1>
-                        <span class="brand-badge" style="font-size: 10px; font-weight: normal; text-transform: uppercase;">Original For Recipient</span>
+                    <div class="logo-block">
+                        <img src="{{ asset('assets/admin/img/logo.jpg') }}" alt="Shree Krishna Auto Green" style="max-height: 120px; width: auto;">
                     </div>
                 </div>
 

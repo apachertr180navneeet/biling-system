@@ -22,6 +22,25 @@
     border: 1px solid #e2e8f0;
 }
 
+.watermark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0.08;
+    z-index: 0;
+    pointer-events: none;
+    width: 70%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.watermark img {
+    width: 100%;
+    height: auto;
+}
+
 /* Dynamic eco-accent top border */
 .invoice-card::before {
     content: "";
@@ -514,6 +533,11 @@
 
     <div class="invoice-wrapper">
         <div class="invoice-card">
+            <!-- Background Watermark -->
+            <div class="watermark">
+                <img src="{{ asset('assets/admin/img/logo.jpg') }}" alt="Watermark Logo">
+            </div>
+            
             <div class="invoice-padding">
                 
                 <!-- Company Header -->
@@ -525,10 +549,8 @@
                         <p style="margin-top: 4px; font-weight: 600; color: #047857;">GSTIN : 08ANQPD4555N1ZE</p>
                         <p>Contact : 7586899148, 9829028792</p>
                     </div>
-                    <div class="invoice-title-block">
-                        <h1>INVOICE</h1>
-                        <span class="brand-badge">YO Bykes</span>
-                        <p style="font-size: 11px; color: #64748b; font-style: italic; margin: 4px 0 0 0;">Life Fully Charged!</p>
+                    <div class="logo-block">
+                        <img src="{{ asset('assets/admin/img/logo.jpg') }}" alt="Shree Krishna Auto Green" style="max-height: 120px; width: auto;">
                     </div>
                 </div>
 
