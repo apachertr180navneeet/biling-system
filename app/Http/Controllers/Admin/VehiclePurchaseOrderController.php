@@ -35,6 +35,83 @@ class VehiclePurchaseOrderController extends Controller
         return view('admin.vehicle_purchase_orders.index', compact('orders', 'search'));
     }
 
+    public function outstanding(Request $request)
+    {
+        $search = $request->input('search');
+        $query = VehiclePurchaseOrder::with('supplier', 'items')
+            ->whereIn('status', ['pending', 'partial'])
+            ->orderBy('created_at', 'desc');
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('po_number', 'like', "%{$search}%")
+                  ->orWhereHas('supplier', function($sq) use ($search) {
+                      $sq->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $orders = $query->paginate(20);
+        return view('admin.vehicle_purchase_orders.outstanding', compact('orders', 'search'));
+    }
+
+    public function exportOutstanding(Request $request)
+    {
+        $search = $request->input('search');
+        $query = VehiclePurchaseOrder::with('supplier', 'items')
+            ->whereIn('status', ['pending', 'partial'])
+            ->orderBy('created_at', 'desc');
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('po_number', 'like', "%{$search}%")
+                  ->orWhereHas('supplier', function($sq) use ($search) {
+                      $sq->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $orders = $query->get();
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setCellValue('A1', 'PO No');
+        $sheet->setCellValue('B1', 'Supplier');
+        $sheet->setCellValue('C1', 'Order Date');
+        $sheet->setCellValue('D1', 'Vehicle');
+        $sheet->setCellValue('E1', 'Ordered Qty');
+        $sheet->setCellValue('F1', 'Received Qty');
+        $sheet->setCellValue('G1', 'Outstanding Qty');
+        $sheet->setCellValue('H1', 'Unit Price');
+        $sheet->setCellValue('I1', 'Outstanding Amount');
+        $sheet->setCellValue('J1', 'Status');
+
+        $row = 2;
+        foreach ($orders as $o) {
+            foreach ($o->items as $item) {
+                $outstandingQty = $item->quantity - $item->received_quantity;
+                if ($outstandingQty <= 0) continue;
+                $sheet->setCellValue('A' . $row, $o->po_number);
+                $sheet->setCellValue('B' . $row, $o->supplier->name ?? '-');
+                $sheet->setCellValue('C' . $row, $o->order_date->format('d-m-Y'));
+                $sheet->setCellValue('D' . $row, $item->vehicle_description);
+                $sheet->setCellValue('E' . $row, $item->quantity);
+                $sheet->setCellValue('F' . $row, $item->received_quantity);
+                $sheet->setCellValue('G' . $row, $outstandingQty);
+                $sheet->setCellValue('H' . $row, $item->unit_price);
+                $sheet->setCellValue('I' . $row, $outstandingQty * $item->unit_price);
+                $sheet->setCellValue('J' . $row, ucfirst($o->status));
+                $row++;
+            }
+        }
+
+        $writer = new Xls($spreadsheet);
+        $path = storage_path('app/vehicle_purchase_orders_outstanding_export.xls');
+        $writer->save($path);
+
+        return response()->download($path, 'vehicle_purchase_orders_outstanding_' . date('Ymd_His') . '.xls')->deleteFileAfterSend(true);
+    }
+
     public function export(Request $request)
     {
         $search = $request->input('search');
@@ -118,6 +195,8 @@ class VehiclePurchaseOrderController extends Controller
         }
         unset($data['items']);
         $data['total_amount'] = $total;
+        $data['received_amount'] = 0;
+        $data['balance'] = $total;
 
         $order = DB::transaction(function () use ($data, $items) {
             $last = DB::table('vehicle_purchase_orders')->lockForUpdate()->orderBy('id', 'desc')->first();
@@ -558,6 +637,27 @@ class VehiclePurchaseOrderController extends Controller
         $whatsappUrl = "https://wa.me/{$phone}?text=" . urlencode($message);
 
         return redirect($whatsappUrl);
+    }
+
+    public function receivePayment(Request $request, VehiclePurchaseOrder $vehiclePurchaseOrder)
+    {
+        $request->validate([
+            'amount' => 'required|numeric|min:0.01',
+        ]);
+
+        $amount = floatval($request->input('amount'));
+
+        if ($amount > $vehiclePurchaseOrder->balance) {
+            return response()->json(['success' => false, 'message' => 'Amount cannot exceed the balance (' . number_format($vehiclePurchaseOrder->balance, 2) . ')']);
+        }
+
+        DB::transaction(function () use ($vehiclePurchaseOrder, $amount) {
+            $vehiclePurchaseOrder->received_amount += $amount;
+            $vehiclePurchaseOrder->balance -= $amount;
+            $vehiclePurchaseOrder->save();
+        });
+
+        return response()->json(['success' => true, 'message' => 'Payment received successfully.']);
     }
 
     private function getVehicleOptions(): array

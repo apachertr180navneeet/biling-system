@@ -37,6 +37,85 @@ class PurchaseOrderController extends Controller
         return view('admin.purchase_orders.index', compact('orders', 'search'));
     }
 
+    public function outstanding(Request $request)
+    {
+        $search = $request->input('search');
+        $query = PurchaseOrder::with('supplier', 'items.sparePart')
+            ->whereIn('status', ['pending', 'partial'])
+            ->orderBy('created_at', 'desc');
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('order_number', 'like', "%{$search}%")
+                  ->orWhereHas('supplier', function($sq) use ($search) {
+                      $sq->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $orders = $query->paginate(20);
+        return view('admin.purchase_orders.outstanding', compact('orders', 'search'));
+    }
+
+    public function exportOutstanding(Request $request)
+    {
+        $search = $request->input('search');
+        $query = PurchaseOrder::with('supplier', 'items.sparePart')
+            ->whereIn('status', ['pending', 'partial'])
+            ->orderBy('created_at', 'desc');
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('order_number', 'like', "%{$search}%")
+                  ->orWhereHas('supplier', function($sq) use ($search) {
+                      $sq->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $orders = $query->get();
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setCellValue('A1', 'Order No');
+        $sheet->setCellValue('B1', 'Supplier');
+        $sheet->setCellValue('C1', 'Order Date');
+        $sheet->setCellValue('D1', 'Item');
+        $sheet->setCellValue('E1', 'Part No');
+        $sheet->setCellValue('F1', 'Ordered Qty');
+        $sheet->setCellValue('G1', 'Received Qty');
+        $sheet->setCellValue('H1', 'Outstanding Qty');
+        $sheet->setCellValue('I1', 'Unit Price');
+        $sheet->setCellValue('J1', 'Outstanding Amount');
+        $sheet->setCellValue('K1', 'Status');
+
+        $row = 2;
+        foreach ($orders as $o) {
+            foreach ($o->items as $item) {
+                $outstandingQty = $item->quantity - $item->received_quantity;
+                if ($outstandingQty <= 0) continue;
+                $sheet->setCellValue('A' . $row, $o->order_number);
+                $sheet->setCellValue('B' . $row, $o->supplier->name ?? '-');
+                $sheet->setCellValue('C' . $row, $o->order_date->format('d-m-Y'));
+                $sheet->setCellValue('D' . $row, $item->sparePart->name ?? '-');
+                $sheet->setCellValue('E' . $row, $item->sparePart->part_no ?? '-');
+                $sheet->setCellValue('F' . $row, $item->quantity);
+                $sheet->setCellValue('G' . $row, $item->received_quantity);
+                $sheet->setCellValue('H' . $row, $outstandingQty);
+                $sheet->setCellValue('I' . $row, $item->unit_price);
+                $sheet->setCellValue('J' . $row, $outstandingQty * $item->unit_price);
+                $sheet->setCellValue('K' . $row, ucfirst($o->status));
+                $row++;
+            }
+        }
+
+        $writer = new Xls($spreadsheet);
+        $path = storage_path('app/purchase_orders_outstanding_export.xls');
+        $writer->save($path);
+
+        return response()->download($path, 'purchase_orders_outstanding_' . date('Ymd_His') . '.xls')->deleteFileAfterSend(true);
+    }
+
     public function export(Request $request)
     {
         $search = $request->input('search');
@@ -117,6 +196,8 @@ class PurchaseOrderController extends Controller
             ]);
         }
         $data['total_amount'] = $total;
+        $data['received_amount'] = 0;
+        $data['balance'] = $total;
         unset($data['items']);
 
         $order = DB::transaction(function () use ($data, $items) {
@@ -340,5 +421,26 @@ class PurchaseOrderController extends Controller
         $whatsappUrl = "https://wa.me/{$phone}?text=" . urlencode($message);
 
         return redirect($whatsappUrl);
+    }
+
+    public function receivePayment(Request $request, PurchaseOrder $purchaseOrder)
+    {
+        $request->validate([
+            'amount' => 'required|numeric|min:0.01',
+        ]);
+
+        $amount = floatval($request->input('amount'));
+
+        if ($amount > $purchaseOrder->balance) {
+            return response()->json(['success' => false, 'message' => 'Amount cannot exceed the balance (' . number_format($purchaseOrder->balance, 2) . ')']);
+        }
+
+        DB::transaction(function () use ($purchaseOrder, $amount) {
+            $purchaseOrder->received_amount += $amount;
+            $purchaseOrder->balance -= $amount;
+            $purchaseOrder->save();
+        });
+
+        return response()->json(['success' => true, 'message' => 'Payment received successfully.']);
     }
 }

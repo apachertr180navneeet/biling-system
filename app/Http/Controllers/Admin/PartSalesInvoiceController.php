@@ -36,6 +36,77 @@ class PartSalesInvoiceController extends Controller
         return view('admin.part_sales_invoices.index', compact('invoices', 'search'));
     }
 
+    public function outstanding(Request $request)
+    {
+        $search = $request->input('search');
+        $query = PartSalesInvoice::with('customer', 'items.sparePart')
+            ->where('balance', '>', 0)
+            ->orderBy('invoice_date', 'desc')
+            ->orderBy('id', 'desc');
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('invoice_number', 'like', "%{$search}%")
+                  ->orWhere('customer_name', 'like', "%{$search}%")
+                  ->orWhere('customer_mobile', 'like', "%{$search}%");
+            });
+        }
+
+        $invoices = $query->paginate(20);
+        return view('admin.part_sales_invoices.outstanding', compact('invoices', 'search'));
+    }
+
+    public function exportOutstanding(Request $request)
+    {
+        $search = $request->input('search');
+        $query = PartSalesInvoice::with('customer', 'items.sparePart')
+            ->where('balance', '>', 0)
+            ->orderBy('invoice_date', 'desc')
+            ->orderBy('id', 'desc');
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('invoice_number', 'like', "%{$search}%")
+                  ->orWhere('customer_name', 'like', "%{$search}%")
+                  ->orWhere('customer_mobile', 'like', "%{$search}%");
+            });
+        }
+
+        $invoices = $query->get();
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setCellValue('A1', 'Invoice No');
+        $sheet->setCellValue('B1', 'Date');
+        $sheet->setCellValue('C1', 'Customer Name');
+        $sheet->setCellValue('D1', 'Mobile');
+        $sheet->setCellValue('E1', 'Items');
+        $sheet->setCellValue('F1', 'Total Amount');
+        $sheet->setCellValue('G1', 'Received Amount');
+        $sheet->setCellValue('H1', 'Balance');
+        $sheet->setCellValue('I1', 'Payment Mode');
+
+        $row = 2;
+        foreach ($invoices as $inv) {
+            $sheet->setCellValue('A' . $row, $inv->invoice_number);
+            $sheet->setCellValue('B' . $row, $inv->invoice_date->format('d-m-Y'));
+            $sheet->setCellValue('C' . $row, $inv->customer_name);
+            $sheet->setCellValue('D' . $row, $inv->customer_mobile);
+            $sheet->setCellValue('E' . $row, $inv->items->count());
+            $sheet->setCellValue('F' . $row, $inv->total_amount);
+            $sheet->setCellValue('G' . $row, $inv->received_amount);
+            $sheet->setCellValue('H' . $row, $inv->balance);
+            $sheet->setCellValue('I' . $row, $inv->payment_mode);
+            $row++;
+        }
+
+        $writer = new Xls($spreadsheet);
+        $path = storage_path('app/part_sales_outstanding_export.xls');
+        $writer->save($path);
+
+        return response()->download($path, 'part_sales_outstanding_' . date('Ymd_His') . '.xls')->deleteFileAfterSend(true);
+    }
+
     public function export(Request $request)
     {
         $search = $request->input('search');
@@ -293,5 +364,27 @@ class PartSalesInvoiceController extends Controller
         });
 
         return response()->json(['success' => true, 'message' => 'Invoice deleted successfully.']);
+    }
+
+    public function receivePayment(Request $request, PartSalesInvoice $partSalesInvoice)
+    {
+        $request->validate([
+            'amount' => 'required|numeric|min:0.01',
+        ]);
+
+        $amount = floatval($request->input('amount'));
+
+        if ($amount > $partSalesInvoice->balance) {
+            return response()->json(['success' => false, 'message' => 'Amount cannot exceed the balance (' . number_format($partSalesInvoice->balance, 2) . ')']);
+        }
+
+        DB::transaction(function () use ($partSalesInvoice, $amount) {
+            $partSalesInvoice->received_amount += $amount;
+            $partSalesInvoice->balance -= $amount;
+            $partSalesInvoice->current_balance -= $amount;
+            $partSalesInvoice->save();
+        });
+
+        return response()->json(['success' => true, 'message' => 'Payment received successfully.']);
     }
 }

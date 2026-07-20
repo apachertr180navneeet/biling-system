@@ -34,6 +34,77 @@ class VehicleSalesInvoiceController extends Controller
         return view('admin.vehicle_sales_invoices.index', compact('invoices', 'search'));
     }
 
+    public function outstanding(Request $request)
+    {
+        $search = $request->input('search');
+        $query = VehicleSalesInvoice::with('customer', 'vehicleInventory')
+            ->where('balance', '>', 0)
+            ->orderBy('invoice_date', 'desc')
+            ->orderBy('id', 'desc');
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('invoice_number', 'like', "%{$search}%")
+                  ->orWhere('customer_name', 'like', "%{$search}%")
+                  ->orWhere('customer_mobile', 'like', "%{$search}%");
+            });
+        }
+
+        $invoices = $query->paginate(20);
+        return view('admin.vehicle_sales_invoices.outstanding', compact('invoices', 'search'));
+    }
+
+    public function exportOutstanding(Request $request)
+    {
+        $search = $request->input('search');
+        $query = VehicleSalesInvoice::with('customer', 'vehicleInventory')
+            ->where('balance', '>', 0)
+            ->orderBy('invoice_date', 'desc')
+            ->orderBy('id', 'desc');
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('invoice_number', 'like', "%{$search}%")
+                  ->orWhere('customer_name', 'like', "%{$search}%")
+                  ->orWhere('customer_mobile', 'like', "%{$search}%");
+            });
+        }
+
+        $invoices = $query->get();
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setCellValue('A1', 'Invoice No');
+        $sheet->setCellValue('B1', 'Date');
+        $sheet->setCellValue('C1', 'Customer Name');
+        $sheet->setCellValue('D1', 'Mobile');
+        $sheet->setCellValue('E1', 'Vehicle');
+        $sheet->setCellValue('F1', 'Grand Total');
+        $sheet->setCellValue('G1', 'Received Amount');
+        $sheet->setCellValue('H1', 'Balance');
+        $sheet->setCellValue('I1', 'Payment Mode');
+
+        $row = 2;
+        foreach ($invoices as $inv) {
+            $sheet->setCellValue('A' . $row, $inv->invoice_number);
+            $sheet->setCellValue('B' . $row, $inv->invoice_date->format('d-m-Y'));
+            $sheet->setCellValue('C' . $row, $inv->customer_name);
+            $sheet->setCellValue('D' . $row, $inv->customer_mobile);
+            $sheet->setCellValue('E' . $row, $inv->vehicleInventory->vehicle_description ?? '-');
+            $sheet->setCellValue('F' . $row, $inv->grand_total);
+            $sheet->setCellValue('G' . $row, $inv->received_amount);
+            $sheet->setCellValue('H' . $row, $inv->balance);
+            $sheet->setCellValue('I' . $row, $inv->payment_mode ?? '-');
+            $row++;
+        }
+
+        $writer = new Xls($spreadsheet);
+        $path = storage_path('app/vehicle_sales_outstanding_export.xls');
+        $writer->save($path);
+
+        return response()->download($path, 'vehicle_sales_outstanding_' . date('Ymd_His') . '.xls')->deleteFileAfterSend(true);
+    }
+
     public function export(Request $request)
     {
         $search = $request->input('search');
@@ -262,5 +333,27 @@ class VehicleSalesInvoiceController extends Controller
         });
 
         return response()->json(['success' => true, 'message' => 'Invoice deleted successfully.']);
+    }
+
+    public function receivePayment(Request $request, VehicleSalesInvoice $vehicleSalesInvoice)
+    {
+        $request->validate([
+            'amount' => 'required|numeric|min:0.01',
+        ]);
+
+        $amount = floatval($request->input('amount'));
+
+        if ($amount > $vehicleSalesInvoice->balance) {
+            return response()->json(['success' => false, 'message' => 'Amount cannot exceed the balance (' . number_format($vehicleSalesInvoice->balance, 2) . ')']);
+        }
+
+        DB::transaction(function () use ($vehicleSalesInvoice, $amount) {
+            $vehicleSalesInvoice->received_amount += $amount;
+            $vehicleSalesInvoice->balance -= $amount;
+            $vehicleSalesInvoice->current_balance -= $amount;
+            $vehicleSalesInvoice->save();
+        });
+
+        return response()->json(['success' => true, 'message' => 'Payment received successfully.']);
     }
 }

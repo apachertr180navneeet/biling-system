@@ -4,6 +4,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h4 class="fw-bold mb-0">Vehicle Sales Invoices</h4>
         <div>
+            <a href="{{ route('admin.vehicle-sales-invoices.outstanding') }}" class="btn btn-warning me-2"><i class="bx bx-list-check"></i> Outstanding</a>
             <a href="{{ route('admin.vehicle-sales-invoices.export', ['search' => request('search')]) }}" class="btn btn-outline-success me-2"><i class="bx bx-file-export"></i> Export</a>
             <a href="{{ route('admin.vehicle-sales-invoices.create') }}" class="btn btn-primary"><i class="bx bx-plus"></i> New Vehicle Sales Invoice</a>
         </div>

@@ -92,19 +92,25 @@ Route::name('admin.')->prefix('admin')->group(function () {
 
         Route::resource('purchase-orders', PurchaseOrderController::class);
         Route::get('purchase-orders/export', [PurchaseOrderController::class, 'export'])->name('purchase-orders.export');
+        Route::get('purchase-orders/outstanding/list', [PurchaseOrderController::class, 'outstanding'])->name('purchase-orders.outstanding');
+        Route::get('purchase-orders/outstanding/export', [PurchaseOrderController::class, 'exportOutstanding'])->name('purchase-orders.outstanding.export');
         Route::post('purchase-orders/{purchase_order}/toggle-status', [PurchaseOrderController::class, 'toggleStatus'])->name('purchase-orders.toggle-status');
         Route::get('purchase-orders/{purchase_order}/receive', [PurchaseOrderController::class, 'receive'])->name('purchase-orders.receive');
         Route::post('purchase-orders/{purchase_order}/receive-store', [PurchaseOrderController::class, 'receiveStore'])->name('purchase-orders.receive-store');
         Route::get('purchase-orders/{purchase_order}/pdf', [PurchaseOrderController::class, 'generatePdf'])->name('purchase-orders.pdf');
         Route::get('purchase-orders/{purchase_order}/whatsapp', [PurchaseOrderController::class, 'sendWhatsapp'])->name('purchase-orders.whatsapp');
+        Route::post('purchase-orders/{purchase_order}/receive-payment', [PurchaseOrderController::class, 'receivePayment'])->name('purchase-orders.receive-payment');
 
         Route::resource('vehicle-purchase-orders', VehiclePurchaseOrderController::class);
         Route::get('vehicle-purchase-orders/export', [VehiclePurchaseOrderController::class, 'export'])->name('vehicle-purchase-orders.export');
+        Route::get('vehicle-purchase-orders/outstanding/list', [VehiclePurchaseOrderController::class, 'outstanding'])->name('vehicle-purchase-orders.outstanding');
+        Route::get('vehicle-purchase-orders/outstanding/export', [VehiclePurchaseOrderController::class, 'exportOutstanding'])->name('vehicle-purchase-orders.outstanding.export');
         Route::post('vehicle-purchase-orders/{vehicle_purchase_order}/toggle-status', [VehiclePurchaseOrderController::class, 'toggleStatus'])->name('vehicle-purchase-orders.toggle-status');
         Route::get('vehicle-purchase-orders/{vehicle_purchase_order}/receive', [VehiclePurchaseOrderController::class, 'receive'])->name('vehicle-purchase-orders.receive');
         Route::post('vehicle-purchase-orders/{vehicle_purchase_order}/receive-store', [VehiclePurchaseOrderController::class, 'receiveStore'])->name('vehicle-purchase-orders.receive-store');
         Route::get('vehicle-purchase-orders/{vehicle_purchase_order}/pdf', [VehiclePurchaseOrderController::class, 'generatePdf'])->name('vehicle-purchase-orders.pdf');
         Route::get('vehicle-purchase-orders/{vehicle_purchase_order}/whatsapp', [VehiclePurchaseOrderController::class, 'sendWhatsapp'])->name('vehicle-purchase-orders.whatsapp');
+        Route::post('vehicle-purchase-orders/{vehicle_purchase_order}/receive-payment', [VehiclePurchaseOrderController::class, 'receivePayment'])->name('vehicle-purchase-orders.receive-payment');
         Route::get('vehicle-inventories', [VehiclePurchaseOrderController::class, 'inventory'])->name('vehicle-inventories.index');
         Route::get('vehicle-inventories/export', [VehiclePurchaseOrderController::class, 'exportInventory'])->name('vehicle-inventories.export');
         Route::post('vehicle-inventories/check-unique', [VehiclePurchaseOrderController::class, 'checkUnique'])->name('vehicle-inventories.check-unique');
@@ -118,8 +124,15 @@ Route::name('admin.')->prefix('admin')->group(function () {
 
         Route::resource('vehicle-sales-invoices', VehicleSalesInvoiceController::class)->except(['edit', 'update']);
         Route::get('vehicle-sales-invoices/export', [VehicleSalesInvoiceController::class, 'export'])->name('vehicle-sales-invoices.export');
+        Route::get('vehicle-sales-invoices/outstanding/list', [VehicleSalesInvoiceController::class, 'outstanding'])->name('vehicle-sales-invoices.outstanding');
+        Route::get('vehicle-sales-invoices/outstanding/export', [VehicleSalesInvoiceController::class, 'exportOutstanding'])->name('vehicle-sales-invoices.outstanding.export');
+        Route::post('vehicle-sales-invoices/{vehicle_sales_invoice}/receive-payment', [VehicleSalesInvoiceController::class, 'receivePayment'])->name('vehicle-sales-invoices.receive-payment');
+
         Route::resource('part-sales-invoices', PartSalesInvoiceController::class)->except(['edit', 'update']);
         Route::get('part-sales-invoices/export', [PartSalesInvoiceController::class, 'export'])->name('part-sales-invoices.export');
+        Route::get('part-sales-invoices/outstanding/list', [PartSalesInvoiceController::class, 'outstanding'])->name('part-sales-invoices.outstanding');
+        Route::get('part-sales-invoices/outstanding/export', [PartSalesInvoiceController::class, 'exportOutstanding'])->name('part-sales-invoices.outstanding.export');
+        Route::post('part-sales-invoices/{part_sales_invoice}/receive-payment', [PartSalesInvoiceController::class, 'receivePayment'])->name('part-sales-invoices.receive-payment');
 
         Route::get('reports/vehicle-ledger', [ReportController::class, 'vehicleLedger'])->name('reports.vehicle-ledger');
         Route::get('reports/part-ledger', [ReportController::class, 'partLedger'])->name('reports.part-ledger');

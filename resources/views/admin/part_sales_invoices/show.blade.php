@@ -609,22 +609,8 @@ if (!function_exists('getIndianRupeesInWords')) {
                                     <td class="summary-total-label">Total Amount</td>
                                     <td class="summary-total-value">₹ {{ number_format($partSalesInvoice->total_amount, 0) }}</td>
                                 </tr>
-                                <tr>
-                                    <td class="summary-label">Received Amount</td>
-                                    <td class="summary-value">₹ {{ number_format($partSalesInvoice->received_amount, 0) }}</td>
-                                </tr>
-                                <tr>
-                                    <td class="summary-label">Balance</td>
-                                    <td class="summary-value">₹ {{ number_format($partSalesInvoice->balance, 0) }}</td>
-                                </tr>
-                                <tr>
-                                    <td class="summary-label">Previous Balance</td>
-                                    <td class="summary-value">₹ {{ number_format($partSalesInvoice->previous_balance, 0) }}</td>
-                                </tr>
-                                <tr>
-                                    <td class="summary-label" style="font-weight: 700; color: #b91c1c;">Current Balance</td>
-                                    <td class="summary-value" style="font-weight: 700; color: #b91c1c;">₹ {{ number_format($partSalesInvoice->current_balance, 0) }}</td>
-                                </tr>
+
+
                             </table>
                         </div>
                     </div>

@@ -33,6 +33,7 @@
         <div class="card-header d-flex align-items-center justify-content-between">
             <h5 class="mb-0">Vehicle Purchase Orders</h5>
             <div>
+                <a href="{{ route('admin.vehicle-purchase-orders.outstanding') }}" class="btn btn-warning me-2"><i class="bx bx-list-check"></i> Outstanding</a>
                 <a href="{{ route('admin.vehicle-purchase-orders.export', ['search' => request('search')]) }}" class="btn btn-outline-success me-2"><i class="bx bx-file-export"></i> Export</a>
                 <a href="{{ route('admin.vehicle-purchase-orders.create') }}" class="btn btn-primary">Add New</a>
             </div>
@@ -47,6 +48,8 @@
                         <th>Order Date</th>
                         <th>Items</th>
                         <th>Total</th>
+                        <th>Received</th>
+                        <th>Balance</th>
                         <th>Status</th>
                         <th>Active</th>
                         <th>Actions</th>
@@ -61,6 +64,8 @@
                         <td>{{ $order->order_date->format('d-m-Y') }}</td>
                         <td>{{ $order->items_count }}</td>
                         <td>{{ number_format($order->total_amount, 2) }}</td>
+                        <td>{{ number_format($order->received_amount, 2) }}</td>
+                        <td><span class="badge bg-danger">{{ number_format($order->balance, 2) }}</span></td>
                         <td>
                             @if($order->status == 'pending')
                             <span class="badge bg-warning">Pending</span>
@@ -83,12 +88,15 @@
                             @if($order->status == 'pending')
                             <a href="{{ route('admin.vehicle-purchase-orders.edit', $order) }}" class="btn btn-sm btn-primary">Edit</a>
                             @endif
+                            @if($order->balance > 0)
+                            <button class="btn btn-sm btn-success receive-payment-btn" data-url="{{ route('admin.vehicle-purchase-orders.receive-payment', $order) }}" data-balance="{{ $order->balance }}" title="Receive Payment"><i class="bx bx-wallet"></i></button>
+                            @endif
                             <a href="{{ route('admin.vehicle-purchase-orders.whatsapp', $order) }}" class="btn btn-sm btn-success" target="_blank"><i class="bx bxl-whatsapp"></i></a>
                             <button class="btn btn-sm btn-danger btn-delete" data-url="{{ route('admin.vehicle-purchase-orders.destroy', $order) }}">Delete</button>
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="9" class="text-center">No vehicle purchase orders found.</td></tr>
+                    <tr><td colspan="11" class="text-center">No vehicle purchase orders found.</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -108,6 +116,53 @@ $(function(){
                 $.ajax({ url: url, type: 'POST', data: { _token: '{{ csrf_token() }}', _method: 'DELETE' }, success: function(resp) {
                     if (resp.success) { btn.closest('tr').remove(); setFlesh('success', resp.message); }
                 }});
+            }
+        });
+    });
+
+    $('.receive-payment-btn').click(function(){
+        var url = $(this).data('url');
+        var balance = $(this).data('balance');
+
+        Swal.fire({
+            title: 'Receive Payment',
+            text: 'Enter the amount received. Outstanding Balance: ₹' + balance,
+            input: 'number',
+            inputAttributes: {
+                min: 0.01,
+                max: balance,
+                step: 0.01
+            },
+            showCancelButton: true,
+            confirmButtonText: 'Submit',
+            showLoaderOnConfirm: true,
+            preConfirm: (amount) => {
+                if (!amount || amount <= 0) {
+                    Swal.showValidationMessage('Please enter a valid amount');
+                    return false;
+                }
+                if (parseFloat(amount) > parseFloat(balance)) {
+                    Swal.showValidationMessage('Amount cannot exceed the balance of ₹' + balance);
+                    return false;
+                }
+                return $.post(url, {
+                    _token: '{{ csrf_token() }}',
+                    amount: amount
+                }).done(function(r) {
+                    if (!r.success) {
+                        Swal.showValidationMessage(r.message);
+                    }
+                    return r;
+                }).fail(function() {
+                    Swal.showValidationMessage('Request failed');
+                });
+            },
+            allowOutsideClick: () => !Swal.isLoading()
+        }).then((result) => {
+            if (result.isConfirmed && result.value.success) {
+                Swal.fire('Success', 'Payment received successfully!', 'success').then(() => {
+                    location.reload();
+                });
             }
         });
     });
