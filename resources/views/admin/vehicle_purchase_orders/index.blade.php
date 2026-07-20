@@ -88,9 +88,6 @@
                             @if($order->status == 'pending')
                             <a href="{{ route('admin.vehicle-purchase-orders.edit', $order) }}" class="btn btn-sm btn-primary">Edit</a>
                             @endif
-                            @if($order->balance > 0)
-                            <button class="btn btn-sm btn-success receive-payment-btn" data-url="{{ route('admin.vehicle-purchase-orders.receive-payment', $order) }}" data-balance="{{ $order->balance }}" title="Receive Payment"><i class="bx bx-wallet"></i></button>
-                            @endif
                             <a href="{{ route('admin.vehicle-purchase-orders.whatsapp', $order) }}" class="btn btn-sm btn-success" target="_blank"><i class="bx bxl-whatsapp"></i></a>
                             <button class="btn btn-sm btn-danger btn-delete" data-url="{{ route('admin.vehicle-purchase-orders.destroy', $order) }}">Delete</button>
                         </td>
