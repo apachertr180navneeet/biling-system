@@ -28,6 +28,7 @@
             
         </style>
         <link rel="stylesheet" href="{{asset('assets/admin/css/premium-admin.css')}}" />
+        <link rel="stylesheet" href="{{asset('assets/admin/css/responsive.css')}}" />
     </head>
     <body>
        <div class="layout-wrapper layout-content-navbar">

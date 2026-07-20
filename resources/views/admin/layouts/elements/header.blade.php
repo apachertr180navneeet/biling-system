@@ -1,6 +1,6 @@
 <nav class="layout-navbar container-fluid navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme"
 	id="layout-navbar">
-	<div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
+	<div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none d-block">
 		<a class="nav-item nav-link px-0 me-xl-4" href="javascript:void(0)">
 			<i class="bx bx-menu bx-sm"></i>
 		</a>
@@ -10,8 +10,9 @@
 		<!-- Search -->
 		<div class="navbar-nav align-items-center">
 			<div class="nav-item d-flex align-items-center text-primary">
-				<i class="bx bx-calendar fs-4 lh-0"></i>&nbsp;
-				<span class="">{{ date('D') }} {{ date('d M Y') }}</span>
+				<i class="bx bx-calendar fs-4 lh-0 d-none d-sm-inline"></i>&nbsp;
+				<span class="d-none d-sm-inline">{{ date('D') }} {{ date('d M Y') }}</span>
+				<span class="d-sm-none">{{ date('d M Y') }}</span>
 			</div>
 		</div>
 		<!-- /Search -->

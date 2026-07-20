@@ -15,6 +15,7 @@
             </div>
         </div>
         <div class="card-body">
+            <div class="table-responsive">
             <table class="table table-bordered">
                 <tr><th style="width:200px">Type</th><td>{{ ucfirst($customer->type) }}</td></tr>
                 <tr><th>First Name</th><td>{{ $customer->first_name }}</td></tr>
@@ -28,6 +29,7 @@
                 <tr><th>PAN No</th><td>{{ $customer->pan_no ?? '-' }}</td></tr>
                 <tr><th>Aadhaar No</th><td>{{ $customer->aadhaar_no ?? '-' }}</td></tr>
             </table>
+            </div>
         </div>
     </div>
 </div>

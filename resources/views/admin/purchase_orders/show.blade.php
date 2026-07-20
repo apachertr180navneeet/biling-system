@@ -37,6 +37,7 @@
                 </div>
             </div>
             <h5>Items</h5>
+            <div class="table-responsive">
             <table class="table table-bordered">
                 <thead>
                     <tr><th>#</th><th>Part</th><th>Qty</th><th>Unit Price</th><th>Total</th><th>Received</th></tr>
@@ -57,7 +58,4 @@
                     <tr><th colspan="4" class="text-end">Total:</th><th>{{ number_format($purchaseOrder->total_amount, 2) }}</th><th></th></tr>
                 </tfoot>
             </table>
-        </div>
-    </div>
-</div>
-@endsection
+            </div>

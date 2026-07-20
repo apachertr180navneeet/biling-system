@@ -15,11 +15,13 @@
             </div>
         </div>
         <div class="card-body">
-            <table class="table table-bordered">
-                <tr><th style="width:200px">Name</th><td>{{ $financeMaster->name }}</td></tr>
-                <tr><th>Description</th><td>{{ $financeMaster->description ?? '-' }}</td></tr>
-                <tr><th>Status</th><td>{{ $financeMaster->is_active ? 'Active' : 'Inactive' }}</td></tr>
-            </table>
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <tr><th style="width:200px">Name</th><td>{{ $financeMaster->name }}</td></tr>
+                    <tr><th>Description</th><td>{{ $financeMaster->description ?? '-' }}</td></tr>
+                    <tr><th>Status</th><td>{{ $financeMaster->is_active ? 'Active' : 'Inactive' }}</td></tr>
+                </table>
+            </div>
         </div>
     </div>
 </div>
