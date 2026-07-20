@@ -167,62 +167,173 @@ class VehiclePurchaseOrderController extends Controller
         }
 
         $request->validate([
-            'items' => 'required|array',
-            'items.*.id' => 'required|exists:vehicle_po_items,id',
-            'items.*.vehicles' => 'required|array|min:1',
-            'items.*.vehicles.*.chassis_number' => 'required|string|max:255|unique:vehicle_inventories,chassis_number',
-            'items.*.vehicles.*.engine_number' => 'required|string|max:255|unique:vehicle_inventories,engine_number',
+            'items' => 'nullable|array',
+            'items.*.id' => 'required_with:items|exists:vehicle_po_items,id',
+            'items.*.vehicles' => 'nullable|array',
+            'edit_vehicles' => 'nullable|array',
+            'edit_vehicles.*.id' => 'required_with:edit_vehicles|exists:vehicle_inventories,id',
+            'edit_vehicles.*.chassis_number' => 'required_with:edit_vehicles|string|max:255',
+            'edit_vehicles.*.engine_number' => 'required_with:edit_vehicles|string|max:255',
+            'delete_vehicles' => 'nullable|array',
+            'delete_vehicles.*' => 'exists:vehicle_inventories,id',
         ]);
 
         $allChassis = [];
         $allEngines = [];
-        foreach ($request->items as $itemIdx => $itemData) {
-            foreach ($itemData['vehicles'] as $vehIdx => $vehicle) {
+
+        // 1. Validate edited vehicles (exclude any marked for deletion)
+        $deletedIds = $request->input('delete_vehicles', []);
+        if ($request->has('edit_vehicles')) {
+            foreach ($request->edit_vehicles as $id => $vehicle) {
+                if (in_array($id, $deletedIds)) {
+                    continue;
+                }
                 if (!empty($vehicle['chassis_number']) && !empty($vehicle['engine_number']) && $vehicle['chassis_number'] === $vehicle['engine_number']) {
-                    return back()->withErrors(["items.{$itemIdx}.vehicles.{$vehIdx}.engine_number" => "Chassis number and engine number must be different."])->withInput();
+                    return back()->withErrors(["edit_vehicles.{$id}.engine_number" => "Chassis number and engine number must be different."])->withInput();
                 }
                 if (in_array($vehicle['chassis_number'], $allChassis)) {
-                    return back()->withErrors(["items.{$itemIdx}.vehicles.{$vehIdx}.chassis_number" => "Duplicate chassis number: {$vehicle['chassis_number']}."])->withInput();
+                    return back()->withErrors(["edit_vehicles.{$id}.chassis_number" => "Duplicate chassis number: {$vehicle['chassis_number']}."])->withInput();
                 }
                 if (in_array($vehicle['engine_number'], $allEngines)) {
-                    return back()->withErrors(["items.{$itemIdx}.vehicles.{$vehIdx}.engine_number" => "Duplicate engine number: {$vehicle['engine_number']}."])->withInput();
+                    return back()->withErrors(["edit_vehicles.{$id}.engine_number" => "Duplicate engine number: {$vehicle['engine_number']}."])->withInput();
                 }
+
+                // Database unique check ignoring current ID
+                $chassisExists = VehicleInventory::where('chassis_number', $vehicle['chassis_number'])->where('id', '!=', $id)->exists();
+                if ($chassisExists) {
+                    return back()->withErrors(["edit_vehicles.{$id}.chassis_number" => "Chassis number is already taken."])->withInput();
+                }
+                $engineExists = VehicleInventory::where('engine_number', $vehicle['engine_number'])->where('id', '!=', $id)->exists();
+                if ($engineExists) {
+                    return back()->withErrors(["edit_vehicles.{$id}.engine_number" => "Engine number is already taken."])->withInput();
+                }
+
                 $allChassis[] = $vehicle['chassis_number'];
                 $allEngines[] = $vehicle['engine_number'];
             }
         }
 
-        DB::transaction(function () use ($request, $vehiclePurchaseOrder) {
-            $allFullyReceived = true;
-            $anyReceived = false;
+        // 2. Validate new vehicles
+        if ($request->has('items')) {
+            foreach ($request->items as $itemIdx => $itemData) {
+                if (isset($itemData['vehicles'])) {
+                    foreach ($itemData['vehicles'] as $vehIdx => $vehicle) {
+                        if (empty($vehicle['chassis_number']) || empty($vehicle['engine_number'])) {
+                            continue;
+                        }
+                        if ($vehicle['chassis_number'] === $vehicle['engine_number']) {
+                            return back()->withErrors(["items.{$itemIdx}.vehicles.{$vehIdx}.engine_number" => "Chassis number and engine number must be different."])->withInput();
+                        }
+                        if (in_array($vehicle['chassis_number'], $allChassis)) {
+                            return back()->withErrors(["items.{$itemIdx}.vehicles.{$vehIdx}.chassis_number" => "Duplicate chassis number: {$vehicle['chassis_number']}."])->withInput();
+                        }
+                        if (in_array($vehicle['engine_number'], $allEngines)) {
+                            return back()->withErrors(["items.{$itemIdx}.vehicles.{$vehIdx}.engine_number" => "Duplicate engine number: {$vehicle['engine_number']}."])->withInput();
+                        }
 
-            foreach ($request->items as $itemData) {
-                $poItem = $vehiclePurchaseOrder->items()->findOrFail($itemData['id']);
-                $previousReceived = $poItem->received_quantity;
-                $delta = count($itemData['vehicles']);
-                $newReceived = min($delta + $previousReceived, $poItem->quantity);
+                        // DB unique check for new ones
+                        $chassisExists = VehicleInventory::where('chassis_number', $vehicle['chassis_number'])->exists();
+                        if ($chassisExists) {
+                            return back()->withErrors(["items.{$itemIdx}.vehicles.{$vehIdx}.chassis_number" => "Chassis number is already taken."])->withInput();
+                        }
+                        $engineExists = VehicleInventory::where('engine_number', $vehicle['engine_number'])->exists();
+                        if ($engineExists) {
+                            return back()->withErrors(["items.{$itemIdx}.vehicles.{$vehIdx}.engine_number" => "Engine number is already taken."])->withInput();
+                        }
 
-                if ($newReceived > $poItem->quantity) {
-                    throw new \Exception("Cannot receive more than ordered for {$poItem->vehicle_description}. Ordered: {$poItem->quantity}, already received: {$previousReceived}.");
+                        $allChassis[] = $vehicle['chassis_number'];
+                        $allEngines[] = $vehicle['engine_number'];
+                    }
                 }
+            }
+        }
 
-                if ($delta > 0) {
-                    $anyReceived = true;
-                    foreach ($itemData['vehicles'] as $vehicle) {
-                        VehicleInventory::create([
-                            'vehicle_po_id' => $vehiclePurchaseOrder->id,
-                            'vehicle_description' => $poItem->vehicle_description,
-                            'color_name' => $poItem->color_name,
-                            'mfg_year' => $poItem->mfg_year,
-                            'chassis_number' => $vehicle['chassis_number'],
-                            'engine_number' => $vehicle['engine_number'],
-                            'quantity' => 1,
-                            'purchase_price' => $poItem->unit_price,
-                            'status' => 'available',
-                        ]);
+        // Check if anything was actually submitted
+        $hasNew = false;
+        if ($request->has('items')) {
+            foreach ($request->items as $itemData) {
+                if (!empty($itemData['vehicles'])) {
+                    $hasNew = true;
+                    break;
+                }
+            }
+        }
+        $hasEdit = false;
+        if ($request->has('edit_vehicles')) {
+            foreach ($request->edit_vehicles as $id => $val) {
+                if (!in_array($id, $deletedIds)) {
+                    $hasEdit = true;
+                    break;
+                }
+            }
+        }
+        $hasDelete = !empty($deletedIds);
+
+        if (!$hasNew && !$hasEdit && !$hasDelete) {
+            return back()->with('error', 'No vehicle details were submitted.')->withInput();
+        }
+
+        DB::transaction(function () use ($request, $vehiclePurchaseOrder, $hasNew, $hasEdit, $hasDelete, $deletedIds) {
+            // Delete removed vehicles and decrement received_quantity
+            if ($hasDelete) {
+                foreach ($deletedIds as $id) {
+                    $vehicle = VehicleInventory::find($id);
+                    if ($vehicle) {
+                        $poItem = $vehiclePurchaseOrder->items()
+                            ->where('vehicle_description', $vehicle->vehicle_description)
+                            ->where('color_name', $vehicle->color_name)
+                            ->where('mfg_year', $vehicle->mfg_year)
+                            ->first();
+                        if ($poItem) {
+                            $poItem->decrement('received_quantity');
+                        }
+                        $vehicle->delete();
+                    }
+                }
+            }
+
+            // Update edited vehicles
+            if ($hasEdit) {
+                foreach ($request->edit_vehicles as $id => $val) {
+                    if (in_array($id, $deletedIds)) {
+                        continue;
+                    }
+                    VehicleInventory::where('id', $id)->update([
+                        'chassis_number' => $val['chassis_number'],
+                        'engine_number' => $val['engine_number'],
+                    ]);
+                }
+            }
+
+            // Create new vehicles and update PO items
+            $allFullyReceived = true;
+            foreach ($vehiclePurchaseOrder->items()->get() as $poItem) {
+                $previousReceived = $poItem->received_quantity;
+                $delta = 0;
+
+                // Find matching item index in request
+                if ($request->has('items')) {
+                    foreach ($request->items as $itemData) {
+                        if ((int)$itemData['id'] === (int)$poItem->id && !empty($itemData['vehicles'])) {
+                            $delta = count($itemData['vehicles']);
+                            foreach ($itemData['vehicles'] as $vehicle) {
+                                VehicleInventory::create([
+                                    'vehicle_po_id' => $vehiclePurchaseOrder->id,
+                                    'vehicle_description' => $poItem->vehicle_description,
+                                    'color_name' => $poItem->color_name,
+                                    'mfg_year' => $poItem->mfg_year,
+                                    'chassis_number' => $vehicle['chassis_number'],
+                                    'engine_number' => $vehicle['engine_number'],
+                                    'quantity' => 1,
+                                    'purchase_price' => $poItem->unit_price,
+                                    'status' => 'available',
+                                ]);
+                            }
+                        }
                     }
                 }
 
+                $newReceived = min($delta + $previousReceived, $poItem->quantity);
                 $poItem->update(['received_quantity' => $newReceived]);
 
                 if ($newReceived < $poItem->quantity) {
@@ -230,28 +341,29 @@ class VehiclePurchaseOrderController extends Controller
                 }
             }
 
-            if (!$anyReceived) {
-                throw new \Exception('Receive at least one vehicle.');
-            }
-
             $vehiclePurchaseOrder->update([
-                'status' => $allFullyReceived ? 'received' : 'partial',
+                'status' => $allFullyReceived ? 'received' : ($vehiclePurchaseOrder->items()->where('received_quantity', '>', 0)->exists() ? 'partial' : 'pending'),
             ]);
         });
 
-        return redirect()->route('admin.vehicle-purchase-orders.show', $vehiclePurchaseOrder)->withSuccess('Vehicles received. Inventory updated.');
+        return redirect()->route('admin.vehicle-purchase-orders.show', $vehiclePurchaseOrder)->withSuccess('Vehicles updated successfully.');
     }
 
     public function checkUnique(Request $request)
     {
         $field = $request->input('field');
         $value = $request->input('value');
+        $ignoreId = $request->input('ignore_id');
 
         if (!in_array($field, ['chassis_number', 'engine_number'])) {
             return response()->json(['valid' => false, 'message' => 'Invalid field.']);
         }
 
-        $exists = VehicleInventory::where($field, $value)->exists();
+        $query = VehicleInventory::where($field, $value);
+        if ($ignoreId) {
+            $query->where('id', '!=', $ignoreId);
+        }
+        $exists = $query->exists();
 
         return response()->json([
             'valid' => !$exists,

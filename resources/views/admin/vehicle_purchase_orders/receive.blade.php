@@ -29,6 +29,7 @@
         <hr>
         <form method="POST" action="{{ route('admin.vehicle-purchase-orders.receive-store', $vehiclePurchaseOrder) }}" id="receiveForm">
             @csrf
+            <div id="deleted-vehicles-container"></div>
             @if($errors->any())
             <div class="alert alert-danger">
                 <ul class="mb-0">@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
@@ -63,13 +64,33 @@
                             @endphp
                             @if($itemVehicles->isNotEmpty())
                                 <div class="mb-4 p-3 bg-light rounded border border-light-subtle">
-                                    <div class="small fw-semibold text-muted mb-2"><i class="bx bx-info-circle me-1"></i> Previously Received Vehicles ({{ $itemVehicles->count() }}):</div>
-                                    <div class="d-flex flex-wrap gap-2">
+                                    <div class="small fw-semibold text-muted mb-3"><i class="bx bx-edit me-1"></i> Edit Previously Received Vehicles ({{ $itemVehicles->count() }}):</div>
+                                    <div class="edit-vehicle-rows">
                                         @foreach($itemVehicles as $rev)
-                                            <span class="badge bg-white text-dark border border-secondary-subtle px-2 py-1_5" style="font-size: 0.85rem;">
-                                                <span class="text-muted">Chassis:</span> <span class="fw-bold">{{ $rev->chassis_number }}</span>
-                                                <span class="text-muted ms-2">| Engine:</span> <span class="fw-bold">{{ $rev->engine_number }}</span>
-                                            </span>
+                                            <div class="vehicle-row d-flex align-items-center gap-2 mb-2">
+                                                <input type="hidden" name="edit_vehicles[{{ $rev->id }}][id]" value="{{ $rev->id }}">
+                                                <div class="flex-grow-1">
+                                                    <label class="form-label small text-muted">Chassis Number *</label>
+                                                    <input type="text" name="edit_vehicles[{{ $rev->id }}][chassis_number]" class="form-control bg-white" required maxlength="255" data-field="chassis_number" data-id="{{ $rev->id }}" value="{{ old("edit_vehicles.{$rev->id}.chassis_number", $rev->chassis_number) }}" style="{{ $errors->has("edit_vehicles.{$rev->id}.chassis_number") ? 'border: 2px solid #dc3545;' : '' }}">
+                                                    <div class="validation-message small text-danger mt-1">
+                                                        @error("edit_vehicles.{$rev->id}.chassis_number")
+                                                            {{ $message }}
+                                                        @enderror
+                                                    </div>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <label class="form-label small text-muted">Engine Number *</label>
+                                                    <input type="text" name="edit_vehicles[{{ $rev->id }}][engine_number]" class="form-control bg-white" required maxlength="255" data-field="engine_number" data-id="{{ $rev->id }}" value="{{ old("edit_vehicles.{$rev->id}.engine_number", $rev->engine_number) }}" style="{{ $errors->has("edit_vehicles.{$rev->id}.engine_number") ? 'border: 2px solid #dc3545;' : '' }}">
+                                                    <div class="validation-message small text-danger mt-1">
+                                                        @error("edit_vehicles.{$rev->id}.engine_number")
+                                                            {{ $message }}
+                                                        @enderror
+                                                    </div>
+                                                </div>
+                                                <div style="width:40px;" class="d-flex align-items-end justify-content-center">
+                                                    <button type="button" class="btn btn-link btn-remove-received p-0 align-middle" data-id="{{ $rev->id }}"><i class="bx bx-trash text-danger" style="font-size: 1.5rem;"></i></button>
+                                                </div>
+                                            </div>
                                         @endforeach
                                     </div>
                                 </div>
@@ -228,9 +249,14 @@ function revalidateFieldType(field) {
 function checkUniqueDB(input, value) {
     var field = input.dataset.field;
     var msgBox = input.parentNode.querySelector('.validation-message');
+    var ignoreId = input.dataset.id || '';
+    
     var formData = new FormData();
     formData.append('field', field);
     formData.append('value', value);
+    if (ignoreId) {
+        formData.append('ignore_id', ignoreId);
+    }
 
     fetch('{{ route("admin.vehicle-inventories.check-unique") }}', {
         method: 'POST',
@@ -318,6 +344,29 @@ document.addEventListener('click', function(e) {
                 }
             }
         });
+        
+        revalidateFieldType('chassis_number');
+        revalidateFieldType('engine_number');
+    }
+});
+
+document.addEventListener('click', function(e) {
+    if (e.target.closest('.btn-remove-received')) {
+        if (!confirm('Are you sure you want to remove this vehicle from inventory?')) {
+            return;
+        }
+        var btn = e.target.closest('.btn-remove-received');
+        var id = btn.dataset.id;
+        var row = btn.closest('.vehicle-row');
+        
+        var container = document.getElementById('deleted-vehicles-container');
+        var hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = 'delete_vehicles[]';
+        hiddenInput.value = id;
+        container.appendChild(hiddenInput);
+        
+        row.remove();
         
         revalidateFieldType('chassis_number');
         revalidateFieldType('engine_number');

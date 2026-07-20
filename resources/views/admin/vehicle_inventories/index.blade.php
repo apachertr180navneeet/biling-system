@@ -17,8 +17,6 @@
                         <th>Vehicle</th>
                         <th>Chassis No</th>
                         <th>Engine No</th>
-                        <th>Color</th>
-                        <th>Year</th>
                         <th>Purchase Price</th>
                         <th>Status</th>
                         <th>PO Ref</th>
@@ -31,8 +29,6 @@
                         <td>{{ $i->vehicle_description }}</td>
                         <td>{{ $i->chassis_number ?? '-' }}</td>
                         <td>{{ $i->engine_number ?? '-' }}</td>
-                        <td>{{ $i->color_name ?? '-' }}</td>
-                        <td>{{ $i->mfg_year ?? '-' }}</td>
                         <td>{{ number_format($i->purchase_price, 2) }}</td>
                         <td>
                             @if($i->status == 'available')
@@ -50,7 +46,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="9" class="text-center">No vehicles in inventory.</td></tr>
+                    <tr><td colspan="7" class="text-center">No vehicles in inventory.</td></tr>
                     @endforelse
                 </tbody>
             </table>
