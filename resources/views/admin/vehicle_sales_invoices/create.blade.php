@@ -137,6 +137,13 @@
                         @error('rate')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-3">
+                        <label class="form-label">GST Type <span class="text-danger">*</span></label>
+                        <select name="gst_type" id="gst_type" class="form-select no-select2" required>
+                            <option value="exclusive" {{ old('gst_type') === 'exclusive' ? 'selected' : '' }}>GST Extra (Exclusive)</option>
+                            <option value="inclusive" {{ old('gst_type') === 'inclusive' ? 'selected' : '' }}>GST Included (Inclusive)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
                         <label class="form-label">SGST @ 2.5% (Calculated)</label>
                         <input type="text" id="sgst" class="form-control bg-light" readonly value="0.00">
                     </div>
@@ -320,16 +327,19 @@ document.addEventListener('DOMContentLoaded', function() {
             lblBatteryType.textContent = opt.getAttribute('data-battery-type') || '-';
             lblBatteryMake.textContent = opt.getAttribute('data-battery-make') || '-';
             rateInput.value = opt.getAttribute('data-rate') || '0';
+            rateInput.dataset.enteredRate = rateInput.value;
             
             detailsCard.classList.remove('d-none');
         } else {
             detailsCard.classList.add('d-none');
             rateInput.value = '0';
+            rateInput.dataset.enteredRate = '0';
         }
         calculateInvoice();
     });
 
     var rateInp = document.getElementById('rate');
+    var gstTypeSelect = document.getElementById('gst_type');
     var nemmpInp = document.getElementById('nemmp_incentive');
     var discountInp = document.getElementById('discount');
     
@@ -339,10 +349,22 @@ document.addEventListener('DOMContentLoaded', function() {
     var grandTotalOut = document.getElementById('grand_total');
 
     function calculateInvoice() {
-        var rate = parseFloat(rateInp.value) || 0;
-        var cgst = Math.round(rate * 2.5) / 100;
-        var sgst = Math.round(rate * 2.5) / 100;
-        var subtotal = rate + cgst + sgst;
+        var gstType = gstTypeSelect.value;
+        var enteredRate = parseFloat(rateInp.dataset.enteredRate) || parseFloat(rateInp.value) || 0;
+        var subtotal = 0;
+        var cgst = 0;
+        var sgst = 0;
+
+        if (gstType === 'inclusive') {
+            var baseRate = enteredRate / 1.05;
+            cgst = Math.round(baseRate * 2.5) / 100;
+            sgst = Math.round(baseRate * 2.5) / 100;
+            subtotal = enteredRate;
+        } else {
+            cgst = Math.round(enteredRate * 2.5) / 100;
+            sgst = Math.round(enteredRate * 2.5) / 100;
+            subtotal = enteredRate + cgst + sgst;
+        }
         
         var nemmp = parseFloat(nemmpInp.value) || 0;
         var discount = parseFloat(discountInp.value) || 0;
@@ -354,7 +376,44 @@ document.addEventListener('DOMContentLoaded', function() {
         grandTotalOut.value = grand.toFixed(2);
     }
 
-    rateInp.addEventListener('input', calculateInvoice);
+    function convertInclusiveToExclusive() {
+        var gstType = gstTypeSelect.value;
+        var enteredRate = parseFloat(rateInp.dataset.enteredRate) || parseFloat(rateInp.value) || 0;
+
+        if (gstType === 'inclusive') {
+            var baseRate = enteredRate / 1.05;
+            rateInp.value = baseRate.toFixed(2);
+        } else {
+            rateInp.value = enteredRate.toFixed(2);
+        }
+        calculateInvoice();
+    }
+
+    rateInp.addEventListener('input', function() {
+        rateInp.dataset.enteredRate = rateInp.value;
+        calculateInvoice();
+    });
+
+    rateInp.addEventListener('focus', function() {
+        if (gstTypeSelect.value === 'inclusive') {
+            var enteredRate = parseFloat(rateInp.dataset.enteredRate) || parseFloat(rateInp.value) || 0;
+            rateInp.value = enteredRate.toFixed(2);
+        }
+    });
+
+    rateInp.addEventListener('blur', convertInclusiveToExclusive);
+    
+    gstTypeSelect.addEventListener('change', function() {
+        convertInclusiveToExclusive();
+    });
+
+    document.getElementById('invoiceForm').addEventListener('submit', function(e) {
+        if (document.activeElement) {
+            document.activeElement.blur();
+        }
+        gstTypeSelect.value = 'exclusive';
+    });
+
     nemmpInp.addEventListener('input', calculateInvoice);
     discountInp.addEventListener('input', calculateInvoice);
 

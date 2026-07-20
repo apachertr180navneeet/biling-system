@@ -125,6 +125,7 @@ class PartSalesInvoiceController extends Controller
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.rate' => 'required|numeric|min:0',
             'items.*.tax_percentage' => 'required|numeric|min:0|max:100',
+            'items.*.gst_type' => 'required|string|in:exclusive,inclusive',
             'items.*.serial_no_warranty_notes' => 'nullable|string|max:255',
         ]);
 
@@ -150,8 +151,14 @@ class PartSalesInvoiceController extends Controller
             $qty = intval($itemData['quantity']);
             $rate = floatval($itemData['rate']);
             $tax_pct = floatval($itemData['tax_percentage']);
+            $gst_type = $itemData['gst_type'] ?? 'exclusive';
 
-            $line_taxable = $qty * $rate;
+            if ($gst_type === 'inclusive') {
+                $rate_excl_tax = $rate / (1 + ($tax_pct / 100));
+                $line_taxable = $qty * $rate_excl_tax;
+            } else {
+                $line_taxable = $qty * $rate;
+            }
             $line_tax = ($line_taxable * $tax_pct) / 100;
             
             $taxable_amount += $line_taxable;
@@ -204,6 +211,11 @@ class PartSalesInvoiceController extends Controller
                 $qty = intval($itemData['quantity']);
                 $rate = floatval($itemData['rate']);
                 $tax_pct = floatval($itemData['tax_percentage']);
+                $gst_type = $itemData['gst_type'] ?? 'exclusive';
+
+                if ($gst_type === 'inclusive') {
+                    $rate = $rate / (1 + ($tax_pct / 100));
+                }
 
                 $line_taxable = $qty * $rate;
                 $line_tax = ($line_taxable * $tax_pct) / 100;

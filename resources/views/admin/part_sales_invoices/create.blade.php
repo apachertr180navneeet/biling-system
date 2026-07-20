@@ -93,12 +93,13 @@
                     <table class="table table-bordered align-middle" id="itemsTable">
                         <thead>
                             <tr class="table-dark">
-                                <th style="width: 35%;">Part Name / Number <span class="text-danger">*</span></th>
-                                <th style="width: 12%; text-align: center;">Stock Available</th>
-                                <th style="width: 10%; text-align: center;">Qty <span class="text-danger">*</span></th>
-                                <th style="width: 13%;">Rate (Excl. Tax) <span class="text-danger">*</span></th>
+                                <th style="width: 30%;">Part Name / Number <span class="text-danger">*</span></th>
+                                <th style="width: 10%; text-align: center;">Stock Available</th>
+                                <th style="width: 8%; text-align: center;">Qty <span class="text-danger">*</span></th>
+                                <th style="width: 12%;">Rate <span class="text-danger">*</span></th>
+                                <th style="width: 12%;">GST Type <span class="text-danger">*</span></th>
                                 <th style="width: 10%;">GST %</th>
-                                <th style="width: 15%;">Total Amount</th>
+                                <th style="width: 13%;">Total Amount</th>
                                 <th style="width: 5%; text-align: center;">Action</th>
                             </tr>
                         </thead>
@@ -126,7 +127,13 @@
                                     <input type="number" name="items[0][quantity]" class="form-control qty-input text-center" min="1" value="1" required>
                                 </td>
                                 <td>
-                                    <input type="number" step="0.01" name="items[0][rate]" class="form-control rate-input" min="0" value="0.00" required>
+                                    <input type="number" step="0.01" name="items[0][rate]" class="form-control rate-input" min="0" value="0.00" data-entered-rate="0.00" required>
+                                </td>
+                                <td>
+                                    <select name="items[0][gst_type]" class="form-select gst-type-select no-select2" required>
+                                        <option value="exclusive">Exclusive</option>
+                                        <option value="inclusive">Inclusive</option>
+                                    </select>
                                 </td>
                                 <td>
                                     <select name="items[0][tax_percentage]" class="form-select tax-select no-select2" required>
@@ -311,7 +318,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 <input type="number" name="items[\${itemIndex}][quantity]" class="form-control qty-input text-center" min="1" value="1" required>
             </td>
             <td>
-                <input type="number" step="0.01" name="items[\${itemIndex}][rate]" class="form-control rate-input" min="0" value="0.00" required>
+                <input type="number" step="0.01" name="items[\${itemIndex}][rate]" class="form-control rate-input" min="0" value="0.00" data-entered-rate="0.00" required>
+            </td>
+            <td>
+                <select name="items[\${itemIndex}][gst_type]" class="form-select gst-type-select no-select2" required>
+                    <option value="exclusive">Exclusive</option>
+                    <option value="inclusive">Inclusive</option>
+                </select>
             </td>
             <td>
                 <select name="items[\${itemIndex}][tax_percentage]" class="form-select tax-select no-select2" required>
@@ -349,10 +362,29 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    function convertRowInclusiveToExclusive(row) {
+        var rateInput = row.querySelector('.rate-input');
+        var gstTypeSelect = row.querySelector('.gst-type-select');
+        var taxSelect = row.querySelector('.tax-select');
+
+        var gstType = gstTypeSelect.value;
+        var enteredRate = parseFloat(rateInput.dataset.enteredRate) || parseFloat(rateInput.value) || 0;
+
+        if (gstType === 'inclusive') {
+            var taxPct = parseFloat(taxSelect.value) || 0;
+            var baseRate = enteredRate / (1 + (taxPct / 100));
+            rateInput.value = baseRate.toFixed(2);
+        } else {
+            rateInput.value = enteredRate.toFixed(2);
+        }
+        calculateRow(row);
+    }
+
     function bindRowEvents(row) {
         var partSelect = row.querySelector('.part-select');
         var qtyInput = row.querySelector('.qty-input');
         var rateInput = row.querySelector('.rate-input');
+        var gstTypeSelect = row.querySelector('.gst-type-select');
         var taxSelect = row.querySelector('.tax-select');
         var stockBadge = row.querySelector('.stock-badge');
 
@@ -362,10 +394,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 var price = parseFloat(opt.getAttribute('data-price')) || 0;
                 var stock = parseInt(opt.getAttribute('data-stock')) || 0;
                 rateInput.value = price.toFixed(2);
+                rateInput.dataset.enteredRate = price.toFixed(2);
                 stockBadge.textContent = stock;
                 qtyInput.setAttribute('max', stock);
             } else {
                 rateInput.value = '0.00';
+                rateInput.dataset.enteredRate = '0.00';
                 stockBadge.textContent = '0';
                 qtyInput.removeAttribute('max');
             }
@@ -386,27 +420,57 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         rateInput.addEventListener('input', function() {
+            rateInput.dataset.enteredRate = rateInput.value;
             calculateRow(row);
         });
 
+        rateInput.addEventListener('focus', function() {
+            if (gstTypeSelect.value === 'inclusive') {
+                var enteredRate = parseFloat(rateInput.dataset.enteredRate) || parseFloat(rateInput.value) || 0;
+                rateInput.value = enteredRate.toFixed(2);
+            }
+        });
+
+        rateInput.addEventListener('blur', function() {
+            convertRowInclusiveToExclusive(row);
+        });
+
+        gstTypeSelect.addEventListener('change', function() {
+            convertRowInclusiveToExclusive(row);
+        });
+
         taxSelect.addEventListener('change', function() {
-            calculateRow(row);
+            convertRowInclusiveToExclusive(row);
         });
     }
 
     function calculateRow(row) {
         var qtyInput = row.querySelector('.qty-input');
         var rateInput = row.querySelector('.rate-input');
+        var gstTypeSelect = row.querySelector('.gst-type-select');
         var taxSelect = row.querySelector('.tax-select');
         var lineTotal = row.querySelector('.line-total');
 
         var qty = parseInt(qtyInput.value) || 0;
-        var rate = parseFloat(rateInput.value) || 0;
+        var gstType = gstTypeSelect.value;
         var taxPct = parseFloat(taxSelect.value) || 0;
 
-        var taxable = qty * rate;
-        var tax = (taxable * taxPct) / 100;
-        var net = taxable + tax;
+        var enteredRate = parseFloat(rateInput.dataset.enteredRate) || parseFloat(rateInput.value) || 0;
+
+        var taxable = 0;
+        var tax = 0;
+        var net = 0;
+
+        if (gstType === 'inclusive') {
+            var rateExclTax = enteredRate / (1 + (taxPct / 100));
+            taxable = qty * rateExclTax;
+            tax = (taxable * taxPct) / 100;
+            net = qty * enteredRate;
+        } else {
+            taxable = qty * enteredRate;
+            tax = (taxable * taxPct) / 100;
+            net = taxable + tax;
+        }
 
         lineTotal.value = net.toFixed(2);
         calculateSummary();
@@ -430,20 +494,31 @@ document.addEventListener('DOMContentLoaded', function() {
         var taxableTotal = 0;
         var cgstTotal = 0;
         var sgstTotal = 0;
-        var grandTotal = 0;
 
         var rows = itemsContainer.querySelectorAll('.item-row');
         rows.forEach(function(row) {
             var qtyInput = row.querySelector('.qty-input');
             var rateInput = row.querySelector('.rate-input');
+            var gstTypeSelect = row.querySelector('.gst-type-select');
             var taxSelect = row.querySelector('.tax-select');
 
             var qty = parseInt(qtyInput.value) || 0;
-            var rate = parseFloat(rateInput.value) || 0;
+            var gstType = gstTypeSelect.value;
             var taxPct = parseFloat(taxSelect.value) || 0;
+            
+            var enteredRate = parseFloat(rateInput.dataset.enteredRate) || parseFloat(rateInput.value) || 0;
 
-            var taxable = qty * rate;
-            var tax = (taxable * taxPct) / 100;
+            var taxable = 0;
+            var tax = 0;
+
+            if (gstType === 'inclusive') {
+                var rateExclTax = enteredRate / (1 + (taxPct / 100));
+                taxable = qty * rateExclTax;
+                tax = (taxable * taxPct) / 100;
+            } else {
+                taxable = qty * enteredRate;
+                tax = (taxable * taxPct) / 100;
+            }
 
             taxableTotal += taxable;
             cgstTotal += tax / 2;
@@ -471,6 +546,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     prevBalanceInput.addEventListener('input', calculateSummary);
     receivedAmountInput.addEventListener('input', calculateSummary);
+
+    document.getElementById('invoiceForm').addEventListener('submit', function(e) {
+        if (document.activeElement) {
+            document.activeElement.blur();
+        }
+        var gstSelects = document.querySelectorAll('.gst-type-select');
+        gstSelects.forEach(function(select) {
+            select.value = 'exclusive';
+        });
+    });
 
     // AJAX Quick Add Customer Form Handler
     var quickAddForm = document.getElementById('quickAddCustomerForm');

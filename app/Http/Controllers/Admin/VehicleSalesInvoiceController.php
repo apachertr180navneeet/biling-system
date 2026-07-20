@@ -123,6 +123,7 @@ class VehicleSalesInvoiceController extends Controller
             'customer_residence_phone' => 'nullable|string|max:20',
             'vehicle_inventory_id' => 'required|exists:vehicle_inventories,id',
             'rate' => 'required|numeric|min:0',
+            'gst_type' => 'required|string|in:exclusive,inclusive',
             'nemmp_incentive' => 'nullable|numeric|min:0',
             'discount' => 'nullable|numeric|min:0',
             'payment_mode' => 'nullable|string|max:255',
@@ -138,15 +139,24 @@ class VehicleSalesInvoiceController extends Controller
         }
 
         // Calculations
-        $rate = floatval($request->rate);
+        $rate_input = floatval($request->rate);
+        $gst_type = $request->input('gst_type', 'exclusive');
         $cgst_rate = 2.50;
         $sgst_rate = 2.50;
         
-        $sub_total = $rate;
-        $cgst_amount = round(($sub_total * $cgst_rate) / 100, 2);
-        $sgst_amount = round(($sub_total * $sgst_rate) / 100, 2);
-        
-        $total = $sub_total + $cgst_amount + $sgst_amount;
+        if ($gst_type === 'inclusive') {
+            $sub_total = round($rate_input / 1.05, 2);
+            $cgst_amount = round(($sub_total * $cgst_rate) / 100, 2);
+            $sgst_amount = round(($sub_total * $sgst_rate) / 100, 2);
+            $total = $rate_input;
+            $rate = $sub_total; // Save base rate excl gst as rate in database
+        } else {
+            $sub_total = $rate_input;
+            $cgst_amount = round(($sub_total * $cgst_rate) / 100, 2);
+            $sgst_amount = round(($sub_total * $sgst_rate) / 100, 2);
+            $total = $sub_total + $cgst_amount + $sgst_amount;
+            $rate = $rate_input;
+        }
         
         $nemmp = floatval($request->input('nemmp_incentive', 0));
         $discount = floatval($request->input('discount', 0));
