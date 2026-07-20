@@ -1,10 +1,10 @@
 @extends('admin.layouts.app')
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
-    <h4 class="fw-bold mb-4">Create Sales Invoice</h4>
+    <h4 class="fw-bold mb-4">Create Vehicle Sales Invoice</h4>
     <div class="card">
         <div class="card-body">
-            <form method="POST" action="{{ route('admin.sales-invoices.store') }}" id="invoiceForm">
+            <form method="POST" action="{{ route('admin.vehicle-sales-invoices.store') }}" id="invoiceForm">
                 @csrf
                 
                 <h5 class="card-title text-primary mb-3">Customer Information</h5>
@@ -157,7 +157,7 @@ CHARGER WARRANTY - 2 YEAR</textarea>
 
                 <div class="mt-4">
                     <button type="submit" class="btn btn-primary"><i class="bx bx-check"></i> Generate Invoice</button>
-                    <a href="{{ route('admin.sales-invoices.index') }}" class="btn btn-secondary">Cancel</a>
+                    <a href="{{ route('admin.vehicle-sales-invoices.index') }}" class="btn btn-secondary">Cancel</a>
                 </div>
             </form>
         </div>

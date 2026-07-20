@@ -117,10 +117,10 @@
 			</a>
 		</li>
 
-		<li class="menu-item {{ request()->routeIs('admin.sales-invoices.*') ? 'active' : ''}}">
-			<a href="{{route('admin.sales-invoices.index')}}" class="menu-link">
+		<li class="menu-item {{ request()->routeIs('admin.vehicle-sales-invoices.*') ? 'active' : ''}}">
+			<a href="{{route('admin.vehicle-sales-invoices.index')}}" class="menu-link">
 				<i class="menu-icon tf-icons bx bx-receipt"></i>
-				<div data-i18n="Sales Invoices">Sales Invoices</div>
+				<div data-i18n="Vehicle Sales Invoices">Vehicle Sales Invoices</div>
 			</a>
 		</li>
 

@@ -22,8 +22,8 @@ class VehicleInventory extends Model
         return $this->belongsTo(VehiclePurchaseOrder::class, 'vehicle_po_id');
     }
 
-    public function salesInvoices()
+    public function vehicleSalesInvoices()
     {
-        return $this->hasMany(SalesInvoice::class, 'vehicle_inventory_id');
+        return $this->hasMany(VehicleSalesInvoice::class, 'vehicle_inventory_id');
     }
 }

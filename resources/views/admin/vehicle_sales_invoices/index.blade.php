@@ -2,8 +2,8 @@
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="fw-bold mb-0">Sales Invoices</h4>
-        <a href="{{ route('admin.sales-invoices.create') }}" class="btn btn-primary"><i class="bx bx-plus"></i> New Sales Invoice</a>
+        <h4 class="fw-bold mb-0">Vehicle Sales Invoices</h4>
+        <a href="{{ route('admin.vehicle-sales-invoices.create') }}" class="btn btn-primary"><i class="bx bx-plus"></i> New Vehicle Sales Invoice</a>
     </div>
 
     <div class="card">
@@ -24,7 +24,7 @@
                 <tbody>
                     @forelse($invoices as $inv)
                     <tr>
-                        <td><a href="{{ route('admin.sales-invoices.show', $inv) }}" class="fw-bold">{{ $inv->invoice_number }}</a></td>
+                        <td><a href="{{ route('admin.vehicle-sales-invoices.show', $inv) }}" class="fw-bold">{{ $inv->invoice_number }}</a></td>
                         <td>{{ $inv->invoice_date->format('d-m-Y') }}</td>
                         <td>
                             {{ $inv->customer_name }}
@@ -35,12 +35,12 @@
                         <td><strong>{{ number_format($inv->grand_total, 2) }}</strong></td>
                         <td>{{ $inv->payment_mode ?? '-' }}</td>
                         <td>
-                            <a href="{{ route('admin.sales-invoices.show', $inv) }}" class="btn btn-sm btn-info" title="View / Print"><i class="bx bx-printer"></i></a>
-                            <button class="btn btn-sm btn-danger delete-btn" data-id="{{ $inv->id }}" data-url="{{ route('admin.sales-invoices.destroy', $inv) }}" title="Delete"><i class="bx bx-trash"></i></button>
+                            <a href="{{ route('admin.vehicle-sales-invoices.show', $inv) }}" class="btn btn-sm btn-info" title="View / Print"><i class="bx bx-printer"></i></a>
+                            <button class="btn btn-sm btn-danger delete-btn" data-id="{{ $inv->id }}" data-url="{{ route('admin.vehicle-sales-invoices.destroy', $inv) }}" title="Delete"><i class="bx bx-trash"></i></button>
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="8" class="text-center text-muted">No sales invoices recorded.</td></tr>
+                    <tr><td colspan="8" class="text-center text-muted">No vehicle sales invoices recorded.</td></tr>
                     @endforelse
                 </tbody>
             </table>

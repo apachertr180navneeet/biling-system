@@ -3,23 +3,23 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\SalesInvoice;
+use App\Models\VehicleSalesInvoice;
 use App\Models\VehicleInventory;
 use App\Models\Customer;
 use App\Models\VehicleMaster;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class SalesInvoiceController extends Controller
+class VehicleSalesInvoiceController extends Controller
 {
     public function index()
     {
-        $invoices = SalesInvoice::with('customer', 'vehicleInventory')
+        $invoices = VehicleSalesInvoice::with('customer', 'vehicleInventory')
             ->orderBy('invoice_date', 'desc')
             ->orderBy('id', 'desc')
             ->paginate(20);
             
-        return view('admin.sales_invoices.index', compact('invoices'));
+        return view('admin.vehicle_sales_invoices.index', compact('invoices'));
     }
 
     public function create()
@@ -45,7 +45,7 @@ class SalesInvoiceController extends Controller
                 return $item;
             });
 
-        return view('admin.sales_invoices.create', compact('customers', 'vehicles'));
+        return view('admin.vehicle_sales_invoices.create', compact('customers', 'vehicles'));
     }
 
     public function store(Request $request)
@@ -89,15 +89,15 @@ class SalesInvoiceController extends Controller
         $grand_total = $total - $nemmp - $discount;
 
         $invoice = DB::transaction(function () use ($request, $vehicle, $sub_total, $cgst_rate, $cgst_amount, $sgst_rate, $sgst_amount, $total, $nemmp, $discount, $grand_total) {
-            // Generate invoice number: INV-YYYYMMDD-0001
-            $last = DB::table('sales_invoices')->lockForUpdate()->orderBy('id', 'desc')->first();
+            // Generate invoice number
+            $last = DB::table('vehicle_sales_invoices')->lockForUpdate()->orderBy('id', 'desc')->first();
             $nextId = $last ? $last->id + 1 : 1;
             $invoiceNumber = 'INV-' . date('Ymd') . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
 
             // Mark vehicle as sold
             $vehicle->update(['status' => 'sold']);
 
-            return SalesInvoice::create([
+            return VehicleSalesInvoice::create([
                 'invoice_number' => $invoiceNumber,
                 'invoice_date' => $request->invoice_date,
                 'customer_id' => $request->customer_id,
@@ -123,15 +123,15 @@ class SalesInvoiceController extends Controller
             ]);
         });
 
-        return redirect()->route('admin.sales-invoices.show', $invoice)->withSuccess('Sales Invoice created successfully.');
+        return redirect()->route('admin.vehicle-sales-invoices.show', $invoice)->withSuccess('Vehicle Sales Invoice created successfully.');
     }
 
-    public function show(SalesInvoice $salesInvoice)
+    public function show(VehicleSalesInvoice $vehicleSalesInvoice)
     {
-        $salesInvoice->load('customer', 'vehicleInventory.purchaseOrder');
+        $vehicleSalesInvoice->load('customer', 'vehicleInventory.purchaseOrder');
         
         // Find matching vehicle master for battery info
-        $vehicle = $salesInvoice->vehicleInventory;
+        $vehicle = $vehicleSalesInvoice->vehicleInventory;
         $master = VehicleMaster::where('is_active', true)
             ->get()
             ->first(function ($m) use ($vehicle) {
@@ -144,17 +144,17 @@ class SalesInvoiceController extends Controller
         $battery_make = $master ? $master->battery_make : 'LITHIUM';
         $color_name = $master ? $master->color_name : '-';
 
-        return view('admin.sales_invoices.show', compact('salesInvoice', 'battery_type', 'battery_make', 'color_name'));
+        return view('admin.vehicle_sales_invoices.show', compact('vehicleSalesInvoice', 'battery_type', 'battery_make', 'color_name'));
     }
 
-    public function destroy(SalesInvoice $salesInvoice)
+    public function destroy(VehicleSalesInvoice $vehicleSalesInvoice)
     {
-        DB::transaction(function () use ($salesInvoice) {
-            $vehicle = VehicleInventory::find($salesInvoice->vehicle_inventory_id);
+        DB::transaction(function () use ($vehicleSalesInvoice) {
+            $vehicle = VehicleInventory::find($vehicleSalesInvoice->vehicle_inventory_id);
             if ($vehicle) {
                 $vehicle->update(['status' => 'available']);
             }
-            $salesInvoice->delete();
+            $vehicleSalesInvoice->delete();
         });
 
         return response()->json(['success' => true, 'message' => 'Invoice deleted successfully.']);
