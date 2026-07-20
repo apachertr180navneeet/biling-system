@@ -1,8 +1,21 @@
 <!DOCTYPE html>
-<html lang="en" ng-app="{{ config('app.name') }}" lang="en" class="light-style layout-menu-fixed layout-compact" dir="ltr" data-theme="theme-default"
+<html lang="en" ng-app="{{ config('app.name') }}" class="layout-menu-fixed layout-compact" dir="ltr" data-theme="theme-default"
     data-assets-path="../assets/" data-template="vertical-menu-template-free">
     <head>
         <meta charset="utf-8" />
+        <script>
+            (function() {
+                const storedTheme = localStorage.getItem('admin-theme') || 'light';
+                document.documentElement.setAttribute('data-theme', storedTheme);
+                if (storedTheme === 'dark') {
+                    document.documentElement.classList.add('dark-style');
+                    document.documentElement.classList.remove('light-style');
+                } else {
+                    document.documentElement.classList.add('light-style');
+                    document.documentElement.classList.remove('dark-style');
+                }
+            })();
+        </script>
         <title>{{ config('app.name') }}</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
         <meta name="description" content="" />

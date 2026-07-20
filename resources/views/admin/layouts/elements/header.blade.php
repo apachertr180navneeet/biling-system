@@ -18,6 +18,13 @@
 		<!-- /Search -->
 
 		<ul class="navbar-nav flex-row align-items-center ms-auto">
+			<!-- Theme Toggle -->
+			<li class="nav-item me-3">
+				<button class="btn btn-icon btn-link p-0" id="theme-toggle-btn" title="Toggle Theme" style="box-shadow: none !important; border: none; background: transparent; cursor: pointer;">
+					<i class="bx bx-moon fs-4" id="theme-toggle-icon" style="transition: transform 0.3s ease;"></i>
+				</button>
+			</li>
+			<!--/ Theme Toggle -->
 			<!-- User -->
 			<li class="nav-item navbar-dropdown dropdown-user dropdown">
 				<a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);"
@@ -75,4 +82,42 @@
 			<!--/ User -->
 		</ul>
 	</div>
+	<script>
+	document.addEventListener('DOMContentLoaded', function() {
+		const themeBtn = document.getElementById('theme-toggle-btn');
+		const themeIcon = document.getElementById('theme-toggle-icon');
+		
+		function updateIcon(theme) {
+			if (theme === 'dark') {
+				themeIcon.className = 'bx bx-sun fs-4 text-warning';
+				themeIcon.style.transform = 'rotate(180deg)';
+			} else {
+				themeIcon.className = 'bx bx-moon fs-4 text-secondary';
+				themeIcon.style.transform = 'rotate(0deg)';
+			}
+		}
+		
+		// Initial state
+		const currentTheme = localStorage.getItem('admin-theme') || 'light';
+		updateIcon(currentTheme);
+		
+		themeBtn.addEventListener('click', function() {
+			const theme = localStorage.getItem('admin-theme') || 'light';
+			const newTheme = theme === 'light' ? 'dark' : 'light';
+			
+			localStorage.setItem('admin-theme', newTheme);
+			document.documentElement.setAttribute('data-theme', newTheme);
+			
+			if (newTheme === 'dark') {
+				document.documentElement.classList.add('dark-style');
+				document.documentElement.classList.remove('light-style');
+			} else {
+				document.documentElement.classList.add('light-style');
+				document.documentElement.classList.remove('dark-style');
+			}
+			
+			updateIcon(newTheme);
+		});
+	});
+	</script>
 </nav>
