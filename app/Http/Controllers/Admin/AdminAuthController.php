@@ -263,7 +263,7 @@ class AdminAuthController extends Controller
     {
         $totalCustomers = Customer::count();
 
-        $vehicleInventoryCount = VehicleInventory::where('quantity', '>', 0)->where('status', 'available')->sum('quantity');
+        $vehicleInventoryCount = VehicleInventory::where('status', 'available')->count();
         $pendingVehiclePOs = VehiclePurchaseOrder::whereIn('status', ['pending', 'partial'])->count();
         $lowStockCount = SparePartStock::where('is_active', true)->whereColumn('quantity', '<', 'min_quantity')->where('min_quantity', '>', 0)->count();
 

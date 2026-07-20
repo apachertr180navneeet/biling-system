@@ -9,6 +9,7 @@ use App\Models\Supplier;
 use App\Models\VehicleMaster;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class VehiclePurchaseOrderController extends Controller
 {
@@ -132,24 +133,9 @@ class VehiclePurchaseOrderController extends Controller
     public function destroy(VehiclePurchaseOrder $vehiclePurchaseOrder)
     {
         DB::transaction(function () use ($vehiclePurchaseOrder) {
-            $vehiclePurchaseOrder->load('items');
-            foreach ($vehiclePurchaseOrder->items as $item) {
-                if ($item->received_quantity > 0) {
-                    $existing = VehicleInventory::where('vehicle_po_id', $vehiclePurchaseOrder->id)
-                        ->where('vehicle_description', $item->vehicle_description)
-                        ->where('color_name', $item->color_name)
-                        ->where('mfg_year', $item->mfg_year)
-                        ->where('status', 'available')
-                        ->lockForUpdate()
-                        ->first();
-                    if ($existing) {
-                        $existing->decrement('quantity', $item->received_quantity);
-                        if ($existing->quantity <= 0) {
-                            $existing->update(['status' => 'sold']);
-                        }
-                    }
-                }
-            }
+            VehicleInventory::where('vehicle_po_id', $vehiclePurchaseOrder->id)
+                ->where('status', 'available')
+                ->update(['status' => 'sold']);
             $vehiclePurchaseOrder->items()->delete();
             $vehiclePurchaseOrder->delete();
         });
@@ -169,7 +155,8 @@ class VehiclePurchaseOrderController extends Controller
             return redirect()->route('admin.vehicle-purchase-orders.show', $vehiclePurchaseOrder)->with('error', 'Already fully received.');
         }
         $vehiclePurchaseOrder->load('items');
-        return view('admin.vehicle_purchase_orders.receive', compact('vehiclePurchaseOrder'));
+        $receivedVehicles = \App\Models\VehicleInventory::where('vehicle_po_id', $vehiclePurchaseOrder->id)->get();
+        return view('admin.vehicle_purchase_orders.receive', compact('vehiclePurchaseOrder', 'receivedVehicles'));
     }
 
     public function receiveStore(Request $request, VehiclePurchaseOrder $vehiclePurchaseOrder)
@@ -181,8 +168,28 @@ class VehiclePurchaseOrderController extends Controller
         $request->validate([
             'items' => 'required|array',
             'items.*.id' => 'required|exists:vehicle_po_items,id',
-            'items.*.received_qty' => 'required|integer|min:0',
+            'items.*.vehicles' => 'required|array|min:1',
+            'items.*.vehicles.*.chassis_number' => 'required|string|max:255|unique:vehicle_inventories,chassis_number',
+            'items.*.vehicles.*.engine_number' => 'required|string|max:255|unique:vehicle_inventories,engine_number',
         ]);
+
+        $allChassis = [];
+        $allEngines = [];
+        foreach ($request->items as $itemIdx => $itemData) {
+            foreach ($itemData['vehicles'] as $vehIdx => $vehicle) {
+                if (!empty($vehicle['chassis_number']) && !empty($vehicle['engine_number']) && $vehicle['chassis_number'] === $vehicle['engine_number']) {
+                    return back()->withErrors(["items.{$itemIdx}.vehicles.{$vehIdx}.engine_number" => "Chassis number and engine number must be different."])->withInput();
+                }
+                if (in_array($vehicle['chassis_number'], $allChassis)) {
+                    return back()->withErrors(["items.{$itemIdx}.vehicles.{$vehIdx}.chassis_number" => "Duplicate chassis number: {$vehicle['chassis_number']}."])->withInput();
+                }
+                if (in_array($vehicle['engine_number'], $allEngines)) {
+                    return back()->withErrors(["items.{$itemIdx}.vehicles.{$vehIdx}.engine_number" => "Duplicate engine number: {$vehicle['engine_number']}."])->withInput();
+                }
+                $allChassis[] = $vehicle['chassis_number'];
+                $allEngines[] = $vehicle['engine_number'];
+            }
+        }
 
         DB::transaction(function () use ($request, $vehiclePurchaseOrder) {
             $allFullyReceived = true;
@@ -191,34 +198,31 @@ class VehiclePurchaseOrderController extends Controller
             foreach ($request->items as $itemData) {
                 $poItem = $vehiclePurchaseOrder->items()->findOrFail($itemData['id']);
                 $previousReceived = $poItem->received_quantity;
-                $newReceived = min($itemData['received_qty'] + $previousReceived, $poItem->quantity);
-                $delta = $newReceived - $previousReceived;
-                $poItem->update(['received_quantity' => $newReceived]);
+                $delta = count($itemData['vehicles']);
+                $newReceived = min($delta + $previousReceived, $poItem->quantity);
+
+                if ($newReceived > $poItem->quantity) {
+                    throw new \Exception("Cannot receive more than ordered for {$poItem->vehicle_description}. Ordered: {$poItem->quantity}, already received: {$previousReceived}.");
+                }
 
                 if ($delta > 0) {
                     $anyReceived = true;
-                    $existing = VehicleInventory::where('vehicle_po_id', $vehiclePurchaseOrder->id)
-                        ->where('vehicle_description', $poItem->vehicle_description)
-                        ->where('color_name', $poItem->color_name)
-                        ->where('mfg_year', $poItem->mfg_year)
-                        ->where('status', 'available')
-                        ->lockForUpdate()
-                        ->first();
-                    if ($existing) {
-                        $existing->increment('quantity', $delta);
-                        $existing->update(['purchase_price' => $poItem->unit_price]);
-                    } else {
+                    foreach ($itemData['vehicles'] as $vehicle) {
                         VehicleInventory::create([
                             'vehicle_po_id' => $vehiclePurchaseOrder->id,
                             'vehicle_description' => $poItem->vehicle_description,
                             'color_name' => $poItem->color_name,
                             'mfg_year' => $poItem->mfg_year,
-                            'quantity' => $delta,
+                            'chassis_number' => $vehicle['chassis_number'],
+                            'engine_number' => $vehicle['engine_number'],
+                            'quantity' => 1,
                             'purchase_price' => $poItem->unit_price,
                             'status' => 'available',
                         ]);
                     }
                 }
+
+                $poItem->update(['received_quantity' => $newReceived]);
 
                 if ($newReceived < $poItem->quantity) {
                     $allFullyReceived = false;
@@ -226,7 +230,7 @@ class VehiclePurchaseOrderController extends Controller
             }
 
             if (!$anyReceived) {
-                throw new \Exception('Receive at least one item.');
+                throw new \Exception('Receive at least one vehicle.');
             }
 
             $vehiclePurchaseOrder->update([
@@ -234,7 +238,24 @@ class VehiclePurchaseOrderController extends Controller
             ]);
         });
 
-        return redirect()->route('admin.vehicle-purchase-orders.show', $vehiclePurchaseOrder)->withSuccess('Items received. Inventory updated.');
+        return redirect()->route('admin.vehicle-purchase-orders.show', $vehiclePurchaseOrder)->withSuccess('Vehicles received. Inventory updated.');
+    }
+
+    public function checkUnique(Request $request)
+    {
+        $field = $request->input('field');
+        $value = $request->input('value');
+
+        if (!in_array($field, ['chassis_number', 'engine_number'])) {
+            return response()->json(['valid' => false, 'message' => 'Invalid field.']);
+        }
+
+        $exists = VehicleInventory::where($field, $value)->exists();
+
+        return response()->json([
+            'valid' => !$exists,
+            'message' => $exists ? "This {$field} is already taken." : '',
+        ]);
     }
 
     public function inventory()
