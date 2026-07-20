@@ -35,6 +35,8 @@
                     <strong>Supplier:</strong> {{ $purchaseOrder->supplier->name ?? '-' }}<br>
                     <strong>Created By:</strong> {{ $purchaseOrder->createdBy->full_name ?? 'System' }}<br>
                     <strong>Total Amount:</strong> {{ number_format($purchaseOrder->total_amount, 2) }}<br>
+                    <strong>Received Amount:</strong> {{ number_format($purchaseOrder->received_amount, 2) }}<br>
+                    <strong>Balance:</strong> <span class="badge bg-danger">{{ number_format($purchaseOrder->balance, 2) }}</span><br>
                     <strong>Notes:</strong> {{ $purchaseOrder->notes ?? '-' }}
                 </div>
             </div>

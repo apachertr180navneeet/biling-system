@@ -32,6 +32,8 @@
                 <div class="col-md-6">
                     <strong>Supplier:</strong> {{ $vehiclePurchaseOrder->supplier->name ?? '-' }}<br>
                     <strong>Total Amount:</strong> {{ number_format($vehiclePurchaseOrder->total_amount, 2) }}<br>
+                    <strong>Received Amount:</strong> {{ number_format($vehiclePurchaseOrder->received_amount, 2) }}<br>
+                    <strong>Balance:</strong> <span class="badge bg-danger">{{ number_format($vehiclePurchaseOrder->balance, 2) }}</span><br>
                     <strong>Notes:</strong> {{ $vehiclePurchaseOrder->notes ?? '-' }}
                 </div>
             </div>

@@ -73,6 +73,8 @@
                             <td>{{ $item->received_quantity }}</td>
                             <td><span class="badge bg-warning">{{ $item->quantity - $item->received_quantity }}</span></td>
                             <td>{{ number_format(($item->quantity - $item->received_quantity) * $item->unit_price, 2) }}</td>
+                            <td>{{ number_format($order->received_amount, 2) }}</td>
+                            <td><span class="badge bg-danger">{{ number_format($order->balance, 2) }}</span></td>
                             <td>
                                 @if($order->status == 'pending')
                                 <span class="badge bg-warning">Pending</span>
@@ -84,12 +86,15 @@
                             </td>
                             <td>
                                 <a href="{{ route('admin.vehicle-purchase-orders.receive', $order) }}" class="btn btn-sm btn-primary">Receive</a>
+                                @if($order->balance > 0)
+                                <button class="btn btn-sm btn-success receive-payment-btn" data-url="{{ route('admin.vehicle-purchase-orders.receive-payment', $order) }}" data-balance="{{ $order->balance }}" title="Receive Payment"><i class="bx bx-wallet"></i></button>
+                                @endif
                                 <a href="{{ route('admin.vehicle-purchase-orders.show', $order) }}" class="btn btn-sm btn-info">View</a>
                             </td>
                         </tr>
                         @endforeach
                     @empty
-                    <tr><td colspan="11" class="text-center">No outstanding vehicle purchase orders found.</td></tr>
+                    <tr><td colspan="13" class="text-center">No outstanding vehicle purchase orders found.</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -97,4 +102,56 @@
         <div class="card-footer">{{ $orders->links() }}</div>
     </div>
 </div>
+@endsection
+@section('script')
+<script>
+$(function(){
+    $('.receive-payment-btn').click(function(){
+        var url = $(this).data('url');
+        var balance = $(this).data('balance');
+
+        Swal.fire({
+            title: 'Receive Payment',
+            text: 'Enter the amount received. Outstanding Balance: ₹' + balance,
+            input: 'number',
+            inputAttributes: {
+                min: 0.01,
+                max: balance,
+                step: 0.01
+            },
+            showCancelButton: true,
+            confirmButtonText: 'Submit',
+            showLoaderOnConfirm: true,
+            preConfirm: (amount) => {
+                if (!amount || amount <= 0) {
+                    Swal.showValidationMessage('Please enter a valid amount');
+                    return false;
+                }
+                if (parseFloat(amount) > parseFloat(balance)) {
+                    Swal.showValidationMessage('Amount cannot exceed the balance of ₹' + balance);
+                    return false;
+                }
+                return $.post(url, {
+                    _token: '{{ csrf_token() }}',
+                    amount: amount
+                }).done(function(r) {
+                    if (!r.success) {
+                        Swal.showValidationMessage(r.message);
+                    }
+                    return r;
+                }).fail(function() {
+                    Swal.showValidationMessage('Request failed');
+                });
+            },
+            allowOutsideClick: () => !Swal.isLoading()
+        }).then((result) => {
+            if (result.isConfirmed && result.value.success) {
+                Swal.fire('Success', 'Payment received successfully!', 'success').then(() => {
+                    location.reload();
+                });
+            }
+        });
+    });
+});
+</script>
 @endsection
