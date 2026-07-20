@@ -83,7 +83,6 @@
                             <option value="Cash" {{ old('payment_mode') === 'Cash' ? 'selected' : '' }}>Cash</option>
                             <option value="UPI / Online" {{ old('payment_mode') === 'UPI / Online' ? 'selected' : '' }}>UPI / Online</option>
                             <option value="Card" {{ old('payment_mode') === 'Card' ? 'selected' : '' }}>Card</option>
-                            <option value="Finance" {{ old('payment_mode') === 'Finance' ? 'selected' : '' }}>Finance</option>
                         </select>
                         @error('payment_mode')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
@@ -357,9 +356,9 @@ document.addEventListener('DOMContentLoaded', function() {
         var taxSelect = row.querySelector('.tax-select');
         var stockBadge = row.querySelector('.stock-badge');
 
-        partSelect.addEventListener('change', function() {
+        $(partSelect).on('change', function() {
             var opt = this.options[this.selectedIndex];
-            if (opt.value) {
+            if (opt && opt.value) {
                 var price = parseFloat(opt.getAttribute('data-price')) || 0;
                 var stock = parseInt(opt.getAttribute('data-stock')) || 0;
                 rateInput.value = price.toFixed(2);
