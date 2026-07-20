@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xls;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class VehiclePurchaseOrderController extends Controller
 {
@@ -509,6 +510,19 @@ class VehiclePurchaseOrderController extends Controller
         return back()->withSuccess("Vehicle status updated to {$newStatus}.");
     }
 
+    public function generatePdf(VehiclePurchaseOrder $vehiclePurchaseOrder)
+    {
+        $vehiclePurchaseOrder->load('supplier', 'items');
+
+        $pdf = Pdf::loadView('admin.vehicle_purchase_orders.pdf', [
+            'vehiclePurchaseOrder' => $vehiclePurchaseOrder,
+        ]);
+        $pdf->setPaper('a4');
+        $pdf->setOption('isRemoteEnabled', true);
+
+        return $pdf->download('VPO-' . $vehiclePurchaseOrder->po_number . '.pdf');
+    }
+
     public function sendWhatsapp(VehiclePurchaseOrder $vehiclePurchaseOrder)
     {
         $vehiclePurchaseOrder->load('supplier', 'items');
@@ -538,6 +552,7 @@ class VehiclePurchaseOrderController extends Controller
             . "💰 *Total:* ₹" . number_format($vehiclePurchaseOrder->total_amount, 2) . "\n"
             . "📌 *Status:* " . ucfirst($vehiclePurchaseOrder->status) . "\n"
             . "━━━━━━━━━━━━━━━━━━━━━━\n\n"
+            . "📄 *PDF Link:* " . route('admin.vehicle-purchase-orders.pdf', $vehiclePurchaseOrder) . "\n\n"
             . "Please find the attached PO details. Kindly confirm.";
 
         $whatsappUrl = "https://wa.me/{$phone}?text=" . urlencode($message);

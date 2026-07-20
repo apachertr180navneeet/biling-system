@@ -103,6 +103,7 @@ Route::name('admin.')->prefix('admin')->group(function () {
         Route::post('vehicle-purchase-orders/{vehicle_purchase_order}/toggle-status', [VehiclePurchaseOrderController::class, 'toggleStatus'])->name('vehicle-purchase-orders.toggle-status');
         Route::get('vehicle-purchase-orders/{vehicle_purchase_order}/receive', [VehiclePurchaseOrderController::class, 'receive'])->name('vehicle-purchase-orders.receive');
         Route::post('vehicle-purchase-orders/{vehicle_purchase_order}/receive-store', [VehiclePurchaseOrderController::class, 'receiveStore'])->name('vehicle-purchase-orders.receive-store');
+        Route::get('vehicle-purchase-orders/{vehicle_purchase_order}/pdf', [VehiclePurchaseOrderController::class, 'generatePdf'])->name('vehicle-purchase-orders.pdf');
         Route::get('vehicle-purchase-orders/{vehicle_purchase_order}/whatsapp', [VehiclePurchaseOrderController::class, 'sendWhatsapp'])->name('vehicle-purchase-orders.whatsapp');
         Route::get('vehicle-inventories', [VehiclePurchaseOrderController::class, 'inventory'])->name('vehicle-inventories.index');
         Route::get('vehicle-inventories/export', [VehiclePurchaseOrderController::class, 'exportInventory'])->name('vehicle-inventories.export');
