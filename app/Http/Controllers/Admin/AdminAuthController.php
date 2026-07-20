@@ -267,9 +267,40 @@ class AdminAuthController extends Controller
         $pendingVehiclePOs = VehiclePurchaseOrder::whereIn('status', ['pending', 'partial'])->count();
         $lowStockCount = SparePartStock::where('is_active', true)->whereColumn('quantity', '<', 'min_quantity')->where('min_quantity', '>', 0)->count();
 
+        // Calculate "To Collect" (outstanding balance from sales)
+        $toCollectPart = \App\Models\PartSalesInvoice::where('is_active', true)->sum('balance');
+        $toCollectVehicle = \App\Models\VehicleSalesInvoice::where('is_active', true)->sum('balance');
+        $toCollect = $toCollectPart + $toCollectVehicle;
+
+        // Calculate "To Pay" (outstanding balance from purchases)
+        $toPayPart = \App\Models\PurchaseOrder::where('is_active', true)->sum('balance');
+        $toPayVehicle = \App\Models\VehiclePurchaseOrder::where('is_active', true)->sum('balance');
+        $toPay = $toPayPart + $toPayVehicle;
+
+        // Calculate "Stock Value" (purchase value of available stock)
+        $stockValueParts = \App\Models\SparePartStock::where('is_active', true)->sum(DB::raw('quantity * purchase_price'));
+        $stockValueVehicles = VehicleInventory::where('status', 'available')->sum(DB::raw('quantity * purchase_price'));
+        $stockValue = $stockValueParts + $stockValueVehicles;
+
+        // Calculate "Stock Count" (total quantity of items in stock)
+        $stockCountParts = \App\Models\SparePartStock::where('is_active', true)->sum('quantity');
+        $stockCountVehicles = VehicleInventory::where('status', 'available')->count();
+
+        // Calculate "This week's sale"
+        $startOfWeek = Carbon::now()->startOfWeek();
+        $endOfWeek = Carbon::now()->endOfWeek();
+        $partSalesThisWeek = \App\Models\PartSalesInvoice::where('is_active', true)
+            ->whereBetween('invoice_date', [$startOfWeek, $endOfWeek])
+            ->sum('total_amount');
+        $vehicleSalesThisWeek = \App\Models\VehicleSalesInvoice::where('is_active', true)
+            ->whereBetween('invoice_date', [$startOfWeek, $endOfWeek])
+            ->sum('grand_total');
+        $thisWeeksSale = $partSalesThisWeek + $vehicleSalesThisWeek;
+
         return view("admin.dashboard.index", compact(
             'totalCustomers',
-            'vehicleInventoryCount', 'pendingVehiclePOs', 'lowStockCount'
+            'vehicleInventoryCount', 'pendingVehiclePOs', 'lowStockCount',
+            'toCollect', 'toPay', 'stockValue', 'stockCountParts', 'stockCountVehicles', 'thisWeeksSale'
         ));
     }
 

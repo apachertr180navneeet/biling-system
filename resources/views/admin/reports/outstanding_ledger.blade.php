@@ -151,27 +151,49 @@
                                 ₹{{ number_format($item->balance, 2) }}
                             </td>
                             <td class="text-center">
-                                @if($tab === 'sales')
-                                    @if($item->sub_type === 'vehicle')
-                                        <a href="{{ route('admin.vehicle-sales-invoices.show', $item->id) }}" class="btn btn-sm btn-outline-primary">
-                                            <i class="bx bx-show me-1"></i> View
-                                        </a>
+                                <div class="d-flex justify-content-center gap-1">
+                                    @if($tab === 'sales')
+                                        @if($item->sub_type === 'vehicle')
+                                            <a href="{{ route('admin.vehicle-sales-invoices.show', $item->id) }}" class="btn btn-sm btn-outline-primary" title="View">
+                                                <i class="bx bx-show"></i>
+                                            </a>
+                                            @if($item->balance > 0)
+                                                <button class="btn btn-sm btn-success receive-payment-btn" data-url="{{ route('admin.vehicle-sales-invoices.receive-payment', $item->id) }}" data-balance="{{ $item->balance }}" data-title="Receive Payment" title="Receive Payment">
+                                                    <i class="bx bx-wallet"></i>
+                                                </button>
+                                            @endif
+                                        @else
+                                            <a href="{{ route('admin.part-sales-invoices.show', $item->id) }}" class="btn btn-sm btn-outline-primary" title="View">
+                                                <i class="bx bx-show"></i>
+                                            </a>
+                                            @if($item->balance > 0)
+                                                <button class="btn btn-sm btn-success receive-payment-btn" data-url="{{ route('admin.part-sales-invoices.receive-payment', $item->id) }}" data-balance="{{ $item->balance }}" data-title="Receive Payment" title="Receive Payment">
+                                                    <i class="bx bx-wallet"></i>
+                                                </button>
+                                            @endif
+                                        @endif
                                     @else
-                                        <a href="{{ route('admin.part-sales-invoices.show', $item->id) }}" class="btn btn-sm btn-outline-primary">
-                                            <i class="bx bx-show me-1"></i> View
-                                        </a>
+                                        @if($item->sub_type === 'vehicle')
+                                            <a href="{{ route('admin.vehicle-purchase-orders.show', $item->id) }}" class="btn btn-sm btn-outline-danger" title="View">
+                                                <i class="bx bx-show"></i>
+                                            </a>
+                                            @if($item->balance > 0)
+                                                <button class="btn btn-sm btn-danger receive-payment-btn" data-url="{{ route('admin.vehicle-purchase-orders.receive-payment', $item->id) }}" data-balance="{{ $item->balance }}" data-title="Pay Amount" title="Pay Amount">
+                                                    <i class="bx bx-wallet"></i>
+                                                </button>
+                                            @endif
+                                        @else
+                                            <a href="{{ route('admin.purchase-orders.show', $item->id) }}" class="btn btn-sm btn-outline-danger" title="View">
+                                                <i class="bx bx-show"></i>
+                                            </a>
+                                            @if($item->balance > 0)
+                                                <button class="btn btn-sm btn-danger receive-payment-btn" data-url="{{ route('admin.purchase-orders.receive-payment', $item->id) }}" data-balance="{{ $item->balance }}" data-title="Pay Amount" title="Pay Amount">
+                                                    <i class="bx bx-wallet"></i>
+                                                </button>
+                                            @endif
+                                        @endif
                                     @endif
-                                @else
-                                    @if($item->sub_type === 'vehicle')
-                                        <a href="{{ route('admin.vehicle-purchase-orders.show', $item->id) }}" class="btn btn-sm btn-outline-danger">
-                                            <i class="bx bx-show me-1"></i> View
-                                        </a>
-                                    @else
-                                        <a href="{{ route('admin.purchase-orders.show', $item->id) }}" class="btn btn-sm btn-outline-danger">
-                                            <i class="bx bx-show me-1"></i> View
-                                        </a>
-                                    @endif
-                                @endif
+                                </div>
                             </td>
                         </tr>
                         @empty
@@ -195,4 +217,61 @@
         </div>
     </div>
 </div>
+@endsection
+
+@section('script')
+<script>
+$(function(){
+    $('.receive-payment-btn').click(function(){
+        var url = $(this).data('url');
+        var balance = $(this).data('balance');
+        var titleText = $(this).data('title') || 'Receive Payment';
+        var promptText = titleText === 'Receive Payment' 
+            ? 'Enter the amount received. Outstanding Balance: ₹' + balance 
+            : 'Enter the amount paid. Outstanding Balance: ₹' + balance;
+        
+        Swal.fire({
+            title: titleText,
+            text: promptText,
+            input: 'number',
+            inputAttributes: {
+                min: 0.01,
+                max: balance,
+                step: 0.01
+            },
+            showCancelButton: true,
+            confirmButtonText: 'Submit',
+            showLoaderOnConfirm: true,
+            preConfirm: (amount) => {
+                if (!amount || amount <= 0) {
+                    Swal.showValidationMessage('Please enter a valid amount');
+                    return false;
+                }
+                if (parseFloat(amount) > parseFloat(balance)) {
+                    Swal.showValidationMessage('Amount cannot exceed the balance of ₹' + balance);
+                    return false;
+                }
+                return $.post(url, {
+                    _token: '{{ csrf_token() }}',
+                    amount: amount
+                }).done(function(r) {
+                    if (!r.success) {
+                        Swal.showValidationMessage(r.message);
+                    }
+                    return r;
+                }).fail(function() {
+                    Swal.showValidationMessage('Request failed');
+                });
+            },
+            allowOutsideClick: () => !Swal.isLoading()
+        }).then((result) => {
+            if (result.isConfirmed && result.value.success) {
+                Swal.fire('Success', titleText === 'Receive Payment' ? 'Payment received successfully!' : 'Payment processed successfully!', 'success').then(() => {
+                    location.reload();
+                });
+            }
+        });
+    });
+});
+</script>
 @endsection
