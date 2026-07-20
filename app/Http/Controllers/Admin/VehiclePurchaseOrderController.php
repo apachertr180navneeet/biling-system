@@ -14,10 +14,22 @@ use Illuminate\Validation\Rule;
 
 class VehiclePurchaseOrderController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $orders = VehiclePurchaseOrder::with('supplier')->withCount('items')->orderBy('created_at', 'desc')->paginate(20);
-        return view('admin.vehicle_purchase_orders.index', compact('orders'));
+        $search = $request->input('search');
+        $query = VehiclePurchaseOrder::with('supplier')->withCount('items')->orderBy('created_at', 'desc');
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('po_number', 'like', "%{$search}%")
+                  ->orWhereHas('supplier', function($sq) use ($search) {
+                      $sq->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $orders = $query->paginate(20);
+        return view('admin.vehicle_purchase_orders.index', compact('orders', 'search'));
     }
 
     public function create()
@@ -370,10 +382,22 @@ class VehiclePurchaseOrderController extends Controller
         ]);
     }
 
-    public function inventory()
+    public function inventory(Request $request)
     {
-        $inventories = VehicleInventory::where('is_active', true)->orderBy('created_at', 'desc')->paginate(20);
-        return view('admin.vehicle_inventories.index', compact('inventories'));
+        $search = $request->input('search');
+        $query = VehicleInventory::where('is_active', true)->orderBy('created_at', 'desc');
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('vehicle_description', 'like', "%{$search}%")
+                  ->orWhere('chassis_number', 'like', "%{$search}%")
+                  ->orWhere('motor_number', 'like', "%{$search}%")
+                  ->orWhere('battery_number', 'like', "%{$search}%");
+            });
+        }
+
+        $inventories = $query->paginate(20);
+        return view('admin.vehicle_inventories.index', compact('inventories', 'search'));
     }
 
     public function toggleInventoryStatus(Request $request, $id)

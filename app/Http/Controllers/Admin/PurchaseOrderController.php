@@ -15,10 +15,22 @@ use Illuminate\Support\Facades\DB;
 
 class PurchaseOrderController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $orders = PurchaseOrder::with('supplier', 'items')->orderBy('created_at', 'desc')->paginate(20);
-        return view('admin.purchase_orders.index', compact('orders'));
+        $search = $request->input('search');
+        $query = PurchaseOrder::with('supplier', 'items')->orderBy('created_at', 'desc');
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('order_number', 'like', "%{$search}%")
+                  ->orWhereHas('supplier', function($sq) use ($search) {
+                      $sq->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $orders = $query->paginate(20);
+        return view('admin.purchase_orders.index', compact('orders', 'search'));
     }
 
     public function create()

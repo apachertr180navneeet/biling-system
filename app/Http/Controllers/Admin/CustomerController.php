@@ -11,10 +11,24 @@ use PhpOffice\PhpSpreadsheet\Writer\Xls;
 
 class CustomerController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $customers = Customer::orderBy('first_name')->paginate(20);
-        return view('admin.customers.index', compact('customers'));
+        $search = $request->input('search');
+        $query = Customer::orderBy('first_name');
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('first_name', 'like', "%{$search}%")
+                  ->orWhere('last_name', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('gstin', 'like', "%{$search}%")
+                  ->orWhere('company_name', 'like', "%{$search}%");
+            });
+        }
+
+        $customers = $query->paginate(20);
+        return view('admin.customers.index', compact('customers', 'search'));
     }
 
     public function create()

@@ -11,10 +11,20 @@ use PhpOffice\PhpSpreadsheet\Writer\Xls;
 
 class SparePartController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $parts = SparePart::orderBy('name')->paginate(20);
-        return view('admin.spare_parts.index', compact('parts'));
+        $search = $request->input('search');
+        $query = SparePart::orderBy('name');
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('part_no', 'like', "%{$search}%")
+                  ->orWhere('name', 'like', "%{$search}%");
+            });
+        }
+
+        $parts = $query->paginate(20);
+        return view('admin.spare_parts.index', compact('parts', 'search'));
     }
 
     public function create()

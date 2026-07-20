@@ -12,14 +12,23 @@ use Illuminate\Support\Facades\DB;
 
 class VehicleSalesInvoiceController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $invoices = VehicleSalesInvoice::with('customer', 'vehicleInventory')
+        $search = $request->input('search');
+        $query = VehicleSalesInvoice::with('customer', 'vehicleInventory')
             ->orderBy('invoice_date', 'desc')
-            ->orderBy('id', 'desc')
-            ->paginate(20);
-            
-        return view('admin.vehicle_sales_invoices.index', compact('invoices'));
+            ->orderBy('id', 'desc');
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('invoice_number', 'like', "%{$search}%")
+                  ->orWhere('customer_name', 'like', "%{$search}%")
+                  ->orWhere('customer_mobile', 'like', "%{$search}%");
+            });
+        }
+
+        $invoices = $query->paginate(20);
+        return view('admin.vehicle_sales_invoices.index', compact('invoices', 'search'));
     }
 
     public function create()

@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\PartSalesInvoiceController;
 use App\Http\Controllers\Admin\SparePartStockController;
 use App\Http\Controllers\Admin\VehicleMasterController;
 use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\FinanceMasterController;
 
 
 /*
@@ -78,6 +79,11 @@ Route::name('admin.')->prefix('admin')->group(function () {
         Route::post('customers/import', [CustomerController::class, 'import'])->name('customers.import');
         Route::resource('customers', CustomerController::class);
         Route::post('customers/{customer}/toggle-status', [CustomerController::class, 'toggleStatus'])->name('customers.toggle-status');
+
+        Route::get('finance-masters/import-template', [FinanceMasterController::class, 'downloadTemplate'])->name('finance-masters.import-template');
+        Route::post('finance-masters/import', [FinanceMasterController::class, 'import'])->name('finance-masters.import');
+        Route::resource('finance-masters', FinanceMasterController::class);
+        Route::post('finance-masters/{finance_master}/toggle-status', [FinanceMasterController::class, 'toggleStatus'])->name('finance-masters.toggle-status');
 
         Route::resource('purchase-orders', PurchaseOrderController::class);
         Route::post('purchase-orders/{purchase_order}/toggle-status', [PurchaseOrderController::class, 'toggleStatus'])->name('purchase-orders.toggle-status');

@@ -80,6 +80,13 @@
 			</a>
 		</li>
 
+		<li class="menu-item {{ request()->routeIs('admin.finance-masters.*') ? 'active' : ''}}">
+			<a href="{{route('admin.finance-masters.index')}}" class="menu-link">
+				<i class="menu-icon tf-icons bx bx-dollar"></i>
+				<div data-i18n="Finance Master">Finance Master</div>
+			</a>
+		</li>
+
 		<li class="menu-item {{ request()->routeIs('admin.spare-parts.*') ? 'active' : ''}}">
 			<a href="{{route('admin.spare-parts.index')}}" class="menu-link">
 				<i class="menu-icon tf-icons bx bx-wrench"></i>

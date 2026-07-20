@@ -10,10 +10,24 @@ use PhpOffice\PhpSpreadsheet\Writer\Xls;
 
 class VehicleMasterController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $vehicles = VehicleMaster::orderBy('variant_name')->paginate(20);
-        return view('admin.vehicle_masters.index', compact('vehicles'));
+        $search = $request->input('search');
+        $query = VehicleMaster::orderBy('variant_name');
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('variant_name', 'like', "%{$search}%")
+                  ->orWhere('color_name', 'like', "%{$search}%")
+                  ->orWhere('fuel_type', 'like', "%{$search}%")
+                  ->orWhere('transmission', 'like', "%{$search}%")
+                  ->orWhere('battery_type', 'like', "%{$search}%")
+                  ->orWhere('battery_make', 'like', "%{$search}%");
+            });
+        }
+
+        $vehicles = $query->paginate(20);
+        return view('admin.vehicle_masters.index', compact('vehicles', 'search'));
     }
 
     public function create()

@@ -6,6 +6,22 @@
         <a href="{{ route('admin.vehicle-sales-invoices.create') }}" class="btn btn-primary"><i class="bx bx-plus"></i> New Vehicle Sales Invoice</a>
     </div>
 
+    <!-- Search filter -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ route('admin.vehicle-sales-invoices.index') }}">
+                <div class="row g-3">
+                    <div class="col-md-9">
+                        <input type="text" name="search" class="form-control" placeholder="Search by Invoice No, Customer Name or Mobile" value="{{ $search ?? '' }}">
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-primary w-100"><i class="bx bx-search"></i> Search</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div class="card">
         <div class="table-responsive text-nowrap">
             <table class="table table-hover">

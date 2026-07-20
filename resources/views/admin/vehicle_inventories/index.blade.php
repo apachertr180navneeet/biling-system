@@ -4,6 +4,23 @@
     <h4 class="fw-bold py-3 mb-4">
         <span class="text-muted fw-light">Admin /</span> Vehicle Inventory
     </h4>
+
+    <!-- Search filter -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ route('admin.vehicle-inventories.index') }}">
+                <div class="row g-3">
+                    <div class="col-md-9">
+                        <input type="text" name="search" class="form-control" placeholder="Search by Vehicle, Chassis No, Motor No or Battery No" value="{{ $search ?? '' }}">
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-primary w-100"><i class="bx bx-search"></i> Search</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div class="card">
         <div class="card-header d-flex align-items-center justify-content-between">
             <h5 class="mb-0">Available Vehicles</h5>

@@ -10,11 +10,21 @@ use Illuminate\Support\Facades\DB;
 
 class SparePartStockController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $stocks = SparePartStock::with('sparePart', 'purchaseOrder')->orderBy('created_at', 'desc')->paginate(20);
+        $search = $request->input('search');
+        $query = SparePartStock::with('sparePart', 'purchaseOrder')->orderBy('created_at', 'desc');
+
+        if ($search) {
+            $query->whereHas('sparePart', function($q) use ($search) {
+                $q->where('part_no', 'like', "%{$search}%")
+                  ->orWhere('name', 'like', "%{$search}%");
+            });
+        }
+
+        $stocks = $query->paginate(20);
         $spareParts = \App\Models\SparePart::where('is_active', true)->orderBy('name')->get();
-        return view('admin.spare_part_stocks.index', compact('stocks', 'spareParts'));
+        return view('admin.spare_part_stocks.index', compact('stocks', 'spareParts', 'search'));
     }
 
     public function toggleStatus(SparePartStock $sparePartStock)

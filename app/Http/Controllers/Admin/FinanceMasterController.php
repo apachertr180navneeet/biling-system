@@ -3,81 +3,81 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Supplier;
+use App\Models\FinanceMaster;
 use Illuminate\Http\Request;
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xls;
 
-class SupplierController extends Controller
+class FinanceMasterController extends Controller
 {
     public function index(Request $request)
     {
         $search = $request->input('search');
-        $query = Supplier::orderBy('name');
+        $query = FinanceMaster::orderBy('name');
 
         if ($search) {
             $query->where(function($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('contact_person', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('gstin', 'like', "%{$search}%");
+                  ->orWhere('description', 'like', "%{$search}%");
             });
         }
 
-        $suppliers = $query->paginate(20);
-        return view('admin.suppliers.index', compact('suppliers', 'search'));
+        $financeMasters = $query->paginate(20);
+        return view('admin.finance_masters.index', compact('financeMasters', 'search'));
     }
 
     public function create()
     {
-        return view('admin.suppliers.create');
+        return view('admin.finance_masters.create');
     }
 
     public function store(Request $request)
     {
         $data = $request->validate([
             'name' => 'required|string|max:255',
-            'gstin' => 'nullable|string|max:15',
-            'address' => 'nullable|string',
-            'contact_person' => 'nullable|string|max:255',
-            'phone' => 'nullable|digits:10',
-            'email' => 'nullable|email|max:255',
+            'description' => 'nullable|string',
         ]);
-        Supplier::create($data);
-        return redirect()->route('admin.suppliers.index')->withSuccess('Supplier created successfully.');
+        $financeMaster = FinanceMaster::create($data);
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'finance_master' => $financeMaster
+            ]);
+        }
+        return redirect()->route('admin.finance-masters.index')->withSuccess('Finance Master created successfully.');
     }
 
-    public function edit(Supplier $supplier)
+    public function show(FinanceMaster $financeMaster)
     {
-        return view('admin.suppliers.edit', compact('supplier'));
+        return view('admin.finance_masters.show', compact('financeMaster'));
     }
 
-    public function update(Request $request, Supplier $supplier)
+    public function edit(FinanceMaster $financeMaster)
+    {
+        return view('admin.finance_masters.edit', compact('financeMaster'));
+    }
+
+    public function update(Request $request, FinanceMaster $financeMaster)
     {
         $data = $request->validate([
             'name' => 'required|string|max:255',
-            'gstin' => 'nullable|string|max:15',
-            'address' => 'nullable|string',
-            'contact_person' => 'nullable|string|max:255',
-            'phone' => 'nullable|digits:10',
-            'email' => 'nullable|email|max:255',
+            'description' => 'nullable|string',
         ]);
-        $supplier->update($data);
-        return redirect()->route('admin.suppliers.index')->withSuccess('Supplier updated successfully.');
+        $financeMaster->update($data);
+        return redirect()->route('admin.finance-masters.index')->withSuccess('Finance Master updated successfully.');
     }
 
-    public function destroy(Supplier $supplier)
+    public function destroy(FinanceMaster $financeMaster)
     {
-        $supplier->delete();
-        return response()->json(['success' => true, 'message' => 'Supplier deleted successfully.']);
+        $financeMaster->delete();
+        return response()->json(['success' => true, 'message' => 'Finance Master deleted successfully.']);
     }
 
-    public function toggleStatus(Supplier $supplier)
+    public function toggleStatus(FinanceMaster $financeMaster)
     {
-        $supplier->update(['is_active' => !$supplier->is_active]);
-        return response()->json(['success' => true, 'is_active' => $supplier->fresh()->is_active]);
+        $financeMaster->update(['is_active' => !$financeMaster->is_active]);
+        return response()->json(['success' => true, 'is_active' => $financeMaster->fresh()->is_active]);
     }
 
     public function downloadTemplate()
@@ -85,25 +85,16 @@ class SupplierController extends Controller
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setCellValue('A1', 'name');
-        $sheet->setCellValue('B1', 'gstin');
-        $sheet->setCellValue('C1', 'address');
-        $sheet->setCellValue('D1', 'contact_person');
-        $sheet->setCellValue('E1', 'phone');
-        $sheet->setCellValue('F1', 'email');
-        
-        // Example row
-        $sheet->setCellValue('A2', 'Supplier Inc');
-        $sheet->setCellValue('B2', '27AAAAA1111A1Z1');
-        $sheet->setCellValue('C2', '123 Main Street');
-        $sheet->setCellValue('D2', 'John Doe');
-        $sheet->setCellValue('E2', '9876543210');
-        $sheet->setCellValue('F2', 'supplier@example.com');
+        $sheet->setCellValue('B1', 'description');
+
+        $sheet->setCellValue('A2', 'Example Finance');
+        $sheet->setCellValue('B2', 'This is an example finance master entry.');
 
         $writer = new Xls($spreadsheet);
-        $path = storage_path('app/supplier_template.xls');
+        $path = storage_path('app/finance_master_template.xls');
         $writer->save($path);
 
-        return response()->download($path, 'supplier_template.xls')->deleteFileAfterSend(true);
+        return response()->download($path, 'finance_master_template.xls')->deleteFileAfterSend(true);
     }
 
     public function import(Request $request)
@@ -171,13 +162,9 @@ class SupplierController extends Controller
             }
 
             $data = array_combine($header, $row);
-            
+
             $name = isset($data['name']) ? trim($data['name']) : '';
-            $gstin = isset($data['gstin']) ? trim($data['gstin']) : '';
-            $address = isset($data['address']) ? trim($data['address']) : '';
-            $contactPerson = isset($data['contact_person']) ? trim($data['contact_person']) : '';
-            $phone = isset($data['phone']) ? trim($data['phone']) : '';
-            $email = isset($data['email']) ? trim($data['email']) : '';
+            $description = isset($data['description']) ? trim($data['description']) : '';
 
             if (empty($name)) {
                 $errors[] = "Row {$rowCount}: Name is required.";
@@ -185,43 +172,27 @@ class SupplierController extends Controller
                 continue;
             }
 
-            if (!empty($phone) && (!is_numeric($phone) || strlen($phone) !== 10)) {
-                $errors[] = "Row {$rowCount}: Phone must be a 10-digit number.";
-                $skipped++;
-                continue;
-            }
-
-            if (!empty($email) && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                $errors[] = "Row {$rowCount}: Email format is invalid.";
-                $skipped++;
-                continue;
-            }
-
             $nameKey = strtolower($name);
 
             if (in_array($nameKey, $seenInFile)) {
-                $errors[] = "Row {$rowCount}: Duplicate Supplier name '{$name}' in the CSV file.";
+                $errors[] = "Row {$rowCount}: Duplicate Name '{$name}' in the CSV file.";
                 $skipped++;
                 continue;
             }
 
-            $exists = Supplier::whereRaw('LOWER(name) = ?', [$nameKey])->exists();
+            $exists = FinanceMaster::where('name', $name)->exists();
 
             if ($exists) {
-                $errors[] = "Row {$rowCount}: Duplicate Supplier name '{$name}' already exists in the database.";
+                $errors[] = "Row {$rowCount}: Finance Master with Name '{$name}' already exists in the database.";
                 $skipped++;
                 continue;
             }
 
             $seenInFile[] = $nameKey;
 
-            Supplier::create([
+            FinanceMaster::create([
                 'name' => $name,
-                'gstin' => $gstin ?: null,
-                'address' => $address ?: null,
-                'contact_person' => $contactPerson ?: null,
-                'phone' => $phone ?: null,
-                'email' => $email ?: null,
+                'description' => $description ?: null,
                 'is_active' => true,
             ]);
 
@@ -229,13 +200,13 @@ class SupplierController extends Controller
         }
 
         $msg = "Import complete. Successfully imported: {$imported} record(s). Skipped: {$skipped} record(s).";
-        
+
         if (!empty($errors)) {
-            return redirect()->route('admin.suppliers.index')
+            return redirect()->route('admin.finance-masters.index')
                 ->withSuccess($msg)
                 ->with('import_errors', $errors);
         }
 
-        return redirect()->route('admin.suppliers.index')->withSuccess($msg);
+        return redirect()->route('admin.finance-masters.index')->withSuccess($msg);
     }
 }
