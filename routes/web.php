@@ -8,15 +8,6 @@ use App\Http\Controllers\Admin\SupplierController;
 use App\Http\Controllers\Admin\CustomerController;
 
 use App\Http\Controllers\Admin\PurchaseOrderController;
-use App\Http\Controllers\Admin\InvoiceController;
-use App\Http\Controllers\Admin\PaymentController;
-use App\Http\Controllers\Admin\ReportController;
-use App\Http\Controllers\Admin\ServiceCategoryController;
-use App\Http\Controllers\Admin\ServiceController;
-use App\Http\Controllers\Admin\JobCardController;
-use App\Http\Controllers\Admin\ServiceReminderController;
-use App\Http\Controllers\Admin\SaleController;
-use App\Http\Controllers\Admin\SpareSaleController;
 use App\Http\Controllers\Admin\VehiclePurchaseOrderController;
 use App\Http\Controllers\Admin\SparePartStockController;
 use App\Http\Controllers\Admin\VehicleMasterController;
@@ -99,65 +90,7 @@ Route::name('admin.')->prefix('admin')->group(function () {
         Route::post('spare-part-stocks/{spare_part_stock}/toggle-status', [SparePartStockController::class, 'toggleStatus'])->name('spare-part-stocks.toggle-status');
         Route::post('spare-part-stocks/{spare_part_stock}/destroy', [SparePartStockController::class, 'destroy'])->name('spare-part-stocks.destroy');
 
-        Route::get('invoices', [InvoiceController::class, 'index'])->name('invoices.index');
-        Route::get('invoices/create-vehicle', [InvoiceController::class, 'createVehicle'])->name('invoices.create-vehicle');
-        Route::post('invoices/create-vehicle', [InvoiceController::class, 'storeVehicle'])->name('invoices.store-vehicle');
-        Route::get('invoices/create-parts', [InvoiceController::class, 'createParts'])->name('invoices.create-parts');
-        Route::post('invoices/create-parts', [InvoiceController::class, 'storeParts'])->name('invoices.store-parts');
-        Route::get('invoices/{invoice}', [InvoiceController::class, 'show'])->name('invoices.show');
-        Route::post('invoices/{invoice}/destroy', [InvoiceController::class, 'destroy'])->name('invoices.destroy');
 
-        Route::resource('payments', PaymentController::class)->except(['edit', 'update', 'show']);
-
-        Route::prefix('reports')->name('reports.')->group(function () {
-            Route::get('ledger', [ReportController::class, 'ledger'])->name('ledger');
-            Route::get('gstr1', [ReportController::class, 'gstr1'])->name('gstr1');
-            Route::post('gstr1-export', [ReportController::class, 'gstr1Export'])->name('gstr1-export');
-        });
-
-        // Service Module
-        Route::resource('service-categories', ServiceCategoryController::class)->except(['show']);
-        Route::post('service-categories/{service_category}/toggle-status', [ServiceCategoryController::class, 'toggleStatus'])->name('service-categories.toggle-status');
-        Route::get('services/import-template', [ServiceController::class, 'downloadTemplate'])->name('services.import-template');
-        Route::post('services/import', [ServiceController::class, 'import'])->name('services.import');
-        Route::resource('services', ServiceController::class)->except(['show']);
-        Route::post('services/{service}/toggle-status', [ServiceController::class, 'toggleStatus'])->name('services.toggle-status');
-
-        Route::get('job-cards', [JobCardController::class, 'index'])->name('job-cards.index');
-        Route::get('job-cards/create', [JobCardController::class, 'create'])->name('job-cards.create');
-        Route::post('job-cards', [JobCardController::class, 'store'])->name('job-cards.store');
-        Route::get('job-cards/{job_card}/edit', [JobCardController::class, 'edit'])->name('job-cards.edit');
-        Route::put('job-cards/{job_card}', [JobCardController::class, 'update'])->name('job-cards.update');
-        Route::get('job-cards/{job_card}', [JobCardController::class, 'show'])->name('job-cards.show');
-        Route::post('job-cards/{job_card}/destroy', [JobCardController::class, 'destroy'])->name('job-cards.destroy');
-        Route::post('job-cards/{job_card}/toggle-status', [JobCardController::class, 'toggleStatus'])->name('job-cards.toggle-status');
-        Route::post('job-cards/{job_card}/update-status', [JobCardController::class, 'updateStatus'])->name('job-cards.update-status');
-        Route::post('job-cards/{job_card}/calculate-billing', [JobCardController::class, 'calculateBilling'])->name('job-cards.calculate-billing');
-        Route::get('job-cards/{job_card}/print', [JobCardController::class, 'print'])->name('job-cards.print');
-
-        Route::resource('service-reminders', ServiceReminderController::class)->except(['show']);
-        Route::post('service-reminders/{service_reminder}/toggle-status', [ServiceReminderController::class, 'toggleStatus'])->name('service-reminders.toggle-status');
-        Route::post('service-reminders/{service_reminder}/update-status', [ServiceReminderController::class, 'updateStatus'])->name('service-reminders.update-status');
-
-        // Sales Module (Vehicle Lifecycle)
-        Route::get('sales', [SaleController::class, 'index'])->name('sales.index');
-        Route::get('sales/create', [SaleController::class, 'create'])->name('sales.create');
-        Route::post('sales', [SaleController::class, 'store'])->name('sales.store');
-        Route::get('sales/{sale}/edit', [SaleController::class, 'edit'])->name('sales.edit');
-        Route::put('sales/{sale}', [SaleController::class, 'update'])->name('sales.update');
-        Route::get('sales/{sale}', [SaleController::class, 'show'])->name('sales.show');
-        Route::post('sales/{sale}/destroy', [SaleController::class, 'destroy'])->name('sales.destroy');
-        Route::post('sales/{sale}/toggle-status', [SaleController::class, 'toggleStatus'])->name('sales.toggle-status');
-        Route::post('sales/{sale}/update-status', [SaleController::class, 'updateStatus'])->name('sales.update-status');
-        Route::get('sales/{sale}/generate-invoice', [SaleController::class, 'generateInvoice'])->name('sales.generate-invoice');
-
-        // Spare Sale Module (Counter Sales)
-        Route::get('spare-sales', [SpareSaleController::class, 'index'])->name('spare-sales.index');
-        Route::get('spare-sales/create', [SpareSaleController::class, 'create'])->name('spare-sales.create');
-        Route::post('spare-sales', [SpareSaleController::class, 'store'])->name('spare-sales.store');
-        Route::get('spare-sales/{spare_sale}', [SpareSaleController::class, 'show'])->name('spare-sales.show');
-        Route::get('spare-sales/{spare_sale}/print', [SpareSaleController::class, 'print'])->name('spare-sales.print');
-        Route::post('spare-sales/{spare_sale}/destroy', [SpareSaleController::class, 'destroy'])->name('spare-sales.destroy');
 
 });
 

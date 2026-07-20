@@ -50,18 +50,10 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
         });
-
-        Schema::table('invoices', function (Blueprint $table) {
-            $table->foreignId('vehicle_inventory_id')->nullable()->after('mfg_year')->constrained('vehicle_inventories')->nullOnDelete();
-        });
     }
 
     public function down(): void
     {
-        Schema::table('invoices', function (Blueprint $table) {
-            $table->dropForeign(['vehicle_inventory_id']);
-            $table->dropColumn('vehicle_inventory_id');
-        });
         Schema::dropIfExists('vehicle_inventories');
         Schema::dropIfExists('vehicle_po_items');
         Schema::dropIfExists('vehicle_purchase_orders');

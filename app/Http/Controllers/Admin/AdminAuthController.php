@@ -9,9 +9,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Mail, DB, Hash, Validator, Session, File,Exception;
-use App\Models\Invoice;
 use App\Models\Customer;
-use App\Models\Payment;
 use App\Models\VehicleInventory;
 use App\Models\VehiclePurchaseOrder;
 use App\Models\SparePartStock;
@@ -263,27 +261,15 @@ class AdminAuthController extends Controller
 
     public function adminDashboard()
     {
-        $todayInvoices = Invoice::whereDate('created_at', today())->count();
-        $monthRevenue = Invoice::whereMonth('created_at', date('m'))->whereYear('created_at', date('Y'))->sum('grand_total');
         $totalCustomers = Customer::count();
-        $totalInvoices = Invoice::count();
-        $totalRevenue = Invoice::sum('grand_total');
-        $totalPayments = Payment::sum('amount');
-        $pendingInvoices = Invoice::where('status', 'confirmed')->count();
 
         $vehicleInventoryCount = VehicleInventory::where('quantity', '>', 0)->where('status', 'available')->sum('quantity');
         $pendingVehiclePOs = VehiclePurchaseOrder::whereIn('status', ['pending', 'partial'])->count();
         $lowStockCount = SparePartStock::where('is_active', true)->whereColumn('quantity', '<', 'min_quantity')->where('min_quantity', '>', 0)->count();
 
-        $recentInvoices = Invoice::with('customer')->latest()->take(5)->get();
-        $recentPayments = Payment::with('customer')->latest()->take(5)->get();
-
         return view("admin.dashboard.index", compact(
-            'todayInvoices', 'monthRevenue',
-            'totalCustomers', 'totalInvoices',
-            'totalRevenue', 'totalPayments', 'pendingInvoices',
-            'vehicleInventoryCount', 'pendingVehiclePOs', 'lowStockCount',
-            'recentInvoices', 'recentPayments'
+            'totalCustomers',
+            'vehicleInventoryCount', 'pendingVehiclePOs', 'lowStockCount'
         ));
     }
 
