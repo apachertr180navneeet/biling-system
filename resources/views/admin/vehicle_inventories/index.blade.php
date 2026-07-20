@@ -16,7 +16,12 @@
                         <th>#</th>
                         <th>Vehicle</th>
                         <th>Chassis No</th>
-                        <th>Engine No</th>
+                        <th>Motor No</th>
+                        <th>Battery No</th>
+                        <th>Charger No</th>
+                        <th>Controller No</th>
+                        <th>Convertor No</th>
+                        <th>Manual No</th>
                         <th>Purchase Price</th>
                         <th>Status</th>
                         <th>PO Ref</th>
@@ -29,7 +34,12 @@
                         <td>{{ $loop->iteration }}</td>
                         <td>{{ $i->vehicle_description }}</td>
                         <td>{{ $i->chassis_number ?? '-' }}</td>
-                        <td>{{ $i->engine_number ?? '-' }}</td>
+                        <td>{{ $i->motor_number ?? '-' }}</td>
+                        <td>{{ $i->battery_number ?? '-' }}</td>
+                        <td>{{ $i->charger_number ?? '-' }}</td>
+                        <td>{{ $i->controller_number ?? '-' }}</td>
+                        <td>{{ $i->convertor_number ?? '-' }}</td>
+                        <td>{{ $i->manual_number ?? '-' }}</td>
                         <td>{{ number_format($i->purchase_price, 2) }}</td>
                         <td>
                             @if($i->status == 'available')
@@ -57,7 +67,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="8" class="text-center">No vehicles in inventory.</td></tr>
+                    <tr><td colspan="13" class="text-center">No vehicles in inventory.</td></tr>
                     @endforelse
                 </tbody>
             </table>

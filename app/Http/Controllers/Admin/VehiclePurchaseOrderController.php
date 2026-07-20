@@ -173,13 +173,17 @@ class VehiclePurchaseOrderController extends Controller
             'edit_vehicles' => 'nullable|array',
             'edit_vehicles.*.id' => 'required_with:edit_vehicles|exists:vehicle_inventories,id',
             'edit_vehicles.*.chassis_number' => 'required_with:edit_vehicles|string|max:255',
-            'edit_vehicles.*.engine_number' => 'required_with:edit_vehicles|string|max:255',
+            'edit_vehicles.*.motor_number' => 'required_with:edit_vehicles|string|max:255',
+            'edit_vehicles.*.battery_number' => 'nullable|string|max:255',
+            'edit_vehicles.*.charger_number' => 'nullable|string|max:255',
+            'edit_vehicles.*.controller_number' => 'nullable|string|max:255',
+            'edit_vehicles.*.convertor_number' => 'nullable|string|max:255',
+            'edit_vehicles.*.manual_number' => 'nullable|string|max:255',
             'delete_vehicles' => 'nullable|array',
             'delete_vehicles.*' => 'exists:vehicle_inventories,id',
         ]);
 
         $allChassis = [];
-        $allEngines = [];
 
         // 1. Validate edited vehicles (exclude any marked for deletion)
         $deletedIds = $request->input('delete_vehicles', []);
@@ -188,14 +192,11 @@ class VehiclePurchaseOrderController extends Controller
                 if (in_array($id, $deletedIds)) {
                     continue;
                 }
-                if (!empty($vehicle['chassis_number']) && !empty($vehicle['engine_number']) && $vehicle['chassis_number'] === $vehicle['engine_number']) {
-                    return back()->withErrors(["edit_vehicles.{$id}.engine_number" => "Chassis number and engine number must be different."])->withInput();
+                if (!empty($vehicle['chassis_number']) && !empty($vehicle['motor_number']) && $vehicle['chassis_number'] === $vehicle['motor_number']) {
+                    return back()->withErrors(["edit_vehicles.{$id}.motor_number" => "Chassis number and motor number must be different."])->withInput();
                 }
                 if (in_array($vehicle['chassis_number'], $allChassis)) {
                     return back()->withErrors(["edit_vehicles.{$id}.chassis_number" => "Duplicate chassis number: {$vehicle['chassis_number']}."])->withInput();
-                }
-                if (in_array($vehicle['engine_number'], $allEngines)) {
-                    return back()->withErrors(["edit_vehicles.{$id}.engine_number" => "Duplicate engine number: {$vehicle['engine_number']}."])->withInput();
                 }
 
                 // Database unique check ignoring current ID
@@ -203,13 +204,8 @@ class VehiclePurchaseOrderController extends Controller
                 if ($chassisExists) {
                     return back()->withErrors(["edit_vehicles.{$id}.chassis_number" => "Chassis number is already taken."])->withInput();
                 }
-                $engineExists = VehicleInventory::where('engine_number', $vehicle['engine_number'])->where('id', '!=', $id)->exists();
-                if ($engineExists) {
-                    return back()->withErrors(["edit_vehicles.{$id}.engine_number" => "Engine number is already taken."])->withInput();
-                }
 
                 $allChassis[] = $vehicle['chassis_number'];
-                $allEngines[] = $vehicle['engine_number'];
             }
         }
 
@@ -218,17 +214,14 @@ class VehiclePurchaseOrderController extends Controller
             foreach ($request->items as $itemIdx => $itemData) {
                 if (isset($itemData['vehicles'])) {
                     foreach ($itemData['vehicles'] as $vehIdx => $vehicle) {
-                        if (empty($vehicle['chassis_number']) || empty($vehicle['engine_number'])) {
+                        if (empty($vehicle['chassis_number']) || empty($vehicle['motor_number'])) {
                             continue;
                         }
-                        if ($vehicle['chassis_number'] === $vehicle['engine_number']) {
-                            return back()->withErrors(["items.{$itemIdx}.vehicles.{$vehIdx}.engine_number" => "Chassis number and engine number must be different."])->withInput();
+                        if ($vehicle['chassis_number'] === $vehicle['motor_number']) {
+                            return back()->withErrors(["items.{$itemIdx}.vehicles.{$vehIdx}.motor_number" => "Chassis number and motor number must be different."])->withInput();
                         }
                         if (in_array($vehicle['chassis_number'], $allChassis)) {
                             return back()->withErrors(["items.{$itemIdx}.vehicles.{$vehIdx}.chassis_number" => "Duplicate chassis number: {$vehicle['chassis_number']}."])->withInput();
-                        }
-                        if (in_array($vehicle['engine_number'], $allEngines)) {
-                            return back()->withErrors(["items.{$itemIdx}.vehicles.{$vehIdx}.engine_number" => "Duplicate engine number: {$vehicle['engine_number']}."])->withInput();
                         }
 
                         // DB unique check for new ones
@@ -236,13 +229,8 @@ class VehiclePurchaseOrderController extends Controller
                         if ($chassisExists) {
                             return back()->withErrors(["items.{$itemIdx}.vehicles.{$vehIdx}.chassis_number" => "Chassis number is already taken."])->withInput();
                         }
-                        $engineExists = VehicleInventory::where('engine_number', $vehicle['engine_number'])->exists();
-                        if ($engineExists) {
-                            return back()->withErrors(["items.{$itemIdx}.vehicles.{$vehIdx}.engine_number" => "Engine number is already taken."])->withInput();
-                        }
 
                         $allChassis[] = $vehicle['chassis_number'];
-                        $allEngines[] = $vehicle['engine_number'];
                     }
                 }
             }
@@ -300,7 +288,13 @@ class VehiclePurchaseOrderController extends Controller
                     }
                     VehicleInventory::where('id', $id)->update([
                         'chassis_number' => $val['chassis_number'],
-                        'engine_number' => $val['engine_number'],
+                        'engine_number' => $val['motor_number'],
+                        'motor_number' => $val['motor_number'],
+                        'battery_number' => $val['battery_number'] ?? null,
+                        'charger_number' => $val['charger_number'] ?? null,
+                        'controller_number' => $val['controller_number'] ?? null,
+                        'convertor_number' => $val['convertor_number'] ?? null,
+                        'manual_number' => $val['manual_number'] ?? null,
                     ]);
                 }
             }
@@ -315,15 +309,24 @@ class VehiclePurchaseOrderController extends Controller
                 if ($request->has('items')) {
                     foreach ($request->items as $itemData) {
                         if ((int)$itemData['id'] === (int)$poItem->id && !empty($itemData['vehicles'])) {
-                            $delta = count($itemData['vehicles']);
-                            foreach ($itemData['vehicles'] as $vehicle) {
+                            $validVehicles = array_filter($itemData['vehicles'], function($v) {
+                                return !empty($v['chassis_number']) && !empty($v['motor_number']);
+                            });
+                            $delta = count($validVehicles);
+                            foreach ($validVehicles as $vehicle) {
                                 VehicleInventory::create([
                                     'vehicle_po_id' => $vehiclePurchaseOrder->id,
                                     'vehicle_description' => $poItem->vehicle_description,
                                     'color_name' => $poItem->color_name,
                                     'mfg_year' => $poItem->mfg_year,
                                     'chassis_number' => $vehicle['chassis_number'],
-                                    'engine_number' => $vehicle['engine_number'],
+                                    'engine_number' => $vehicle['motor_number'],
+                                    'motor_number' => $vehicle['motor_number'],
+                                    'battery_number' => $vehicle['battery_number'] ?? null,
+                                    'charger_number' => $vehicle['charger_number'] ?? null,
+                                    'controller_number' => $vehicle['controller_number'] ?? null,
+                                    'convertor_number' => $vehicle['convertor_number'] ?? null,
+                                    'manual_number' => $vehicle['manual_number'] ?? null,
                                     'quantity' => 1,
                                     'purchase_price' => $poItem->unit_price,
                                     'status' => 'available',

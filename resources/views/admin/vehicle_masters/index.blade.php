@@ -31,6 +31,8 @@
                         <th>Color</th>
                         <th>Fuel</th>
                         <th>Transmission</th>
+                        <th>Battery Type</th>
+                        <th>Battery Make</th>
                         <th>Price</th>
                         <th>Status</th>
                         <th>Actions</th>
@@ -44,6 +46,8 @@
                         <td>{{ $v->color_name ?? '-' }}</td>
                         <td>{{ $v->fuel_type ?? '-' }}</td>
                         <td>{{ $v->transmission ?? '-' }}</td>
+                        <td>{{ $v->battery_type ?? '-' }}</td>
+                        <td>{{ $v->battery_make ?? '-' }}</td>
                         <td>{{ number_format($v->ex_showroom_price, 2) }}</td>
                         <td>
                             <label class="switch switch-success">
@@ -59,7 +63,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="8" class="text-center text-muted">No vehicle records.</td></tr>
+                    <tr><td colspan="10" class="text-center text-muted">No vehicle records.</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -85,7 +89,7 @@
                         <input type="file" name="csv_file" class="form-control" accept=".csv,.txt,.xls,.xlsx" required>
                         <div class="form-text text-muted mt-2">
                             Please upload a valid CSV file using the template headers:<br>
-                            <code>variant_name, color_name, fuel_type, transmission, ex_showroom_price</code>
+                            <code>variant_name, color_name, fuel_type, transmission, ex_showroom_price, battery_type, battery_make</code>
                         </div>
                     </div>
                 </div>

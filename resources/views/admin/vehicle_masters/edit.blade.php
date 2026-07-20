@@ -41,6 +41,16 @@
                     <input type="text" name="color_name" class="form-control @error('color_name') is-invalid @enderror" value="{{ old('color_name', $vehicle->color_name) }}">
                     @error('color_name')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
+                <div class="col-md-4">
+                    <label class="form-label">Type of Battery</label>
+                    <input type="text" name="battery_type" class="form-control @error('battery_type') is-invalid @enderror" value="{{ old('battery_type', $vehicle->battery_type) }}" placeholder="e.g. LITHIUM">
+                    @error('battery_type')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Make of Battery</label>
+                    <input type="text" name="battery_make" class="form-control @error('battery_make') is-invalid @enderror" value="{{ old('battery_make', $vehicle->battery_make) }}" placeholder="e.g. LITHIUM">
+                    @error('battery_make')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
             </div>
             <div class="mt-4"><button type="submit" class="btn btn-primary">Update</button> <a href="{{ route('admin.vehicle-masters.index') }}" class="btn btn-secondary">Cancel</a></div>
         </form>

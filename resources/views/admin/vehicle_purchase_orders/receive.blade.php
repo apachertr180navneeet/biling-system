@@ -1,8 +1,7 @@
 @extends('admin.layouts.app')
 @section('style')
 <style>
-.vehicle-rows .vehicle-row { border: 1px solid #e0e0e0; border-radius: 6px; padding: 10px; margin-bottom: 8px; background: #fafafa; }
-.vehicle-rows .vehicle-row .btn-remove { color: #dc3545; cursor: pointer; }
+.vehicle-rows .vehicle-row { border: 1px solid #e0e0e0; border-radius: 6px; padding: 15px; margin-bottom: 12px; background: #fafafa; }
 .validation-icon { width: 20px; display: inline-block; }
 .validation-icon .spinner { display: none; width: 14px; height: 14px; border: 2px solid #e0e0e0; border-top-color: #696cff; border-radius: 50%; animation: spin 0.6s linear infinite; }
 .validation-icon .check { display: none; color: #28a745; font-weight: bold; }
@@ -67,28 +66,45 @@
                                     <div class="small fw-semibold text-muted mb-3"><i class="bx bx-edit me-1"></i> Edit Previously Received Vehicles ({{ $itemVehicles->count() }}):</div>
                                     <div class="edit-vehicle-rows">
                                         @foreach($itemVehicles as $rev)
-                                            <div class="vehicle-row d-flex align-items-center gap-2 mb-2">
+                                            <div class="vehicle-row p-3 mb-3 border rounded bg-white">
                                                 <input type="hidden" name="edit_vehicles[{{ $rev->id }}][id]" value="{{ $rev->id }}">
-                                                <div class="flex-grow-1">
-                                                    <label class="form-label small text-muted">Chassis Number *</label>
-                                                    <input type="text" name="edit_vehicles[{{ $rev->id }}][chassis_number]" class="form-control bg-white" required maxlength="255" data-field="chassis_number" data-id="{{ $rev->id }}" value="{{ old("edit_vehicles.{$rev->id}.chassis_number", $rev->chassis_number) }}" style="{{ $errors->has("edit_vehicles.{$rev->id}.chassis_number") ? 'border: 2px solid #dc3545;' : '' }}">
-                                                    <div class="validation-message small text-danger mt-1">
-                                                        @error("edit_vehicles.{$rev->id}.chassis_number")
-                                                            {{ $message }}
-                                                        @enderror
+                                                <div class="row g-2">
+                                                    <div class="col-md-3">
+                                                        <label class="form-label small text-muted">Chassis Number *</label>
+                                                        <input type="text" name="edit_vehicles[{{ $rev->id }}][chassis_number]" class="form-control bg-white" required maxlength="255" data-field="chassis_number" data-id="{{ $rev->id }}" value="{{ old("edit_vehicles.{$rev->id}.chassis_number", $rev->chassis_number) }}" style="{{ $errors->has("edit_vehicles.{$rev->id}.chassis_number") ? 'border: 2px solid #dc3545;' : '' }}">
+                                                        <div class="validation-message small text-danger mt-1">
+                                                            @error("edit_vehicles.{$rev->id}.chassis_number")
+                                                                {{ $message }}
+                                                            @enderror
+                                                        </div>
                                                     </div>
-                                                </div>
-                                                <div class="flex-grow-1">
-                                                    <label class="form-label small text-muted">Engine Number *</label>
-                                                    <input type="text" name="edit_vehicles[{{ $rev->id }}][engine_number]" class="form-control bg-white" required maxlength="255" data-field="engine_number" data-id="{{ $rev->id }}" value="{{ old("edit_vehicles.{$rev->id}.engine_number", $rev->engine_number) }}" style="{{ $errors->has("edit_vehicles.{$rev->id}.engine_number") ? 'border: 2px solid #dc3545;' : '' }}">
-                                                    <div class="validation-message small text-danger mt-1">
-                                                        @error("edit_vehicles.{$rev->id}.engine_number")
-                                                            {{ $message }}
-                                                        @enderror
+                                                    <div class="col-md-3">
+                                                        <label class="form-label small text-muted">Motor Number *</label>
+                                                        <input type="text" name="edit_vehicles[{{ $rev->id }}][motor_number]" class="form-control bg-white" required maxlength="255" value="{{ old("edit_vehicles.{$rev->id}.motor_number", $rev->motor_number) }}">
                                                     </div>
-                                                </div>
-                                                <div style="width:40px;" class="d-flex align-items-end justify-content-center">
-                                                    <button type="button" class="btn btn-link btn-remove-received p-0 align-middle" data-id="{{ $rev->id }}"><i class="bx bx-trash text-danger" style="font-size: 1.5rem;"></i></button>
+                                                    <div class="col-md-3">
+                                                        <label class="form-label small text-muted">Battery Number</label>
+                                                        <input type="text" name="edit_vehicles[{{ $rev->id }}][battery_number]" class="form-control bg-white" maxlength="255" value="{{ old("edit_vehicles.{$rev->id}.battery_number", $rev->battery_number) }}">
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label class="form-label small text-muted">Charger Number</label>
+                                                        <input type="text" name="edit_vehicles[{{ $rev->id }}][charger_number]" class="form-control bg-white" maxlength="255" value="{{ old("edit_vehicles.{$rev->id}.charger_number", $rev->charger_number) }}">
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label class="form-label small text-muted">Controller Number</label>
+                                                        <input type="text" name="edit_vehicles[{{ $rev->id }}][controller_number]" class="form-control bg-white" maxlength="255" value="{{ old("edit_vehicles.{$rev->id}.controller_number", $rev->controller_number) }}">
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label class="form-label small text-muted">Convertor Number</label>
+                                                        <input type="text" name="edit_vehicles[{{ $rev->id }}][convertor_number]" class="form-control bg-white" maxlength="255" value="{{ old("edit_vehicles.{$rev->id}.convertor_number", $rev->convertor_number) }}">
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label class="form-label small text-muted">Manual Number</label>
+                                                        <input type="text" name="edit_vehicles[{{ $rev->id }}][manual_number]" class="form-control bg-white" maxlength="255" value="{{ old("edit_vehicles.{$rev->id}.manual_number", $rev->manual_number) }}">
+                                                    </div>
+                                                    <div class="col-md-3 d-flex align-items-end justify-content-end">
+                                                        <button type="button" class="btn btn-outline-danger btn-remove-received w-100" data-id="{{ $rev->id }}"><i class="bx bx-trash me-1"></i> Remove</button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         @endforeach
@@ -100,32 +116,49 @@
                         <div class="vehicle-rows" id="vehicles-{{ $item->id }}">
                             @php
                                 $oldVehicles = old("items.{$i}.vehicles");
-                                $vehiclesToRender = is_array($oldVehicles) ? $oldVehicles : [['chassis_number' => '', 'engine_number' => '']];
+                                $vehiclesToRender = is_array($oldVehicles) ? $oldVehicles : [['chassis_number' => '', 'motor_number' => '', 'battery_number' => '', 'charger_number' => '', 'controller_number' => '', 'convertor_number' => '', 'manual_number' => '']];
                             @endphp
                             @foreach($vehiclesToRender as $vIdx => $vVal)
-                            <div class="vehicle-row d-flex align-items-center gap-2">
-                                <div class="flex-grow-1">
-                                    <label class="form-label small">Chassis Number *</label>
-                                    <input type="text" name="items[{{ $i }}][vehicles][{{ $vIdx }}][chassis_number]" class="form-control" required maxlength="255" data-field="chassis_number" value="{{ old("items.{$i}.vehicles.{$vIdx}.chassis_number", $vVal['chassis_number'] ?? '') }}" style="{{ $errors->has("items.{$i}.vehicles.{$vIdx}.chassis_number") ? 'border: 2px solid #dc3545;' : '' }}">
-                                    <div class="validation-message small text-danger mt-1">
-                                        @error("items.{$i}.vehicles.{$vIdx}.chassis_number")
-                                            {{ $message }}
-                                        @enderror
+                            <div class="vehicle-row p-3 mb-3 border rounded bg-white">
+                                <div class="row g-2">
+                                    <div class="col-md-3">
+                                        <label class="form-label small">Chassis Number *</label>
+                                        <input type="text" name="items[{{ $i }}][vehicles][{{ $vIdx }}][chassis_number]" class="form-control" required maxlength="255" data-field="chassis_number" value="{{ old("items.{$i}.vehicles.{$vIdx}.chassis_number", $vVal['chassis_number'] ?? '') }}" style="{{ $errors->has("items.{$i}.vehicles.{$vIdx}.chassis_number") ? 'border: 2px solid #dc3545;' : '' }}">
+                                        <div class="validation-message small text-danger mt-1">
+                                            @error("items.{$i}.vehicles.{$vIdx}.chassis_number")
+                                                {{ $message }}
+                                            @enderror
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <label class="form-label small">Engine Number *</label>
-                                    <input type="text" name="items[{{ $i }}][vehicles][{{ $vIdx }}][engine_number]" class="form-control" required maxlength="255" data-field="engine_number" value="{{ old("items.{$i}.vehicles.{$vIdx}.engine_number", $vVal['engine_number'] ?? '') }}" style="{{ $errors->has("items.{$i}.vehicles.{$vIdx}.engine_number") ? 'border: 2px solid #dc3545;' : '' }}">
-                                    <div class="validation-message small text-danger mt-1">
-                                        @error("items.{$i}.vehicles.{$vIdx}.engine_number")
-                                            {{ $message }}
-                                        @enderror
+                                    <div class="col-md-3">
+                                        <label class="form-label small">Motor Number *</label>
+                                        <input type="text" name="items[{{ $i }}][vehicles][{{ $vIdx }}][motor_number]" class="form-control" required maxlength="255" value="{{ old("items.{$i}.vehicles.{$vIdx}.motor_number", $vVal['motor_number'] ?? '') }}">
                                     </div>
-                                </div>
-                                <div style="width:40px;" class="d-flex align-items-end justify-content-center">
-                                    @if($vIdx > 0)
-                                        <button type="button" class="btn btn-link btn-remove p-0 align-middle"><i class="bx bx-trash text-danger" style="font-size: 1.5rem;"></i></button>
-                                    @endif
+                                    <div class="col-md-3">
+                                        <label class="form-label small">Battery Number</label>
+                                        <input type="text" name="items[{{ $i }}][vehicles][{{ $vIdx }}][battery_number]" class="form-control" maxlength="255" value="{{ old("items.{$i}.vehicles.{$vIdx}.battery_number", $vVal['battery_number'] ?? '') }}">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label small">Charger Number</label>
+                                        <input type="text" name="items[{{ $i }}][vehicles][{{ $vIdx }}][charger_number]" class="form-control" maxlength="255" value="{{ old("items.{$i}.vehicles.{$vIdx}.charger_number", $vVal['charger_number'] ?? '') }}">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label small">Controller Number</label>
+                                        <input type="text" name="items[{{ $i }}][vehicles][{{ $vIdx }}][controller_number]" class="form-control" maxlength="255" value="{{ old("items.{$i}.vehicles.{$vIdx}.controller_number", $vVal['controller_number'] ?? '') }}">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label small">Convertor Number</label>
+                                        <input type="text" name="items[{{ $i }}][vehicles][{{ $vIdx }}][convertor_number]" class="form-control" maxlength="255" value="{{ old("items.{$i}.vehicles.{$vIdx}.convertor_number", $vVal['convertor_number'] ?? '') }}">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label small">Manual Number</label>
+                                        <input type="text" name="items[{{ $i }}][vehicles][{{ $vIdx }}][manual_number]" class="form-control" maxlength="255" value="{{ old("items.{$i}.vehicles.{$vIdx}.manual_number", $vVal['manual_number'] ?? '') }}">
+                                    </div>
+                                    <div class="col-md-3 d-flex align-items-end justify-content-end remove-btn-col">
+                                        @if($vIdx > 0)
+                                            <button type="button" class="btn btn-outline-danger btn-remove w-100"><i class="bx bx-trash me-1"></i> Remove</button>
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
                             @endforeach
@@ -153,8 +186,8 @@ function checkUnique(input) {
     var field = input.dataset.field;
     var value = input.value.trim();
     var lowerVal = value.toLowerCase();
-    var row = input.closest('.vehicle-row');
-    var msgBox = input.parentNode.querySelector('.validation-message');
+    var msgBox = input.parentNode.querySelector('.validation-message') || input.parentNode.appendChild(document.createElement('div'));
+    msgBox.className = 'validation-message small text-danger mt-1';
 
     if (!value) {
         msgBox.textContent = '';
@@ -163,52 +196,26 @@ function checkUnique(input) {
         return;
     }
 
-    // 1. Same row chassis !== engine check
-    if (row) {
-        var chassisInput = row.querySelector('input[data-field="chassis_number"]');
-        var engineInput = row.querySelector('input[data-field="engine_number"]');
-        if (chassisInput && engineInput && chassisInput.value.trim() && engineInput.value.trim() && chassisInput.value.trim() === engineInput.value.trim()) {
-            chassisInput.style.border = '2px solid #dc3545';
-            engineInput.style.border = '2px solid #dc3545';
-            var chassisMsg = chassisInput.parentNode.querySelector('.validation-message');
-            var engineMsg = engineInput.parentNode.querySelector('.validation-message');
-            if (chassisMsg) { chassisMsg.textContent = 'Chassis and engine number must be different.'; chassisMsg.className = 'validation-message small text-danger mt-1'; }
-            if (engineMsg) { engineMsg.textContent = 'Chassis and engine number must be different.'; engineMsg.className = 'validation-message small text-danger mt-1'; }
-            return;
-        } else if (chassisInput && engineInput) {
-            // clear cross-field error if values now differ
-            var cMsg = chassisInput.parentNode.querySelector('.validation-message');
-            var eMsg = engineInput.parentNode.querySelector('.validation-message');
-            if (cMsg && cMsg.textContent === 'Chassis and engine number must be different.') { cMsg.textContent = ''; cMsg.className = 'validation-message small mt-1'; chassisInput.style.border = ''; }
-            if (eMsg && eMsg.textContent === 'Chassis and engine number must be different.') { eMsg.textContent = ''; eMsg.className = 'validation-message small mt-1'; engineInput.style.border = ''; }
-        }
-    }
-
-    // 2. Unique within form check
+    // Unique within form check
     var inputsOfSameField = document.querySelectorAll('input[data-field="' + field + '"]');
     var duplicateFound = false;
     inputsOfSameField.forEach(function(otherInput) {
         if (otherInput !== input && otherInput.value.trim().toLowerCase() === lowerVal) {
             duplicateFound = true;
             otherInput.style.border = '2px solid #dc3545';
-            var otherMsg = otherInput.parentNode.querySelector('.validation-message');
-            if (otherMsg) {
-                var label = field === 'chassis_number' ? 'Chassis number' : 'Engine number';
-                otherMsg.textContent = 'Duplicate ' + label.toLowerCase() + ' in this form.';
-                otherMsg.className = 'validation-message small text-danger mt-1';
-            }
+            var otherMsg = otherInput.parentNode.querySelector('.validation-message') || otherInput.parentNode.appendChild(document.createElement('div'));
+            otherMsg.textContent = 'Duplicate chassis number in this form.';
+            otherMsg.className = 'validation-message small text-danger mt-1';
         }
     });
 
     if (duplicateFound) {
         input.style.border = '2px solid #dc3545';
-        var label = field === 'chassis_number' ? 'Chassis number' : 'Engine number';
-        msgBox.textContent = 'Duplicate ' + label.toLowerCase() + ' in this form.';
-        msgBox.className = 'validation-message small text-danger mt-1';
+        msgBox.textContent = 'Duplicate chassis number in this form.';
         return;
     }
 
-    // 3. Unique in DB check
+    // Unique in DB check
     input.style.border = '1px solid #aaa';
     msgBox.textContent = 'Checking...';
     msgBox.className = 'validation-message small text-muted mt-1';
@@ -248,7 +255,7 @@ function revalidateFieldType(field) {
 
 function checkUniqueDB(input, value) {
     var field = input.dataset.field;
-    var msgBox = input.parentNode.querySelector('.validation-message');
+    var msgBox = input.parentNode.querySelector('.validation-message') || input.parentNode.appendChild(document.createElement('div'));
     var ignoreId = input.dataset.id || '';
     
     var formData = new FormData();
@@ -265,7 +272,7 @@ function checkUniqueDB(input, value) {
     })
     .then(function(r) { return r.json(); })
     .then(function(data) {
-        if (input.value.trim() !== value) return; // value changed in the meantime
+        if (input.value.trim() !== value) return; // value changed
         if (data.valid) {
             input.style.border = '2px solid #28a745';
             msgBox.textContent = '';
@@ -307,16 +314,16 @@ document.querySelectorAll('.add-vehicle-btn').forEach(function(btn) {
             input.value = '';
             input.style.border = '';
             var name = input.name;
+            // e.g. items[0][vehicles][0][chassis_number]
             name = name.replace(/\[vehicles\]\[\d+\]/, '[vehicles][' + newIndex + ']');
             input.name = name;
             var msg = input.parentNode.querySelector('.validation-message');
             if (msg) { msg.textContent = ''; msg.className = 'validation-message small mt-1'; }
         });
         
-        var actionDiv = newRow.querySelector('div[style*="width:40px"]');
+        var actionDiv = newRow.querySelector('.remove-btn-col');
         if (actionDiv) {
-            actionDiv.className = 'd-flex align-items-end justify-content-center';
-            actionDiv.innerHTML = '<button type="button" class="btn btn-link btn-remove p-0 align-middle"><i class="bx bx-trash text-danger" style="font-size: 1.5rem;"></i></button>';
+            actionDiv.innerHTML = '<button type="button" class="btn btn-outline-danger btn-remove w-100"><i class="bx bx-trash me-1"></i> Remove</button>';
         }
         container.appendChild(newRow);
     });
@@ -335,18 +342,17 @@ document.addEventListener('click', function(e) {
                 name = name.replace(/\[vehicles\]\[\d+\]/, '[vehicles][' + index + ']');
                 input.name = name;
             });
-            var actionDiv = r.querySelector('div[style*="width:40px"]');
+            var actionDiv = r.querySelector('.remove-btn-col');
             if (actionDiv) {
                 if (index === 0) {
                     actionDiv.innerHTML = '';
                 } else if (!actionDiv.querySelector('.btn-remove')) {
-                    actionDiv.innerHTML = '<button type="button" class="btn btn-link btn-remove p-0 align-middle"><i class="bx bx-trash text-danger" style="font-size: 1.5rem;"></i></button>';
+                    actionDiv.innerHTML = '<button type="button" class="btn btn-outline-danger btn-remove w-100"><i class="bx bx-trash me-1"></i> Remove</button>';
                 }
             }
         });
         
         revalidateFieldType('chassis_number');
-        revalidateFieldType('engine_number');
     }
 });
 
@@ -367,26 +373,22 @@ document.addEventListener('click', function(e) {
         container.appendChild(hiddenInput);
         
         row.remove();
-        
         revalidateFieldType('chassis_number');
-        revalidateFieldType('engine_number');
     }
 });
 
 document.getElementById('receiveForm').addEventListener('submit', function(e) {
-    var inputs = this.querySelectorAll('input[data-field]');
+    var inputs = this.querySelectorAll('input[required]');
     var errors = [];
     
     inputs.forEach(function(input) {
         var val = input.value.trim();
         if (!val) {
-            var label = input.dataset.field === 'chassis_number' ? 'Chassis number' : 'Engine number';
+            var label = input.name.indexOf('chassis_number') !== -1 ? 'Chassis number' : 'Motor number';
             errors.push(label + ' is required for all vehicles.');
         }
-        if (input.style.border.indexOf('rgb(220, 53, 69)') !== -1 || input.style.border.indexOf('#dc3545') !== -1 || input.style.borderColor === 'rgb(220, 53, 69)' || input.style.borderColor === '#dc3545') {
-            var msg = input.parentNode.querySelector('.validation-message');
-            var errorText = msg ? msg.textContent.trim() : '';
-            errors.push(errorText || ('Please fix invalid ' + input.dataset.field.replace('_', ' ') + ' values before submitting.'));
+        if (input.style.borderColor === 'rgb(220, 53, 69)' || input.style.borderColor === '#dc3545') {
+            errors.push('Please fix invalid values before submitting.');
         }
     });
     

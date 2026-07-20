@@ -117,6 +117,13 @@
 			</a>
 		</li>
 
+		<li class="menu-item {{ request()->routeIs('admin.sales-invoices.*') ? 'active' : ''}}">
+			<a href="{{route('admin.sales-invoices.index')}}" class="menu-link">
+				<i class="menu-icon tf-icons bx bx-receipt"></i>
+				<div data-i18n="Sales Invoices">Sales Invoices</div>
+			</a>
+		</li>
+
 		<li class="menu-item {{ request()->routeIs('admin.spare-part-stocks.*') ? 'active' : ''}}">
 			<a href="{{route('admin.spare-part-stocks.index')}}" class="menu-link">
 				<i class="menu-icon tf-icons bx bx-box"></i>

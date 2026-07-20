@@ -29,6 +29,8 @@ class VehicleMasterController extends Controller
             'fuel_type' => 'nullable|string|max:255',
             'transmission' => 'nullable|string|max:255',
             'ex_showroom_price' => 'required|numeric|min:0',
+            'battery_type' => 'nullable|string|max:255',
+            'battery_make' => 'nullable|string|max:255',
         ]);
         VehicleMaster::create($data);
         return redirect()->route('admin.vehicle-masters.index')->withSuccess('Vehicle master created successfully.');
@@ -47,6 +49,8 @@ class VehicleMasterController extends Controller
             'fuel_type' => 'nullable|string|max:255',
             'transmission' => 'nullable|string|max:255',
             'ex_showroom_price' => 'required|numeric|min:0',
+            'battery_type' => 'nullable|string|max:255',
+            'battery_make' => 'nullable|string|max:255',
         ]);
         $vehicleMaster->update($data);
         return redirect()->route('admin.vehicle-masters.index')->withSuccess('Vehicle master updated successfully.');
@@ -73,12 +77,16 @@ class VehicleMasterController extends Controller
         $sheet->setCellValue('C1', 'fuel_type');
         $sheet->setCellValue('D1', 'transmission');
         $sheet->setCellValue('E1', 'ex_showroom_price');
+        $sheet->setCellValue('F1', 'battery_type');
+        $sheet->setCellValue('G1', 'battery_make');
         // Example row
-        $sheet->setCellValue('A2', 'test');
-        $sheet->setCellValue('B2', 'red');
-        $sheet->setCellValue('C2', 'Petrol');
-        $sheet->setCellValue('D2', 'Manual');
-        $sheet->setCellValue('E2', '750000.00');
+        $sheet->setCellValue('A2', 'ARZOO ECO LI');
+        $sheet->setCellValue('B2', 'BLACK');
+        $sheet->setCellValue('C2', 'Electric');
+        $sheet->setCellValue('D2', 'Automatic');
+        $sheet->setCellValue('E2', '166666.00');
+        $sheet->setCellValue('F2', 'LITHIUM');
+        $sheet->setCellValue('G2', 'LITHIUM');
 
         $writer = new Xls($spreadsheet);
         $path = storage_path('app/vehicle_master_template.xls');
@@ -159,6 +167,9 @@ class VehicleMasterController extends Controller
             $transmission = isset($data['transmission']) ? trim($data['transmission']) : '';
             $exShowroomPrice = isset($data['ex_showroom_price']) ? trim($data['ex_showroom_price']) : '0';
 
+            $batteryType = isset($data['battery_type']) ? trim($data['battery_type']) : '';
+            $batteryMake = isset($data['battery_make']) ? trim($data['battery_make']) : '';
+
             if (empty($variantName)) {
                 $errors[] = "Row {$rowCount}: Variant Name is required.";
                 $skipped++;
@@ -197,6 +208,8 @@ class VehicleMasterController extends Controller
                 'fuel_type' => $fuelType ?: null,
                 'transmission' => $transmission ?: null,
                 'ex_showroom_price' => floatval($exShowroomPrice),
+                'battery_type' => $batteryType ?: null,
+                'battery_make' => $batteryMake ?: null,
                 'is_active' => true,
             ]);
 

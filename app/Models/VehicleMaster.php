@@ -13,5 +13,6 @@ class VehicleMaster extends Model
         'variant_name', 'color_name',
         'fuel_type', 'transmission',
         'ex_showroom_price', 'is_active',
+        'battery_type', 'battery_make',
     ];
 }

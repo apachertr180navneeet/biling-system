@@ -1,0 +1,81 @@
+@extends('admin.layouts.app')
+@section('content')
+<div class="container-xxl flex-grow-1 container-p-y">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="fw-bold mb-0">Sales Invoices</h4>
+        <a href="{{ route('admin.sales-invoices.create') }}" class="btn btn-primary"><i class="bx bx-plus"></i> New Sales Invoice</a>
+    </div>
+
+    <div class="card">
+        <div class="table-responsive text-nowrap">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Invoice No</th>
+                        <th>Date</th>
+                        <th>Customer</th>
+                        <th>Vehicle</th>
+                        <th>Chassis No</th>
+                        <th>Grand Total</th>
+                        <th>Payment Mode</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($invoices as $inv)
+                    <tr>
+                        <td><a href="{{ route('admin.sales-invoices.show', $inv) }}" class="fw-bold">{{ $inv->invoice_number }}</a></td>
+                        <td>{{ $inv->invoice_date->format('d-m-Y') }}</td>
+                        <td>
+                            {{ $inv->customer_name }}
+                            @if($inv->customer_mobile) <br><small class="text-muted">{{ $inv->customer_mobile }}</small> @endif
+                        </td>
+                        <td>{{ $inv->vehicleInventory->vehicle_description }}</td>
+                        <td>{{ $inv->vehicleInventory->chassis_number ?? '-' }}</td>
+                        <td><strong>{{ number_format($inv->grand_total, 2) }}</strong></td>
+                        <td>{{ $inv->payment_mode ?? '-' }}</td>
+                        <td>
+                            <a href="{{ route('admin.sales-invoices.show', $inv) }}" class="btn btn-sm btn-info" title="View / Print"><i class="bx bx-printer"></i></a>
+                            <button class="btn btn-sm btn-danger delete-btn" data-id="{{ $inv->id }}" data-url="{{ route('admin.sales-invoices.destroy', $inv) }}" title="Delete"><i class="bx bx-trash"></i></button>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr><td colspan="8" class="text-center text-muted">No sales invoices recorded.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer">{{ $invoices->links() }}</div>
+    </div>
+</div>
+
+<form id="deleteForm" method="POST">@csrf</form>
+@endsection
+
+@section('script')
+<script>
+$(function(){
+    $('.delete-btn').click(function(){
+        var form=$('#deleteForm'), url=$(this).data('url');
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "This will delete the invoice and restore the vehicle to inventory as available.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#696cff',
+            cancelButtonColor: '#8592a3',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.attr('action', url);
+                $.post(url, form.serialize() + '&_method=DELETE').done(function(r){
+                    if(r.success) location.reload();
+                }).fail(function(){
+                    Swal.fire('Error', 'Something went wrong!', 'error');
+                });
+            }
+        });
+    });
+});
+</script>
+@endsection

@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\VehiclePurchaseOrderController;
 use App\Http\Controllers\Admin\SparePartStockController;
 use App\Http\Controllers\Admin\VehicleMasterController;
 use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\SalesInvoiceController;
 
 
 /*
@@ -94,6 +95,8 @@ Route::name('admin.')->prefix('admin')->group(function () {
         Route::post('spare-part-stocks/adjust', [SparePartStockController::class, 'adjust'])->name('spare-part-stocks.adjust');
 
         Route::post('vehicle-inventories/{vehicle_inventory}/toggle-status-sold', [VehiclePurchaseOrderController::class, 'toggleInventoryStatus'])->name('vehicle-inventories.toggle-status-sold');
+
+        Route::resource('sales-invoices', SalesInvoiceController::class)->except(['edit', 'update']);
 
         Route::get('reports/vehicle-ledger', [ReportController::class, 'vehicleLedger'])->name('reports.vehicle-ledger');
         Route::get('reports/part-ledger', [ReportController::class, 'partLedger'])->name('reports.part-ledger');
