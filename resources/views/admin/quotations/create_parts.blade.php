@@ -12,19 +12,24 @@
                 <div class="row g-3 mb-4">
                     <div class="col-md-4">
                         <label class="form-label">Select Customer (Existing)</label>
-                        <select id="customer_select" name="customer_id" class="form-select">
-                            <option value="">-- New Customer / Walk-in --</option>
-                            @foreach($customers as $c)
-                            <option value="{{ $c->id }}" 
-                                    data-name="{{ $c->first_name }} {{ $c->last_name }}"
-                                    data-mobile="{{ $c->phone }}"
-                                    data-address="{{ $c->address }}"
-                                    data-gstin="{{ $c->gstin }}"
-                                    data-pan="{{ $c->pan_no }}">
-                                {{ $c->first_name }} {{ $c->last_name }} ({{ $c->phone }})
-                            </option>
-                            @endforeach
-                        </select>
+                        <div class="input-group">
+                            <select id="customer_select" name="customer_id" class="form-select">
+                                <option value="">-- New Customer / Walk-in --</option>
+                                @foreach($customers as $c)
+                                <option value="{{ $c->id }}" 
+                                        data-name="{{ $c->first_name }} {{ $c->last_name }}"
+                                        data-mobile="{{ $c->phone }}"
+                                        data-address="{{ $c->address }}"
+                                        data-gstin="{{ $c->gstin }}"
+                                        data-pan="{{ $c->pan_no }}">
+                                    {{ $c->first_name }} {{ $c->last_name }} ({{ $c->phone }})
+                                </option>
+                                @endforeach
+                            </select>
+                            <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#quickAddCustomerModal">
+                                <i class="bx bx-plus"></i> Add
+                            </button>
+                        </div>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Customer Name <span class="text-danger">*</span></label>
@@ -338,6 +343,139 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('summary_round_off').innerText = roundOff.toFixed(2);
         document.getElementById('summary_grand_total').innerText = grandTotalRounded.toFixed(2);
     }
+
+    // AJAX Quick Add Customer Form Handler
+    var quickAddForm = document.getElementById('quickAddCustomerForm');
+    var modalErrorAlert = document.getElementById('modalErrorAlert');
+    var saveCustomerBtn = document.getElementById('btnSaveCustomer');
+    
+    quickAddForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        saveCustomerBtn.disabled = true;
+        saveCustomerBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...';
+        modalErrorAlert.classList.add('d-none');
+        
+        var formData = new FormData(this);
+        
+        fetch('{{ route("admin.customers.store") }}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json().then(data => ({ status: response.status, body: data })))
+        .then(res => {
+            saveCustomerBtn.disabled = false;
+            saveCustomerBtn.innerHTML = 'Save Customer';
+            
+            if (res.status === 200 || res.status === 201) {
+                var customer = res.body.customer;
+                var fullName = customer.first_name + ' ' + (customer.last_name || '');
+                
+                // Add new customer to select dropdown list
+                var option = document.createElement('option');
+                option.value = customer.id;
+                option.text = fullName + ' (' + customer.phone + ')';
+                option.setAttribute('data-name', fullName);
+                option.setAttribute('data-mobile', customer.phone);
+                option.setAttribute('data-address', customer.address || '');
+                option.setAttribute('data-gstin', customer.gstin || '');
+                option.setAttribute('data-pan', customer.pan_no || '');
+                
+                customerSelect.appendChild(option);
+                customerSelect.value = customer.id;
+                $(customerSelect).trigger('change.select2');
+                
+                // Trigger change event to populate input fields
+                var event = new Event('change');
+                customerSelect.dispatchEvent(event);
+                
+                // Close modal
+                var modalEl = document.getElementById('quickAddCustomerModal');
+                var modalInstance = bootstrap.Modal.getInstance(modalEl);
+                if (!modalInstance) {
+                    modalInstance = new bootstrap.Modal(modalEl);
+                }
+                modalInstance.hide();
+                
+                // Reset form
+                quickAddForm.reset();
+            } else {
+                var errorMsg = 'Error saving customer.';
+                if (res.body.errors) {
+                    errorMsg = Object.values(res.body.errors).flat().join('<br>');
+                } else if (res.body.message) {
+                    errorMsg = res.body.message;
+                }
+                modalErrorAlert.innerHTML = errorMsg;
+                modalErrorAlert.classList.remove('d-none');
+            }
+        })
+        .catch(err => {
+            saveCustomerBtn.disabled = false;
+            saveCustomerBtn.innerHTML = 'Save Customer';
+            modalErrorAlert.textContent = 'Server connection error.';
+            modalErrorAlert.classList.remove('d-none');
+            console.error(err);
+        });
+    });
 });
 </script>
+
+<!-- Quick Add Customer Modal -->
+<div class="modal fade" id="quickAddCustomerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form id="quickAddCustomerForm">
+            @csrf
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Quick Add New Customer</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger d-none" id="modalErrorAlert"></div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">First Name <span class="text-danger">*</span></label>
+                            <input type="text" name="first_name" id="modal_first_name" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Last Name <span class="text-danger">*</span></label>
+                            <input type="text" name="last_name" id="modal_last_name" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Mobile Number <span class="text-danger">*</span></label>
+                            <input type="text" name="phone" id="modal_phone" class="form-control" maxlength="10" placeholder="10 digits" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Type <span class="text-danger">*</span></label>
+                            <select name="type" id="modal_type" class="form-select no-select2" required>
+                                <option value="individual">Individual</option>
+                                <option value="corporate">Corporate</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">GSTIN (Optional)</label>
+                            <input type="text" name="gstin" id="modal_gstin" class="form-control" maxlength="15">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">PAN No (Optional)</label>
+                            <input type="text" name="pan_no" id="modal_pan_no" class="form-control" maxlength="10">
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Billing Address</label>
+                            <textarea name="address" id="modal_address" class="form-control" rows="2"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary" id="btnSaveCustomer">Save Customer</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
 @endsection
