@@ -162,6 +162,26 @@
                     </div>
                 </div>
 
+                <h5 class="card-title text-primary mb-3">Payment Summary</h5>
+                <div class="row g-3 mb-4 bg-light p-3 rounded border border-light-subtle">
+                    <div class="col-md-3">
+                        <label class="form-label">Previous Balance (INR)</label>
+                        <input type="number" step="0.01" name="previous_balance" id="previous_balance" class="form-control" value="0.00">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Received Amount (INR)</label>
+                        <input type="number" step="0.01" name="received_amount" id="received_amount" class="form-control fw-bold" value="0.00">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Balance (INR)</label>
+                        <input type="text" id="payment_balance" class="form-control bg-white" readonly value="0.00">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold text-danger">Current Balance (INR)</label>
+                        <input type="text" id="current_balance" class="form-control bg-white fw-bold text-danger" readonly value="0.00">
+                    </div>
+                </div>
+
                 <div class="mb-4">
                     <label class="form-label fw-semibold">Warranty Terms / Notes</label>
                     <textarea name="warranty_notes" class="form-control" rows="3">MOTOR, CONTROLLER WARRANTY - 1 YEAR
@@ -337,6 +357,30 @@ document.addEventListener('DOMContentLoaded', function() {
     rateInp.addEventListener('input', calculateInvoice);
     nemmpInp.addEventListener('input', calculateInvoice);
     discountInp.addEventListener('input', calculateInvoice);
+
+    var prevBalanceInp = document.getElementById('previous_balance');
+    var receivedInp = document.getElementById('received_amount');
+    var paymentBalanceOut = document.getElementById('payment_balance');
+    var currentBalanceOut = document.getElementById('current_balance');
+
+    function calculatePayment() {
+        var grand = parseFloat(grandTotalOut.value) || 0;
+        var prev = parseFloat(prevBalanceInp.value) || 0;
+        var rec = parseFloat(receivedInp.value) || 0;
+        var bal = grand - rec;
+        var curBal = prev + bal;
+        paymentBalanceOut.value = bal.toFixed(2);
+        currentBalanceOut.value = curBal.toFixed(2);
+    }
+
+    prevBalanceInp.addEventListener('input', calculatePayment);
+    receivedInp.addEventListener('input', calculatePayment);
+
+    var origCalcInvoice = calculateInvoice;
+    calculateInvoice = function() {
+        origCalcInvoice();
+        calculatePayment();
+    };
 
     // AJAX Quick Add Customer Form Handler
     var quickAddForm = document.getElementById('quickAddCustomerForm');

@@ -35,6 +35,10 @@ class VehicleSalesInvoice extends Model
         'grand_total',
         'payment_mode',
         'finance_name',
+        'received_amount',
+        'balance',
+        'previous_balance',
+        'current_balance',
         'warranty_notes',
         'is_active',
     ];

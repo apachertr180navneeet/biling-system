@@ -127,6 +127,8 @@ class VehicleSalesInvoiceController extends Controller
             'discount' => 'nullable|numeric|min:0',
             'payment_mode' => 'nullable|string|max:255',
             'finance_name' => 'nullable|string|max:255',
+            'previous_balance' => 'nullable|numeric|min:0',
+            'received_amount' => 'nullable|numeric|min:0',
             'warranty_notes' => 'nullable|string',
         ]);
 
@@ -151,7 +153,12 @@ class VehicleSalesInvoiceController extends Controller
         
         $grand_total = $total - $nemmp - $discount;
 
-        $invoice = DB::transaction(function () use ($request, $vehicle, $rate, $sub_total, $cgst_rate, $cgst_amount, $sgst_rate, $sgst_amount, $total, $nemmp, $discount, $grand_total) {
+        $prev_bal = floatval($request->input('previous_balance', 0));
+        $received = floatval($request->input('received_amount', 0));
+        $balance = $grand_total - $received;
+        $curr_bal = $prev_bal + $balance;
+
+        $invoice = DB::transaction(function () use ($request, $vehicle, $rate, $sub_total, $cgst_rate, $cgst_amount, $sgst_rate, $sgst_amount, $total, $nemmp, $discount, $grand_total, $prev_bal, $received, $balance, $curr_bal) {
             // Generate invoice number
             $last = DB::table('vehicle_sales_invoices')->lockForUpdate()->orderBy('id', 'desc')->first();
             $nextId = $last ? $last->id + 1 : 1;
@@ -183,6 +190,10 @@ class VehicleSalesInvoiceController extends Controller
                 'grand_total' => $grand_total,
                 'payment_mode' => $request->payment_mode,
                 'finance_name' => $request->input('finance_name'),
+                'received_amount' => $received,
+                'balance' => $balance,
+                'previous_balance' => $prev_bal,
+                'current_balance' => $curr_bal,
                 'warranty_notes' => $request->input('warranty_notes', "MOTOR, CONTROLLER WARRANTY - 1 YEAR\nBATTERY WARRANTY - 3 YEAR\nCHARGER WARRANTY - 2 YEAR"),
             ]);
         });
