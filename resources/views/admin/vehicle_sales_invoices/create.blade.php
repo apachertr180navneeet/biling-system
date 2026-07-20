@@ -55,11 +55,20 @@
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Payment Mode</label>
-                        <select name="payment_mode" class="form-select">
+                        <select name="payment_mode" id="payment_mode" class="form-select no-select2">
                             <option value="Cash">Cash</option>
                             <option value="UPI / Online">UPI / Online</option>
                             <option value="Card">Card</option>
-                            <option value="Finance">Finance</option>
+                            <option value="Finance">Finance/HPN (Hypothecation)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-none" id="finance_name_div">
+                        <label class="form-label">Finance Name <span class="text-danger">*</span></label>
+                        <select name="finance_name" id="finance_name" class="form-select">
+                            <option value="">-- Select Finance --</option>
+                            @foreach($financeMasters as $fm)
+                            <option value="{{ $fm->name }}" {{ old('finance_name') === $fm->name ? 'selected' : '' }}>{{ $fm->name }}</option>
+                            @endforeach
                         </select>
                     </div>
                     <div class="col-md-12">
@@ -196,7 +205,7 @@ CHARGER WARRANTY - 2 YEAR</textarea>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Type <span class="text-danger">*</span></label>
-                            <select name="type" id="modal_type" class="form-select" required>
+                            <select name="type" id="modal_type" class="form-select no-select2" required>
                                 <option value="individual">Individual</option>
                                 <option value="corporate">Corporate</option>
                             </select>
@@ -228,10 +237,30 @@ document.addEventListener('DOMContentLoaded', function() {
     var customerNameInput = document.getElementById('customer_name');
     var customerMobileInput = document.getElementById('customer_mobile');
     var customerAddressInput = document.getElementById('customer_address');
+
+    var paymentModeSelect = document.getElementById('payment_mode');
+    var financeNameDiv = document.getElementById('finance_name_div');
+    var financeNameSelect = document.getElementById('finance_name');
+
+    paymentModeSelect.addEventListener('change', function() {
+        if (this.value === 'Finance') {
+            financeNameDiv.classList.remove('d-none');
+            financeNameSelect.setAttribute('required', 'required');
+        } else {
+            financeNameDiv.classList.add('d-none');
+            financeNameSelect.removeAttribute('required');
+            financeNameSelect.value = '';
+        }
+    });
+
+    if (paymentModeSelect.value === 'Finance') {
+        financeNameDiv.classList.remove('d-none');
+        financeNameSelect.setAttribute('required', 'required');
+    }
     
-    customerSelect.addEventListener('change', function() {
+    $(customerSelect).on('change', function() {
         var opt = this.options[this.selectedIndex];
-        if (opt.value) {
+        if (opt && opt.value) {
             customerNameInput.value = opt.getAttribute('data-name') || '';
             customerMobileInput.value = opt.getAttribute('data-mobile') || '';
             customerAddressInput.value = opt.getAttribute('data-address') || '';
@@ -257,9 +286,9 @@ document.addEventListener('DOMContentLoaded', function() {
     var lblBatteryMake = document.getElementById('lbl_battery_make');
     var rateInput = document.getElementById('rate');
 
-    vehicleSelect.addEventListener('change', function() {
+    $(vehicleSelect).on('change', function() {
         var opt = this.options[this.selectedIndex];
-        if (opt.value) {
+        if (opt && opt.value) {
             lblDesc.textContent = opt.getAttribute('data-desc') || '-';
             lblChassis.textContent = opt.getAttribute('data-chassis') || '-';
             lblMotor.textContent = opt.getAttribute('data-motor') || '-';
@@ -349,6 +378,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 customerSelect.appendChild(option);
                 customerSelect.value = customer.id;
+                $(customerSelect).trigger('change.select2');
                 
                 // Trigger change event to populate input fields
                 var event = new Event('change');

@@ -13,7 +13,7 @@
                 @csrf @method('PUT')
                 <div class="mb-3">
                     <label class="form-label">Type</label>
-                    <select name="type" class="form-control @error('type') is-invalid @enderror">
+                    <select name="type" class="form-control no-select2 @error('type') is-invalid @enderror">
                         <option value="individual" {{ old('type', $customer->type) == 'individual' ? 'selected' : '' }}>Individual</option>
                         <option value="corporate" {{ old('type', $customer->type) == 'corporate' ? 'selected' : '' }}>Corporate</option>
                     </select>

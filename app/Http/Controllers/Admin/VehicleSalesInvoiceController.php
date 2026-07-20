@@ -7,6 +7,7 @@ use App\Models\VehicleSalesInvoice;
 use App\Models\VehicleInventory;
 use App\Models\Customer;
 use App\Models\VehicleMaster;
+use App\Models\FinanceMaster;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -104,7 +105,9 @@ class VehicleSalesInvoiceController extends Controller
                 return $item;
             });
 
-        return view('admin.vehicle_sales_invoices.create', compact('customers', 'vehicles'));
+        $financeMasters = FinanceMaster::where('is_active', true)->orderBy('name')->get();
+
+        return view('admin.vehicle_sales_invoices.create', compact('customers', 'vehicles', 'financeMasters'));
     }
 
     public function store(Request $request)
@@ -123,6 +126,7 @@ class VehicleSalesInvoiceController extends Controller
             'nemmp_incentive' => 'nullable|numeric|min:0',
             'discount' => 'nullable|numeric|min:0',
             'payment_mode' => 'nullable|string|max:255',
+            'finance_name' => 'nullable|string|max:255',
             'warranty_notes' => 'nullable|string',
         ]);
 
@@ -178,6 +182,7 @@ class VehicleSalesInvoiceController extends Controller
                 'discount' => $discount,
                 'grand_total' => $grand_total,
                 'payment_mode' => $request->payment_mode,
+                'finance_name' => $request->input('finance_name'),
                 'warranty_notes' => $request->input('warranty_notes', "MOTOR, CONTROLLER WARRANTY - 1 YEAR\nBATTERY WARRANTY - 3 YEAR\nCHARGER WARRANTY - 2 YEAR"),
             ]);
         });

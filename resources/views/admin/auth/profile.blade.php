@@ -94,9 +94,4 @@
 
 @endsection
 @section('script')
-<script>
-    $(".timezone").select2().on('select2:opening', function(e) {
-        $(this).data('select2').$dropdown.find(':input.select2-search__field').attr('placeholder', 'Search your timezone')
-    })
-</script> 
 @endsection

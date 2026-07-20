@@ -224,13 +224,45 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 }
 
 .input-group {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: stretch !important;
     border-radius: 10px !important;
-    overflow: hidden;
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
 }
 
-.input-group .form-control {
-    border-radius: 0 10px 10px 0 !important;
+.input-group > .form-select,
+.input-group > .form-control {
+    flex: 1 1 auto !important;
+    width: 1% !important;
+    min-width: 0 !important;
+}
+
+.input-group > .btn {
+    flex-shrink: 0 !important;
+}
+
+/* Fix input group border radius overrides due to !important on individual classes */
+.input-group > :not(:first-child):not(.dropdown-menu):not(.valid-tooltip):not(.valid-feedback):not(.invalid-tooltip):not(.invalid-feedback) {
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+}
+
+.input-group > :not(:last-child):not(.dropdown-toggle):not(.dropdown-menu):not(.form-floating) {
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+}
+
+.input-group > .form-floating:not(:first-child) > .form-control,
+.input-group > .form-floating:not(:first-child) > .form-select {
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+}
+
+.input-group > .form-floating:not(:last-child) > .form-control,
+.input-group > .form-floating:not(:last-child) > .form-select {
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
 }
 
 .input-group-text {

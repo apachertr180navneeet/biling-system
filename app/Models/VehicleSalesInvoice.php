@@ -34,6 +34,7 @@ class VehicleSalesInvoice extends Model
         'discount',
         'grand_total',
         'payment_mode',
+        'finance_name',
         'warranty_notes',
         'is_active',
     ];

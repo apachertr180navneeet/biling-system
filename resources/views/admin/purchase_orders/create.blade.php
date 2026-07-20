@@ -93,6 +93,7 @@ $(document).ready(function() {
             '<div class="col-md-1"><button type="button" class="btn btn-sm btn-danger remove-item">X</button></div>' +
         '</div>';
         $('#itemsContainer').append(html);
+        initSelect2($('#itemsContainer').find('.item-row').last().find('select'));
         itemIndex++;
     });
     $(document).on('click', '.remove-item', function() {

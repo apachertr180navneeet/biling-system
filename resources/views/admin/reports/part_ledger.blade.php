@@ -15,7 +15,7 @@
                 </div>
                 <div class="col-md-4">
                     <label for="transaction_type" class="form-label">Transaction Type</label>
-                    <select name="transaction_type" id="transaction_type" class="form-select">
+                    <select name="transaction_type" id="transaction_type" class="form-select no-select2">
                         <option value="">-- All Transactions --</option>
                         <option value="in" {{ request('transaction_type') == 'in' ? 'selected' : '' }}>Stock In</option>
                         <option value="out" {{ request('transaction_type') == 'out' ? 'selected' : '' }}>Stock Out</option>

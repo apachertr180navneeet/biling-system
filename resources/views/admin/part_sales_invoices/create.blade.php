@@ -79,7 +79,7 @@
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Payment Mode <span class="text-danger">*</span></label>
-                        <select name="payment_mode" class="form-select @error('payment_mode') is-invalid @enderror" required>
+                        <select name="payment_mode" class="form-select no-select2 @error('payment_mode') is-invalid @enderror" required>
                             <option value="Cash" {{ old('payment_mode') === 'Cash' ? 'selected' : '' }}>Cash</option>
                             <option value="UPI / Online" {{ old('payment_mode') === 'UPI / Online' ? 'selected' : '' }}>UPI / Online</option>
                             <option value="Card" {{ old('payment_mode') === 'Card' ? 'selected' : '' }}>Card</option>
@@ -130,7 +130,7 @@
                                     <input type="number" step="0.01" name="items[0][rate]" class="form-control rate-input" min="0" value="0.00" required>
                                 </td>
                                 <td>
-                                    <select name="items[0][tax_percentage]" class="form-select tax-select" required>
+                                    <select name="items[0][tax_percentage]" class="form-select tax-select no-select2" required>
                                         <option value="0.00">0%</option>
                                         <option value="5.00">5%</option>
                                         <option value="12.00">12%</option>
@@ -225,7 +225,7 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Type <span class="text-danger">*</span></label>
-                            <select name="type" id="modal_type" class="form-select" required>
+                            <select name="type" id="modal_type" class="form-select no-select2" required>
                                 <option value="individual">Individual</option>
                                 <option value="corporate">Corporate</option>
                             </select>
@@ -264,9 +264,9 @@ document.addEventListener('DOMContentLoaded', function() {
     var customerGstInput = document.getElementById('customer_gstin');
     var customerPanInput = document.getElementById('customer_pan');
     
-    customerSelect.addEventListener('change', function() {
+    $(customerSelect).on('change', function() {
         var opt = this.options[this.selectedIndex];
-        if (opt.value) {
+        if (opt && opt.value) {
             customerNameInput.value = opt.getAttribute('data-name') || '';
             customerMobileInput.value = opt.getAttribute('data-mobile') || '';
             customerAddressInput.value = opt.getAttribute('data-address') || '';
@@ -315,7 +315,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <input type="number" step="0.01" name="items[\${itemIndex}][rate]" class="form-control rate-input" min="0" value="0.00" required>
             </td>
             <td>
-                <select name="items[\${itemIndex}][tax_percentage]" class="form-select tax-select" required>
+                <select name="items[\${itemIndex}][tax_percentage]" class="form-select tax-select no-select2" required>
                     <option value="0.00">0%</option>
                     <option value="5.00">5%</option>
                     <option value="12.00">12%</option>
@@ -332,6 +332,7 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         itemsContainer.appendChild(row);
         itemIndex++;
+        initSelect2(row.querySelector('.part-select'));
         bindRowEvents(row);
     });
 
@@ -514,6 +515,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 customerSelect.appendChild(option);
                 customerSelect.value = customer.id;
+                $(customerSelect).trigger('change.select2');
                 
                 // Trigger change event to populate input fields
                 var event = new Event('change');

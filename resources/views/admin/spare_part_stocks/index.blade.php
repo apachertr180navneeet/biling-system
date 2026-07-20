@@ -102,7 +102,7 @@
                     </div>
                     <div class="mb-3">
                         <label for="adjustment_type" class="form-label">Adjustment Type</label>
-                        <select name="adjustment_type" id="adjustment_type" class="form-select" required>
+                        <select name="adjustment_type" id="adjustment_type" class="form-select no-select2" required>
                             <option value="in">Stock In (+)</option>
                             <option value="out">Stock Out (-)</option>
                         </select>

@@ -574,6 +574,12 @@
                                 <td class="meta-label">Payment Mode</td>
                                 <td class="meta-value">{{ $vehicleSalesInvoice->payment_mode ?? '-' }}</td>
                             </tr>
+                            @if($vehicleSalesInvoice->payment_mode === 'Finance' && $vehicleSalesInvoice->finance_name)
+                            <tr>
+                                <td class="meta-label">Finance Name</td>
+                                <td class="meta-value">{{ $vehicleSalesInvoice->finance_name }}</td>
+                            </tr>
+                            @endif
                             <tr>
                                 <td class="meta-label">Date of Sale</td>
                                 <td class="meta-value">{{ $vehicleSalesInvoice->invoice_date->format('d M Y') }}</td>

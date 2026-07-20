@@ -13,7 +13,7 @@
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Fuel Type</label>
-                    <select name="fuel_type" class="form-select @error('fuel_type') is-invalid @enderror">
+                    <select name="fuel_type" class="form-select no-select2 @error('fuel_type') is-invalid @enderror">
                         <option value="">Select</option>
                         @foreach(['Petrol','Diesel','CNG','Electric','Hybrid'] as $ft)
                         <option value="{{ $ft }}" {{ old('fuel_type', $vehicle->fuel_type)==$ft ? 'selected':'' }}>{{ $ft }}</option>
@@ -23,7 +23,7 @@
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Transmission</label>
-                    <select name="transmission" class="form-select @error('transmission') is-invalid @enderror">
+                    <select name="transmission" class="form-select no-select2 @error('transmission') is-invalid @enderror">
                         <option value="">Select</option>
                         @foreach(['Manual','Automatic','AMT','CVT','DCT'] as $t)
                         <option value="{{ $t }}" {{ old('transmission', $vehicle->transmission)==$t ? 'selected':'' }}>{{ $t }}</option>

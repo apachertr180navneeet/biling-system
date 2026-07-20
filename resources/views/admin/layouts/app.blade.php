@@ -29,6 +29,8 @@
         </style>
         <link rel="stylesheet" href="{{asset('assets/admin/css/premium-admin.css')}}" />
         <link rel="stylesheet" href="{{asset('assets/admin/css/responsive.css')}}" />
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
     </head>
     <body>
        <div class="layout-wrapper layout-content-navbar">
@@ -45,6 +47,7 @@
                 </div>
         
                 <script src="{{asset('assets/admin/vendor/libs/jquery/jquery.js')}}"></script>
+                <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
                 <script src="{{asset('assets/admin/vendor/libs/popper/popper.js')}}"></script>
                 <script src="{{asset('assets/admin/vendor/js/bootstrap.js')}}"></script>
                 <script src="{{asset('assets/admin/vendor/libs/perfect-scrollbar/perfect-scrollbar.js')}}"></script>
@@ -56,6 +59,20 @@
                 <script src="{{asset('assets/admin/js/dashboards-analytics.js')}}"></script>
                 <script src="{{asset('assets/admin/js/moment.min.js')}}"></script>
                 <script async defer src="https://buttons.github.io/buttons.js"></script>
+                <script>
+                $(document).ready(function() {
+                    $('select').not('.no-select2').select2({
+                        width: '100%',
+                        theme: 'bootstrap-5'
+                    });
+                });
+                function initSelect2(el) {
+                    $(el).select2({
+                        width: '100%',
+                        theme: 'bootstrap-5'
+                    });
+                }
+                </script>
                 @yield('script')
                 @include('admin.layouts.elements.sweet_alerts')
             </div>
