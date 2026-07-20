@@ -75,14 +75,18 @@ class FinanceMasterController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
         ]);
-        $financeMaster = FinanceMaster::create($data);
-        if ($request->ajax() || $request->wantsJson()) {
-            return response()->json([
-                'success' => true,
-                'finance_master' => $financeMaster
-            ]);
+        try {
+            $financeMaster = FinanceMaster::create($data);
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'finance_master' => $financeMaster
+                ]);
+            }
+            return redirect()->route('admin.finance-masters.index')->withSuccess('Finance Master created successfully.');
+        } catch (\Exception $e) {
+            return back()->withInput()->with('error', 'Something went wrong: ' . $e->getMessage());
         }
-        return redirect()->route('admin.finance-masters.index')->withSuccess('Finance Master created successfully.');
     }
 
     public function show(FinanceMaster $financeMaster)
@@ -101,8 +105,12 @@ class FinanceMasterController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
         ]);
-        $financeMaster->update($data);
-        return redirect()->route('admin.finance-masters.index')->withSuccess('Finance Master updated successfully.');
+        try {
+            $financeMaster->update($data);
+            return redirect()->route('admin.finance-masters.index')->withSuccess('Finance Master updated successfully.');
+        } catch (\Exception $e) {
+            return back()->withInput()->with('error', 'Something went wrong: ' . $e->getMessage());
+        }
     }
 
     public function destroy(FinanceMaster $financeMaster)

@@ -127,8 +127,8 @@ class QuotationController extends Controller
 
                 $taxRegime = $request->input('tax_regime');
                 if ($taxRegime === 'cgst_sgst') {
-                    $cgstRate = (float) $request->input('cgst_rate', 2.5);
-                    $sgstRate = (float) $request->input('sgst_rate', 2.5);
+                    $cgstRate = (float) $request->input('cgst_rate', config('app.cgst_rate', 2.5));
+                    $sgstRate = (float) $request->input('sgst_rate', config('app.sgst_rate', 2.5));
                     $cgstAmount = ($taxable * $cgstRate) / 100;
                     $sgstAmount = ($taxable * $sgstRate) / 100;
 
@@ -141,7 +141,7 @@ class QuotationController extends Controller
 
                     $total = $taxable + $cgstAmount + $sgstAmount;
                 } else {
-                    $igstRate = (float) $request->input('igst_rate', 5);
+                    $igstRate = (float) $request->input('igst_rate', config('app.igst_rate', 5));
                     $igstAmount = ($taxable * $igstRate) / 100;
 
                     $data['cgst_rate'] = 0;

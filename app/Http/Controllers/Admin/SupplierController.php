@@ -93,8 +93,12 @@ class SupplierController extends Controller
             'phone' => 'nullable|digits:10',
             'email' => 'nullable|email|max:255',
         ]);
-        Supplier::create($data);
-        return redirect()->route('admin.suppliers.index')->withSuccess('Supplier created successfully.');
+        try {
+            Supplier::create($data);
+            return redirect()->route('admin.suppliers.index')->withSuccess('Supplier created successfully.');
+        } catch (\Exception $e) {
+            return back()->withInput()->with('error', 'Something went wrong: ' . $e->getMessage());
+        }
     }
 
     public function edit(Supplier $supplier)
@@ -112,8 +116,12 @@ class SupplierController extends Controller
             'phone' => 'nullable|digits:10',
             'email' => 'nullable|email|max:255',
         ]);
-        $supplier->update($data);
-        return redirect()->route('admin.suppliers.index')->withSuccess('Supplier updated successfully.');
+        try {
+            $supplier->update($data);
+            return redirect()->route('admin.suppliers.index')->withSuccess('Supplier updated successfully.');
+        } catch (\Exception $e) {
+            return back()->withInput()->with('error', 'Something went wrong: ' . $e->getMessage());
+        }
     }
 
     public function destroy(Supplier $supplier)

@@ -97,8 +97,12 @@ class VehicleMasterController extends Controller
             'battery_type' => 'nullable|string|max:255',
             'battery_make' => 'nullable|string|max:255',
         ]);
-        VehicleMaster::create($data);
-        return redirect()->route('admin.vehicle-masters.index')->withSuccess('Vehicle master created successfully.');
+        try {
+            VehicleMaster::create($data);
+            return redirect()->route('admin.vehicle-masters.index')->withSuccess('Vehicle master created successfully.');
+        } catch (\Exception $e) {
+            return back()->withInput()->with('error', 'Something went wrong: ' . $e->getMessage());
+        }
     }
 
     public function edit(VehicleMaster $vehicleMaster)
@@ -117,8 +121,12 @@ class VehicleMasterController extends Controller
             'battery_type' => 'nullable|string|max:255',
             'battery_make' => 'nullable|string|max:255',
         ]);
-        $vehicleMaster->update($data);
-        return redirect()->route('admin.vehicle-masters.index')->withSuccess('Vehicle master updated successfully.');
+        try {
+            $vehicleMaster->update($data);
+            return redirect()->route('admin.vehicle-masters.index')->withSuccess('Vehicle master updated successfully.');
+        } catch (\Exception $e) {
+            return back()->withInput()->with('error', 'Something went wrong: ' . $e->getMessage());
+        }
     }
 
     public function destroy(VehicleMaster $vehicleMaster)

@@ -437,8 +437,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    rateInp.addEventListener('blur', convertInclusiveToExclusive);
-    
     gstTypeSelect.addEventListener('change', function() {
         convertInclusiveToExclusive();
     });

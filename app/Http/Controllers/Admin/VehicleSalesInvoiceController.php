@@ -218,9 +218,9 @@ class VehicleSalesInvoiceController extends Controller
         $rate_input = floatval($request->rate);
         $gst_type = $request->input('gst_type', 'exclusive');
         $tax_regime = $request->input('tax_regime', 'cgst_sgst');
-        $cgst_rate = 2.50;
-        $sgst_rate = 2.50;
-        $igst_rate = 5.00;
+        $cgst_rate = config('app.cgst_rate', 2.50);
+        $sgst_rate = config('app.sgst_rate', 2.50);
+        $igst_rate = config('app.igst_rate', 5.00);
         
         if ($gst_type === 'inclusive') {
             $sub_total = round($rate_input / 1.05, 2);

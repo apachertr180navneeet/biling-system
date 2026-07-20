@@ -110,14 +110,18 @@ class CustomerController extends Controller
             'pan_no' => 'nullable|string|max:10',
             'aadhaar_no' => 'nullable|string|max:12',
         ]);
-        $customer = Customer::create($data);
-        if ($request->ajax() || $request->wantsJson()) {
-            return response()->json([
-                'success' => true,
-                'customer' => $customer
-            ]);
+        try {
+            $customer = Customer::create($data);
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'customer' => $customer
+                ]);
+            }
+            return redirect()->route('admin.customers.index')->withSuccess('Customer created successfully.');
+        } catch (\Exception $e) {
+            return back()->withInput()->with('error', 'Something went wrong: ' . $e->getMessage());
         }
-        return redirect()->route('admin.customers.index')->withSuccess('Customer created successfully.');
     }
 
     public function show(Customer $customer)
@@ -145,8 +149,12 @@ class CustomerController extends Controller
             'pan_no' => 'nullable|string|max:10',
             'aadhaar_no' => 'nullable|string|max:12',
         ]);
-        $customer->update($data);
-        return redirect()->route('admin.customers.index')->withSuccess('Customer updated successfully.');
+        try {
+            $customer->update($data);
+            return redirect()->route('admin.customers.index')->withSuccess('Customer updated successfully.');
+        } catch (\Exception $e) {
+            return back()->withInput()->with('error', 'Something went wrong: ' . $e->getMessage());
+        }
     }
 
     public function destroy(Customer $customer)

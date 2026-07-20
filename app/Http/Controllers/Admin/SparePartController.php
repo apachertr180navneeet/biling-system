@@ -84,8 +84,12 @@ class SparePartController extends Controller
             'mrp' => 'required|numeric|min:0',
             'unit' => 'required|string|max:10',
         ]);
-        SparePart::create($data);
-        return redirect()->route('admin.spare-parts.index')->withSuccess('Spare part created successfully.');
+        try {
+            SparePart::create($data);
+            return redirect()->route('admin.spare-parts.index')->withSuccess('Spare part created successfully.');
+        } catch (\Exception $e) {
+            return back()->withInput()->with('error', 'Something went wrong: ' . $e->getMessage());
+        }
     }
 
     public function edit(SparePart $sparePart)
@@ -102,8 +106,12 @@ class SparePartController extends Controller
             'mrp' => 'required|numeric|min:0',
             'unit' => 'required|string|max:10',
         ]);
-        $sparePart->update($data);
-        return redirect()->route('admin.spare-parts.index')->withSuccess('Spare part updated successfully.');
+        try {
+            $sparePart->update($data);
+            return redirect()->route('admin.spare-parts.index')->withSuccess('Spare part updated successfully.');
+        } catch (\Exception $e) {
+            return back()->withInput()->with('error', 'Something went wrong: ' . $e->getMessage());
+        }
     }
 
     public function destroy(SparePart $sparePart)
