@@ -605,7 +605,7 @@ class VehiclePurchaseOrderController extends Controller
         $pdf->setPaper('a4');
         $pdf->setOption('isRemoteEnabled', true);
 
-        return $pdf->download('VPO-' . $vehiclePurchaseOrder->po_number . '.pdf');
+        return $pdf->stream('VPO-' . $vehiclePurchaseOrder->po_number . '.pdf');
     }
 
     public function sendWhatsapp(VehiclePurchaseOrder $vehiclePurchaseOrder)
@@ -628,6 +628,8 @@ class VehiclePurchaseOrderController extends Controller
             $itemsList .= ($i + 1) . ". " . $item->vehicle_description . " x " . $item->quantity . "\n";
         }
 
+        $pdfUrl = request()->getSchemeAndHttpHost() . route('admin.vehicle-purchase-orders.pdf', $vehiclePurchaseOrder, false);
+
         $message = "*VEHICLE PURCHASE ORDER - {$vehiclePurchaseOrder->po_number}*\n"
             . "━━━━━━━━━━━━━━━━━━━━━━\n"
             . "📅 *Date:* {$vehiclePurchaseOrder->order_date->format('d/m/Y')}\n"
@@ -637,7 +639,7 @@ class VehiclePurchaseOrderController extends Controller
             . "💰 *Total:* ₹" . number_format($vehiclePurchaseOrder->total_amount, 2) . "\n"
             . "📌 *Status:* " . ucfirst($vehiclePurchaseOrder->status) . "\n"
             . "━━━━━━━━━━━━━━━━━━━━━━\n\n"
-            . "📄 *PDF Link:* " . route('admin.vehicle-purchase-orders.pdf', $vehiclePurchaseOrder) . "\n\n"
+            . "📄 *PDF Link:* {$pdfUrl}\n\n"
             . "Please find the attached PO details. Kindly confirm.";
 
         $whatsappUrl = "https://wa.me/{$phone}?text=" . urlencode($message);

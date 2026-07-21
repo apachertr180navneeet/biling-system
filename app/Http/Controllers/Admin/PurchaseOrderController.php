@@ -382,7 +382,7 @@ class PurchaseOrderController extends Controller
         $pdf->setPaper('a4');
         $pdf->setOption('isRemoteEnabled', true);
 
-        return $pdf->download('PO-' . $purchaseOrder->order_number . '.pdf');
+        return $pdf->stream('PO-' . $purchaseOrder->order_number . '.pdf');
     }
 
     public function sendWhatsapp(PurchaseOrder $purchaseOrder)
@@ -408,7 +408,7 @@ class PurchaseOrderController extends Controller
             $itemsList .= ($i + 1) . ". " . $partName . " (" . $partNo . ") x " . $item->quantity . "\n";
         }
 
-        $pdfUrl = route('admin.purchase-orders.pdf', $purchaseOrder);
+        $pdfUrl = request()->getSchemeAndHttpHost() . route('admin.purchase-orders.pdf', $purchaseOrder, false);
 
         $message = "*PURCHASE ORDER - {$purchaseOrder->order_number}*\n"
             . "━━━━━━━━━━━━━━━━━━━━━━\n"

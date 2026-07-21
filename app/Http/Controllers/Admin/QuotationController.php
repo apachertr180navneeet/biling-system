@@ -264,7 +264,7 @@ class QuotationController extends Controller
         $pdf->setPaper('a4');
         $pdf->setOption('isRemoteEnabled', true);
 
-        return $pdf->download($quotation->quotation_number . '.pdf');
+        return $pdf->stream($quotation->quotation_number . '.pdf');
     }
 
     public function sendWhatsapp(Quotation $quotation)
@@ -280,7 +280,7 @@ class QuotationController extends Controller
             $phone = '91' . $phone;
         }
 
-        $pdfUrl = route('admin.quotations.pdf', $quotation);
+        $pdfUrl = request()->getSchemeAndHttpHost() . route('admin.quotations.pdf', $quotation, false);
 
         $itemsList = '';
         if ($quotation->type === 'vehicle') {
