@@ -140,8 +140,10 @@ Route::name('admin.')->prefix('admin')->group(function () {
 
             Route::get('quotations/create/vehicle', [QuotationController::class, 'createVehicle'])->name('quotations.create-vehicle');
             Route::get('quotations/create/parts', [QuotationController::class, 'createParts'])->name('quotations.create-parts');
+            Route::get('quotations/{quotation}/edit-vehicle', [QuotationController::class, 'editVehicle'])->name('quotations.edit-vehicle');
+            Route::get('quotations/{quotation}/edit-parts', [QuotationController::class, 'editParts'])->name('quotations.edit-parts');
             Route::get('quotations/{quotation}/whatsapp', [QuotationController::class, 'sendWhatsapp'])->name('quotations.whatsapp');
-            Route::resource('quotations', QuotationController::class)->except(['edit', 'update']);
+            Route::resource('quotations', QuotationController::class);
 
             Route::get('reports/vehicle-ledger', [ReportController::class, 'vehicleLedger'])->name('reports.vehicle-ledger');
             Route::get('reports/part-ledger', [ReportController::class, 'partLedger'])->name('reports.part-ledger');

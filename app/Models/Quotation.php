@@ -41,6 +41,21 @@ class Quotation extends Model
         'remarks',
         'created_by',
         'is_active',
+
+        // Vehicle Technical Specs
+        'model_maker_name',
+        'gross_weight',
+        'charging_time',
+        'performance',
+        'charger_output',
+        'motor_output',
+        'seating_capacity',
+        'type_of_break',
+        'roof_top_abs',
+        'front_fiber_wind_shield',
+        'meter_type',
+        'accessories',
+        'terms_and_conditions',
     ];
 
     protected function casts(): array

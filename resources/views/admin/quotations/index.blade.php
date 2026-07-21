@@ -103,6 +103,11 @@
                                 <a href="{{ route('admin.quotations.show', $q) }}" class="btn btn-sm btn-outline-secondary" title="View">
                                     <i class="bx bx-show-alt"></i>
                                 </a>
+                                @if($q->type === 'vehicle')
+                                    <a href="{{ route('admin.quotations.edit-vehicle', $q) }}" class="btn btn-sm btn-outline-primary" title="Edit">
+                                        <i class="bx bx-edit-alt"></i>
+                                    </a>
+                                @endif
                                 <a href="{{ route('admin.quotations.pdf', $q) }}" class="btn btn-sm btn-outline-danger" target="_blank" title="Download PDF">
                                     <i class="bx bxs-file-pdf"></i>
                                 </a>

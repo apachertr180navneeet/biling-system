@@ -196,7 +196,8 @@
                     <td>
                         <strong>{{ $quotation->vehicleMaster->variant_name ?? '-' }}</strong><br>
                         Color: {{ $quotation->vehicleMaster->color_name ?? '-' }} | Fuel: {{ $quotation->vehicleMaster->fuel_type ?? '-' }}<br>
-                        Battery Make: {{ $quotation->vehicleMaster->battery_make ?? '-' }}
+                        Battery Make: {{ $quotation->vehicleMaster->battery_make ?? '-' }}<br>
+                        <strong style="color: #000;">ON ROAD PRICE INCLUDING GST, RTO, INSURANCE</strong>
                     </td>
                     <td class="text-right">₹{{ number_format($quotation->rate, 2) }}</td>
                     <td class="text-right">-₹{{ number_format($quotation->discount, 2) }}</td>
@@ -237,15 +238,47 @@
 
     <table style="width: 100%;">
         <tr>
-            <td style="width: 50%; vertical-align: top;">
-                @if($quotation->remarks)
+            <td style="width: 55%; vertical-align: top;">
+                @if($quotation->type === 'vehicle')
+                    <div style="font-size: 8.5px; border: 1px solid #ccc; padding: 6px; border-radius: 4px; background: #fafafa; margin-right: 10px; margin-bottom: 8px;">
+                        <strong style="font-size: 9.5px; color: #111; display: block; margin-bottom: 4px; border-bottom: 1px solid #ddd; padding-bottom: 2px;">TECHNICAL SPECIFICATION -:</strong>
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <tr><td style="width: 48%; padding: 1px 0;"><strong>Model/ Maker's:</strong></td><td>:- {{ $quotation->model_maker_name ?? 'E- PASSENGER/ARZOO/PASSANGER' }}</td></tr>
+                            <tr><td style="padding: 1px 0;"><strong>GROSS WEIGHT:</strong></td><td>:- {{ $quotation->gross_weight ?? '60 KG' }}</td></tr>
+                            <tr><td style="padding: 1px 0;"><strong>CHARGING TIME:</strong></td><td>:- {{ $quotation->charging_time ?? '3-4 HR' }}</td></tr>
+                            <tr><td style="padding: 1px 0;"><strong>PERFORMANCE:</strong></td><td>:- {{ $quotation->performance ?? 'HIGH SPEED 25 KM/HR' }}</td></tr>
+                            <tr><td style="padding: 1px 0;"><strong>CHARGER OUTPUT:</strong></td><td>:- {{ $quotation->charger_output ?? 'DC 51V 105 AH (1 LITHIUM BATTERY)' }}</td></tr>
+                            <tr><td style="padding: 1px 0;"><strong>MOTOR OUTPUT:</strong></td><td>:- {{ $quotation->motor_output ?? '1200 W' }}</td></tr>
+                            <tr><td style="padding: 1px 0;"><strong>SEATING CAPACITY:</strong></td><td>:- {{ $quotation->seating_capacity ?? '5' }}</td></tr>
+                            <tr><td style="padding: 1px 0;"><strong>TYPE OF BREAK:</strong></td><td>:- {{ $quotation->type_of_break ?? 'DRUM BREAK' }}</td></tr>
+                            <tr><td style="padding: 1px 0;"><strong>ROOT TOP ABS HARD ROOF:</strong></td><td>;- {{ $quotation->roof_top_abs ?? 'YES' }}</td></tr>
+                            <tr><td style="padding: 1px 0;"><strong>FRONT FIBER WIND SHIELD:</strong></td><td>;- {{ $quotation->front_fiber_wind_shield ?? 'YES' }}</td></tr>
+                            <tr><td style="padding: 1px 0;"><strong>METER:</strong></td><td>:- {{ $quotation->meter_type ?? 'DIGITAL' }}</td></tr>
+                            <tr><td style="padding: 1px 0;"><strong>ON ROAD PRICE:</strong></td><td>:- {{ number_format($quotation->total_amount, 0, '', '') }}/- INCLUDING GST, RTO, INSURANCE</td></tr>
+                            <tr><td style="padding: 1px 0;"><strong>ACCESSORIES:</strong></td><td>:- {{ $quotation->accessories ?? 'STEPNY, JACK, TOOL KIT,STERIO, SIDE MIRROR' }}</td></tr>
+                        </table>
+                    </div>
+
+                    <div style="font-size: 8px; border: 1px solid #ccc; padding: 6px; border-radius: 4px; background: #fafafa; margin-right: 10px; margin-bottom: 8px;">
+                        <strong style="font-size: 9px; color: #111; display: block; margin-bottom: 3px;">TERMS AND CONDITION –</strong>
+                        {!! nl2br(e($quotation->terms_and_conditions ?? "THERE IS 12 MONTH WARRANTY FOR MOTOR, CONTROLLER\nTHERE IS 36 MONTH WARRANTY FOR BATTERY, CHARGER\nTHERE IS NO WARRANTY OR GURANTEE FOR THE WORK CARRIED OUT AND PARTS REPLACED OTHER THAN FOR THE PARTS LIKE BATTERIES, CHARGER, CONTROLLER, MOTOR.")) !!}
+                    </div>
+
+                    <div style="font-size: 8.5px; border: 1px solid #ccc; padding: 6px; border-radius: 4px; background: #fafafa; margin-right: 10px;">
+                        <strong style="font-size: 9px; color: #111; display: block; margin-bottom: 3px;">BANK DETAILS :-</strong>
+                        <strong>AC HOLDER :-</strong> SHREE KRISHNA AUTO GREEN<br>
+                        <strong>BRANCH :-</strong> STADIUM, SHOPPING CENTRE<br>
+                        <strong>AC NUMBER :-</strong> 65261516842<br>
+                        <strong>IFSC :-</strong> SBIN0050696
+                    </div>
+                @elseif($quotation->remarks)
                     <div style="font-size: 9px; color: #555; border: 1px solid #eee; padding: 8px; border-radius: 4px; background: #fafafa; margin-right: 15px;">
                         <strong>Remarks / Terms:</strong><br>
                         {!! nl2br(e($quotation->remarks)) !!}
                     </div>
                 @endif
             </td>
-            <td style="width: 50%; vertical-align: top;">
+            <td style="width: 45%; vertical-align: top;">
                 <table class="totals-table">
                     <tr>
                         <td>Taxable Amount:</td>

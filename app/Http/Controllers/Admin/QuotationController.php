@@ -49,6 +49,13 @@ class QuotationController extends Controller
         return view('admin.quotations.create_vehicle', compact('customers', 'vehicles'));
     }
 
+    public function editVehicle(Quotation $quotation)
+    {
+        $customers = Customer::where('is_active', true)->orderBy('first_name')->get();
+        $vehicles = VehicleMaster::where('is_active', true)->orderBy('variant_name')->get();
+        return view('admin.quotations.edit_vehicle', compact('quotation', 'customers', 'vehicles'));
+    }
+
     public function createParts()
     {
         $customers = Customer::where('is_active', true)->orderBy('first_name')->get();
@@ -105,7 +112,11 @@ class QuotationController extends Controller
             $data = $request->only([
                 'type', 'quotation_date', 'customer_id', 'customer_name',
                 'customer_mobile', 'customer_address', 'customer_gstin',
-                'customer_pan', 'place_of_supply', 'tax_regime', 'remarks'
+                'customer_pan', 'place_of_supply', 'tax_regime', 'remarks',
+                'model_maker_name', 'gross_weight', 'charging_time', 'performance',
+                'charger_output', 'motor_output', 'seating_capacity', 'type_of_break',
+                'roof_top_abs', 'front_fiber_wind_shield', 'meter_type', 'accessories',
+                'terms_and_conditions'
             ]);
             $data['created_by'] = Auth::id();
 
@@ -246,6 +257,104 @@ class QuotationController extends Controller
             DB::rollBack();
             return back()->withInput()->with('error', 'Error creating quotation: ' . $e->getMessage());
         }
+    }
+
+    public function update(Request $request, Quotation $quotation)
+    {
+        $type = $request->input('type', $quotation->type);
+
+        if ($type === 'vehicle') {
+            $request->validate([
+                'quotation_date' => 'required|date',
+                'customer_id' => 'nullable|exists:customers,id',
+                'customer_name' => 'required|string|max:255',
+                'customer_mobile' => 'nullable|string|max:20',
+                'customer_address' => 'nullable|string',
+                'customer_gstin' => 'nullable|string|max:15',
+                'customer_pan' => 'nullable|string|max:10',
+                'place_of_supply' => 'required|string|max:255',
+                'tax_regime' => 'required|string|in:cgst_sgst,igst',
+                'vehicle_master_id' => 'required|exists:vehicle_masters,id',
+                'rate' => 'required|numeric|min:0',
+                'cgst_rate' => 'nullable|numeric|min:0',
+                'sgst_rate' => 'nullable|numeric|min:0',
+                'igst_rate' => 'nullable|numeric|min:0',
+                'discount' => 'nullable|numeric|min:0',
+                'nemmp_incentive' => 'nullable|numeric|min:0',
+            ]);
+
+            try {
+                DB::beginTransaction();
+
+                $data = $request->only([
+                    'quotation_date', 'customer_id', 'customer_name',
+                    'customer_mobile', 'customer_address', 'customer_gstin',
+                    'customer_pan', 'place_of_supply', 'tax_regime', 'remarks',
+                    'model_maker_name', 'gross_weight', 'charging_time', 'performance',
+                    'charger_output', 'motor_output', 'seating_capacity', 'type_of_break',
+                    'roof_top_abs', 'front_fiber_wind_shield', 'meter_type', 'accessories',
+                    'terms_and_conditions'
+                ]);
+
+                $data['vehicle_master_id'] = $request->input('vehicle_master_id');
+                $rate = (float) $request->input('rate');
+                $discount = (float) $request->input('discount', 0);
+                $incentive = (float) $request->input('nemmp_incentive', 0);
+                
+                $sub_total = $rate;
+                $taxable = $sub_total - $discount - $incentive;
+                if ($taxable < 0) $taxable = 0;
+
+                $data['rate'] = $rate;
+                $data['sub_total'] = $sub_total;
+                $data['discount'] = $discount;
+                $data['nemmp_incentive'] = $incentive;
+                $data['taxable_amount'] = $taxable;
+
+                $taxRegime = $request->input('tax_regime');
+                if ($taxRegime === 'cgst_sgst') {
+                    $cgstRate = (float) $request->input('cgst_rate', config('app.cgst_rate', 2.5));
+                    $sgstRate = (float) $request->input('sgst_rate', config('app.sgst_rate', 2.5));
+                    $cgstAmount = ($taxable * $cgstRate) / 100;
+                    $sgstAmount = ($taxable * $sgstRate) / 100;
+
+                    $data['cgst_rate'] = $cgstRate;
+                    $data['sgst_rate'] = $sgstRate;
+                    $data['cgst_amount'] = $cgstAmount;
+                    $data['sgst_amount'] = $sgstAmount;
+                    $data['igst_rate'] = 0;
+                    $data['igst_amount'] = 0;
+
+                    $total = $taxable + $cgstAmount + $sgstAmount;
+                } else {
+                    $igstRate = (float) $request->input('igst_rate', config('app.igst_rate', 5));
+                    $igstAmount = ($taxable * $igstRate) / 100;
+
+                    $data['cgst_rate'] = 0;
+                    $data['sgst_rate'] = 0;
+                    $data['cgst_amount'] = 0;
+                    $data['sgst_amount'] = 0;
+                    $data['igst_rate'] = $igstRate;
+                    $data['igst_amount'] = $igstAmount;
+
+                    $total = $taxable + $igstAmount;
+                }
+
+                $grandTotal = round($total);
+                $data['round_off'] = $grandTotal - $total;
+                $data['total_amount'] = $grandTotal;
+
+                $quotation->update($data);
+
+                DB::commit();
+                return redirect()->route('admin.quotations.show', $quotation)->with('success', 'Quotation updated successfully.');
+            } catch (\Exception $e) {
+                DB::rollBack();
+                return back()->withInput()->with('error', 'Error updating quotation: ' . $e->getMessage());
+            }
+        }
+
+        return back()->with('error', 'Only vehicle quotations can be edited currently.');
     }
 
     public function show(Quotation $quotation)

@@ -84,6 +84,7 @@
                             </option>
                             @endforeach
                         </select>
+                        <div class="form-text text-muted fw-bold mt-1"><i class="bx bx-info-circle"></i> On Road Price includes GST, RTO, & Insurance.</div>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Ex-Showroom Price / Rate <span class="text-danger">*</span></label>
@@ -160,10 +161,70 @@
                     </div>
                 </div>
 
+                <h5 class="card-title text-primary mb-3">Technical Specifications</h5>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <label class="form-label">Model / Maker's Name</label>
+                        <input type="text" name="model_maker_name" class="form-control" value="{{ old('model_maker_name', 'E- PASSENGER/ARZOO/PASSANGER') }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Gross Weight</label>
+                        <input type="text" name="gross_weight" class="form-control" value="{{ old('gross_weight', '60 KG') }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Charging Time</label>
+                        <input type="text" name="charging_time" class="form-control" value="{{ old('charging_time', '3-4 HR') }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Performance</label>
+                        <input type="text" name="performance" class="form-control" value="{{ old('performance', 'HIGH SPEED 25 KM/HR') }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Charger Output</label>
+                        <input type="text" name="charger_output" class="form-control" value="{{ old('charger_output', 'DC 51V 105 AH (1 LITHIUM BATTERY)') }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Motor Output</label>
+                        <input type="text" name="motor_output" class="form-control" value="{{ old('motor_output', '1200 W') }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Seating Capacity</label>
+                        <input type="text" name="seating_capacity" class="form-control" value="{{ old('seating_capacity', '5') }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Type of Brake</label>
+                        <input type="text" name="type_of_break" class="form-control" value="{{ old('type_of_break', 'DRUM BREAK') }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Roof Top ABS Hard Roof</label>
+                        <input type="text" name="roof_top_abs" class="form-control" value="{{ old('roof_top_abs', 'YES') }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Front Fiber Wind Shield</label>
+                        <input type="text" name="front_fiber_wind_shield" class="form-control" value="{{ old('front_fiber_wind_shield', 'YES') }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Meter</label>
+                        <input type="text" name="meter_type" class="form-control" value="{{ old('meter_type', 'DIGITAL') }}">
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label">Accessories</label>
+                        <input type="text" name="accessories" class="form-control" value="{{ old('accessories', 'STEPNY, JACK, TOOL KIT,STERIO, SIDE MIRROR') }}">
+                    </div>
+                </div>
+
+                <h5 class="card-title text-primary mb-3">Terms & Conditions</h5>
                 <div class="row g-3 mb-4">
                     <div class="col-md-12">
-                        <label class="form-label">Remarks / Warranty Notes</label>
-                        <textarea name="remarks" class="form-control" rows="3">{{ old('remarks') }}</textarea>
+                        <label class="form-label">Terms & Conditions</label>
+                        <textarea name="terms_and_conditions" class="form-control" rows="4">{{ old('terms_and_conditions', "1. THERE IS 12 MONTH WARRANTY FOR MOTOR, CONTROLLER\n2. THERE IS 36 MONTH WARRANTY FOR BATTERY, CHARGER\n3. THERE IS NO WARRANTY OR GURANTEE FOR THE WORK CARRIED OUT AND PARTS REPLACED OTHER THAN FOR THE PARTS LIKE BATTERIES, CHARGER, CONTROLLER, MOTOR.") }}</textarea>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-12">
+                        <label class="form-label">Remarks / Notes</label>
+                        <textarea name="remarks" class="form-control" rows="2">{{ old('remarks') }}</textarea>
                     </div>
                 </div>
 
