@@ -15,6 +15,7 @@ class SparePartStockController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search');
+        $statusFilter = $request->input('status');
         $query = SparePartStock::with('sparePart', 'purchaseOrder')->orderBy('created_at', 'desc');
 
         if ($search) {
@@ -25,14 +26,34 @@ class SparePartStockController extends Controller
             });
         }
 
-        $stocks = $query->paginate(20);
+        if ($statusFilter === 'low_stock') {
+            $query->whereHas('sparePart', function($q) {
+                $q->whereColumn('spare_part_stocks.quantity', '<=', 'spare_parts.min_stock')
+                  ->where('spare_parts.min_stock', '>', 0)
+                  ->where('spare_part_stocks.quantity', '>', 0);
+            });
+        } elseif ($statusFilter === 'out_of_stock') {
+            $query->where('quantity', '<', 1);
+        } elseif ($statusFilter === 'available') {
+            $query->where('quantity', '>=', 1)
+                  ->where(function($q) {
+                      $q->whereHas('sparePart', function($sq) {
+                          $sq->whereColumn('spare_part_stocks.quantity', '>', 'spare_parts.min_stock');
+                      })->orWhereHas('sparePart', function($sq) {
+                          $sq->where('spare_parts.min_stock', 0);
+                      });
+                  });
+        }
+
+        $stocks = $query->paginate(20)->withQueryString();
         $spareParts = \App\Models\SparePart::where('is_active', true)->orderBy('name')->get();
-        return view('admin.spare_part_stocks.index', compact('stocks', 'spareParts', 'search'));
+        return view('admin.spare_part_stocks.index', compact('stocks', 'spareParts', 'search', 'statusFilter'));
     }
 
     public function export(Request $request)
     {
         $search = $request->input('search');
+        $statusFilter = $request->input('status');
         $query = SparePartStock::with('sparePart', 'purchaseOrder')->orderBy('created_at', 'desc');
 
         if ($search) {
@@ -41,6 +62,25 @@ class SparePartStockController extends Controller
                 $q->where('part_no', 'like', $escapedSearch)
                   ->orWhere('name', 'like', $escapedSearch);
             });
+        }
+
+        if ($statusFilter === 'low_stock') {
+            $query->whereHas('sparePart', function($q) {
+                $q->whereColumn('spare_part_stocks.quantity', '<=', 'spare_parts.min_stock')
+                  ->where('spare_parts.min_stock', '>', 0)
+                  ->where('spare_part_stocks.quantity', '>', 0);
+            });
+        } elseif ($statusFilter === 'out_of_stock') {
+            $query->where('quantity', '<', 1);
+        } elseif ($statusFilter === 'available') {
+            $query->where('quantity', '>=', 1)
+                  ->where(function($q) {
+                      $q->whereHas('sparePart', function($sq) {
+                          $sq->whereColumn('spare_part_stocks.quantity', '>', 'spare_parts.min_stock');
+                      })->orWhereHas('sparePart', function($sq) {
+                          $sq->where('spare_parts.min_stock', 0);
+                      });
+                  });
         }
 
         $stocks = $query->get();
@@ -50,25 +90,28 @@ class SparePartStockController extends Controller
         $sheet->setCellValue('A1', 'Part No');
         $sheet->setCellValue('B1', 'Part Name');
         $sheet->setCellValue('C1', 'Quantity');
-        $sheet->setCellValue('D1', 'Purchase Price');
-        $sheet->setCellValue('E1', 'Status');
-        $sheet->setCellValue('F1', 'PO Ref');
+        $sheet->setCellValue('D1', 'Min Stock Threshold');
+        $sheet->setCellValue('E1', 'Purchase Price');
+        $sheet->setCellValue('F1', 'Status');
+        $sheet->setCellValue('G1', 'PO Ref');
 
         $row = 2;
         foreach ($stocks as $s) {
+            $effectiveMinStock = ($s->sparePart && $s->sparePart->min_stock > 0) ? $s->sparePart->min_stock : $s->min_quantity;
             $status = 'Available';
-            if ($s->min_quantity > 0 && $s->quantity < $s->min_quantity) {
-                $status = 'Low Stock';
-            } elseif ($s->quantity < 1) {
+            if ($s->quantity < 1) {
                 $status = 'Out of Stock';
+            } elseif ($effectiveMinStock > 0 && $s->quantity <= $effectiveMinStock) {
+                $status = 'Low Stock';
             }
 
             $sheet->setCellValue('A' . $row, $s->sparePart->part_no ?? '-');
             $sheet->setCellValue('B' . $row, $s->sparePart->name ?? '-');
             $sheet->setCellValue('C' . $row, $s->quantity);
-            $sheet->setCellValue('D' . $row, $s->purchase_price);
-            $sheet->setCellValue('E' . $row, $status);
-            $sheet->setCellValue('F' . $row, $s->purchaseOrder->order_number ?? '-');
+            $sheet->setCellValue('D' . $row, $effectiveMinStock);
+            $sheet->setCellValue('E' . $row, $s->purchase_price);
+            $sheet->setCellValue('F' . $row, $status);
+            $sheet->setCellValue('G' . $row, $s->purchaseOrder->order_number ?? '-');
             $row++;
         }
 

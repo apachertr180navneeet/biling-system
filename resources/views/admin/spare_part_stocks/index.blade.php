@@ -10,8 +10,16 @@
         <div class="card-body">
             <form method="GET" action="{{ route('admin.spare-part-stocks.index') }}">
                 <div class="row g-3">
-                    <div class="col-md-9">
+                    <div class="col-md-6">
                         <input type="text" name="search" class="form-control" placeholder="Search by Part No or Part Name" value="{{ $search ?? '' }}">
+                    </div>
+                    <div class="col-md-3">
+                        <select name="status" class="form-select no-select2">
+                            <option value="">-- All Stock Statuses --</option>
+                            <option value="low_stock" {{ ($statusFilter ?? '') == 'low_stock' ? 'selected' : '' }}>Low Stock</option>
+                            <option value="out_of_stock" {{ ($statusFilter ?? '') == 'out_of_stock' ? 'selected' : '' }}>Out of Stock</option>
+                            <option value="available" {{ ($statusFilter ?? '') == 'available' ? 'selected' : '' }}>Available</option>
+                        </select>
                     </div>
                     <div class="col-md-3">
                         <div class="d-flex gap-2">
@@ -28,7 +36,7 @@
         <div class="card-header d-flex align-items-center justify-content-between">
             <h5 class="mb-0">Stock Levels</h5>
             <div>
-                <a href="{{ route('admin.spare-part-stocks.export', ['search' => request('search')]) }}" class="btn btn-outline-success btn-sm me-2"><i class="bx bx-file-export"></i> Export</a>
+                <a href="{{ route('admin.spare-part-stocks.export', ['search' => request('search'), 'status' => request('status')]) }}" class="btn btn-outline-success btn-sm me-2"><i class="bx bx-file-export"></i> Export</a>
                 <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#adjustStockModal">Adjust Stock</button>
             </div>
         </div>
@@ -40,6 +48,7 @@
                         <th>Part No.</th>
                         <th>Part Name</th>
                         <th>Qty</th>
+                        <th>Min Stock</th>
                         <th>Purchase Price</th>
                         <th>Status</th>
                         <th>PO Ref</th>
@@ -47,17 +56,23 @@
                 </thead>
                 <tbody>
                     @forelse($stocks as $s)
-                    <tr class="@if($s->min_quantity > 0 && $s->quantity < $s->min_quantity) table-danger @endif">
+                    @php
+                        $effMin = ($s->sparePart && $s->sparePart->min_stock > 0) ? $s->sparePart->min_stock : $s->min_quantity;
+                        $isOut = $s->quantity < 1;
+                        $isLow = !$isOut && ($effMin > 0 && $s->quantity <= $effMin);
+                    @endphp
+                    <tr class="@if($isOut) table-secondary @elseif($isLow) table-danger @endif">
                         <td>{{ $loop->iteration }}</td>
-                        <td>{{ $s->sparePart->part_no ?? '-' }}</td>
+                        <td><code>{{ $s->sparePart->part_no ?? '-' }}</code></td>
                         <td>{{ $s->sparePart->name ?? '-' }}</td>
                         <td><strong>{{ $s->quantity }}</strong></td>
+                        <td><span class="badge bg-label-info">{{ $effMin }}</span></td>
                         <td>{{ number_format($s->purchase_price, 2) }}</td>
                         <td>
-                            @if($s->min_quantity > 0 && $s->quantity < $s->min_quantity)
-                            <span class="badge bg-danger">Low Stock</span>
-                            @elseif($s->quantity < 1)
+                            @if($isOut)
                             <span class="badge bg-secondary">Out of Stock</span>
+                            @elseif($isLow)
+                            <span class="badge bg-danger"><i class="bx bx-error me-1"></i>Low Stock</span>
                             @else
                             <span class="badge bg-success">Available</span>
                             @endif

@@ -274,7 +274,31 @@ class AdminAuthController extends Controller
 
         $vehicleInventoryCount = VehicleInventory::where('status', 'available')->count();
         $pendingVehiclePOs = VehiclePurchaseOrder::whereIn('status', ['pending', 'partial'])->count();
-        $lowStockCount = SparePartStock::where('is_active', true)->whereColumn('quantity', '<', 'min_quantity')->where('min_quantity', '>', 0)->count();
+        
+        // Parts low stock count
+        $lowStockCount = SparePartStock::where('spare_part_stocks.is_active', true)
+            ->join('spare_parts', 'spare_parts.id', '=', 'spare_part_stocks.spare_part_id')
+            ->where(function($q) {
+                $q->whereColumn('spare_part_stocks.quantity', '<=', 'spare_parts.min_stock')
+                  ->where('spare_parts.min_stock', '>', 0);
+            })->count();
+
+        // Vehicle low stock variants count
+        $vehicleMasters = VehicleMaster::where('is_active', true)->where('min_stock', '>', 0)->get();
+        $variantCounts = VehicleInventory::where('status', 'available')
+            ->select('vehicle_description', DB::raw('COUNT(*) as total'))
+            ->groupBy('vehicle_description')
+            ->pluck('total', 'vehicle_description')
+            ->toArray();
+
+        $lowStockVehicleCount = 0;
+        foreach ($vehicleMasters as $vm) {
+            $name = $vm->variant_name . ($vm->color_name ? ' (' . $vm->color_name . ')' : '');
+            $available = $variantCounts[$name] ?? ($variantCounts[$vm->variant_name] ?? 0);
+            if ($available <= $vm->min_stock) {
+                $lowStockVehicleCount++;
+            }
+        }
 
         // Calculate "To Collect" (outstanding balance from sales)
         $toCollectPart = \App\Models\PartSalesInvoice::where('is_active', true)->sum('balance');
@@ -308,7 +332,7 @@ class AdminAuthController extends Controller
 
         return view("admin.dashboard.index", compact(
             'totalCustomers',
-            'vehicleInventoryCount', 'pendingVehiclePOs', 'lowStockCount',
+            'vehicleInventoryCount', 'pendingVehiclePOs', 'lowStockCount', 'lowStockVehicleCount',
             'toCollect', 'toPay', 'stockValue', 'stockCountParts', 'stockCountVehicles', 'thisWeeksSale'
         ));
     }

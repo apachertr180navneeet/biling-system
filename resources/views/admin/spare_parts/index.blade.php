@@ -57,6 +57,7 @@
                         <th>Name</th>
                         <th>MRP</th>
                         <th>Selling Price</th>
+                        <th>Min Stock</th>
                         <th>Status</th>
                         <th>Actions</th>
                     </tr>
@@ -69,6 +70,7 @@
                         <td>{{ $part->name }}</td>
                         <td>{{ number_format($part->mrp, 2) }}</td>
                         <td>{{ number_format($part->selling_price, 2) }}</td>
+                        <td><span class="badge bg-label-secondary">{{ $part->min_stock ?? 0 }}</span></td>
                         <td>
                             <label class="switch switch-success">
                                 <input type="checkbox" class="toggle-status" data-url="{{ route('admin.spare-parts.toggle-status', $part) }}" {{ $part->is_active ? 'checked' : '' }}>
@@ -106,7 +108,7 @@
                         <input type="file" name="csv_file" class="form-control" accept=".csv,.txt,.xls,.xlsx" required>
                         <div class="form-text text-muted mt-2">
                             Please upload a valid CSV/Excel file using the template headers:<br>
-                            <code>part_no, name, selling_price, mrp, unit</code>
+                            <code>part_no, name, selling_price, mrp, unit, min_stock</code>
                         </div>
                     </div>
                 </div>

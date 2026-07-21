@@ -516,6 +516,7 @@ class VehiclePurchaseOrderController extends Controller
     public function inventory(Request $request)
     {
         $search = $request->input('search');
+        $statusFilter = $request->input('status');
         $query = VehicleInventory::where('is_active', true)->orderBy('created_at', 'desc');
 
         if ($search) {
@@ -528,8 +529,42 @@ class VehiclePurchaseOrderController extends Controller
             });
         }
 
-        $inventories = $query->paginate(20);
-        return view('admin.vehicle_inventories.index', compact('inventories', 'search'));
+        if ($statusFilter) {
+            $query->where('status', $statusFilter);
+        }
+
+        $inventories = $query->paginate(20)->withQueryString();
+
+        // Calculate available count per vehicle variant to evaluate against VehicleMaster.min_stock
+        $vehicleMasters = \App\Models\VehicleMaster::where('is_active', true)->get();
+        $variantCounts = VehicleInventory::where('status', 'available')
+            ->select('vehicle_description', DB::raw('COUNT(*) as total'))
+            ->groupBy('vehicle_description')
+            ->pluck('total', 'vehicle_description')
+            ->toArray();
+
+        $lowStockVariants = [];
+        foreach ($vehicleMasters as $vm) {
+            $name = $vm->variant_name;
+            if ($vm->color_name) {
+                $name .= ' (' . $vm->color_name . ')';
+            }
+            $available = $variantCounts[$name] ?? ($variantCounts[$vm->variant_name] ?? 0);
+            if ($vm->min_stock > 0 && $available <= $vm->min_stock) {
+                $lowStockVariants[$name] = [
+                    'min_stock' => $vm->min_stock,
+                    'available' => $available,
+                ];
+                if ($vm->variant_name !== $name) {
+                    $lowStockVariants[$vm->variant_name] = [
+                        'min_stock' => $vm->min_stock,
+                        'available' => $available,
+                    ];
+                }
+            }
+        }
+
+        return view('admin.vehicle_inventories.index', compact('inventories', 'search', 'statusFilter', 'lowStockVariants'));
     }
 
     public function exportInventory(Request $request)

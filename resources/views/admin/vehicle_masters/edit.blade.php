@@ -51,6 +51,12 @@
                     <input type="text" name="battery_make" class="form-control @error('battery_make') is-invalid @enderror" value="{{ old('battery_make', $vehicle->battery_make) }}" placeholder="e.g. LITHIUM">
                     @error('battery_make')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
+                <div class="col-md-4">
+                    <label class="form-label">Minimum Stock Threshold</label>
+                    <input type="number" name="min_stock" class="form-control @error('min_stock') is-invalid @enderror" value="{{ old('min_stock', $vehicle->min_stock ?? 0) }}" min="0">
+                    <div class="form-text text-muted">Low stock alert triggers when available count falls to or below this level.</div>
+                    @error('min_stock')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
             </div>
             <div class="mt-4"><button type="submit" class="btn btn-primary">Update</button> <a href="{{ route('admin.vehicle-masters.index') }}" class="btn btn-secondary">Cancel</a></div>
         </form>

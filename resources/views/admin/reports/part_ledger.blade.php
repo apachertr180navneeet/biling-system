@@ -55,9 +55,15 @@
                         <td class="text-center text-success font-weight-bold">+{{ $s->total_in }}</td>
                         <td class="text-center text-danger font-weight-bold">-{{ $s->total_out }}</td>
                         <td class="text-center">
-                            <span class="badge bg-label-{{ $s->remaining > 0 ? 'success' : 'secondary' }} fs-6">
+                            @php
+                                $isLow = $s->min_stock > 0 && $s->remaining <= $s->min_stock;
+                            @endphp
+                            <span class="badge bg-{{ $s->remaining < 1 ? 'secondary' : ($isLow ? 'danger' : 'success') }} fs-6">
                                 {{ $s->remaining }}
                             </span>
+                            @if($isLow && $s->remaining >= 1)
+                            <span class="badge bg-danger ms-1">Low Stock (Min: {{ $s->min_stock }})</span>
+                            @endif
                         </td>
                     </tr>
                     @empty

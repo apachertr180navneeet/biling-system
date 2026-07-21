@@ -12,7 +12,7 @@ class VehicleMaster extends Model
     protected $fillable = [
         'variant_name', 'color_name',
         'fuel_type', 'transmission',
-        'ex_showroom_price', 'is_active',
+        'ex_showroom_price', 'min_stock', 'is_active',
         'battery_type', 'battery_make',
     ];
 }

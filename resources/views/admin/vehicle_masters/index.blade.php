@@ -55,6 +55,7 @@
                         <th>Battery Type</th>
                         <th>Battery Make</th>
                         <th>Price</th>
+                        <th>Min Stock</th>
                         <th>Status</th>
                         <th>Actions</th>
                     </tr>
@@ -70,6 +71,7 @@
                         <td>{{ $v->battery_type ?? '-' }}</td>
                         <td>{{ $v->battery_make ?? '-' }}</td>
                         <td>{{ number_format($v->ex_showroom_price, 2) }}</td>
+                        <td><span class="badge bg-label-secondary">{{ $v->min_stock ?? 0 }}</span></td>
                         <td>
                             <label class="switch switch-success">
                                 <input type="checkbox" class="toggle-status"
@@ -110,7 +112,7 @@
                         <input type="file" name="csv_file" class="form-control" accept=".csv,.txt,.xls,.xlsx" required>
                         <div class="form-text text-muted mt-2">
                             Please upload a valid CSV file using the template headers:<br>
-                            <code>variant_name, color_name, fuel_type, transmission, ex_showroom_price, battery_type, battery_make</code>
+                            <code>variant_name, color_name, fuel_type, transmission, ex_showroom_price, battery_type, battery_make, min_stock</code>
                         </div>
                     </div>
                 </div>

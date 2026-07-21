@@ -12,7 +12,7 @@ class SparePart extends Model
 
     protected $fillable = [
         'part_no', 'name',
-        'selling_price', 'mrp', 'unit', 'is_active',
+        'selling_price', 'mrp', 'unit', 'min_stock', 'is_active',
     ];
 
     public function transactions(): \Illuminate\Database\Eloquent\Relations\HasMany

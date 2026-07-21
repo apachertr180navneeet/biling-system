@@ -35,6 +35,16 @@ class ReportController extends Controller
         }
         $summaries = $summaryQuery->get();
 
+        $vehicleMasters = \App\Models\VehicleMaster::where('is_active', true)->get();
+        foreach ($summaries as $s) {
+            $matchedMaster = $vehicleMasters->first(function($m) use ($s) {
+                $fullName = $m->variant_name . ($m->color_name ? ' (' . $m->color_name . ')' : '');
+                return strtolower($fullName) === strtolower($s->vehicle_description) 
+                    || strtolower($m->variant_name) === strtolower($s->vehicle_description);
+            });
+            $s->min_stock = $matchedMaster ? $matchedMaster->min_stock : 0;
+        }
+
         // 2. Chronological Ledger transactions
         $ledgerQuery = VehicleInventory::with('purchaseOrder')->orderBy('created_at', 'desc');
 
@@ -69,11 +79,12 @@ class ReportController extends Controller
                 'spare_parts.part_no',
                 'spare_parts.name',
                 'spare_parts.unit',
+                'spare_parts.min_stock',
                 DB::raw('COALESCE(SUM(CASE WHEN t.transaction_type = "in" THEN t.quantity ELSE 0 END), 0) as total_in'),
                 DB::raw('COALESCE(SUM(CASE WHEN t.transaction_type = "out" THEN t.quantity ELSE 0 END), 0) as total_out'),
                 DB::raw('COALESCE(MAX(s.quantity), 0) as remaining')
             )
-            ->groupBy('spare_parts.id', 'spare_parts.part_no', 'spare_parts.name', 'spare_parts.unit');
+            ->groupBy('spare_parts.id', 'spare_parts.part_no', 'spare_parts.name', 'spare_parts.unit', 'spare_parts.min_stock');
 
         if ($search) {
             $escapedSearch = '%' . addcslashes($search, '%_') . '%';

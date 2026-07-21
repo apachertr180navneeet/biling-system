@@ -155,6 +155,9 @@
             <div class="dashboard-card-info">
                 <h3 class="dashboard-card-value">Parts Stock</h3>
                 <span class="dashboard-card-label">Value of items: {{ number_format($stockCountParts) }} items</span>
+                @if(($lowStockCount ?? 0) > 0)
+                <span class="badge bg-danger mt-1"><i class="bx bx-error me-1"></i>{{ $lowStockCount }} Part(s) Low Stock</span>
+                @endif
             </div>
             <i class="bx bx-chevron-right dashboard-card-chevron"></i>
         </a>
@@ -164,6 +167,9 @@
             <div class="dashboard-card-info">
                 <h3 class="dashboard-card-value">Vehicle Stock</h3>
                 <span class="dashboard-card-label">Value of items: {{ number_format($stockCountVehicles) }} items</span>
+                @if(($lowStockVehicleCount ?? 0) > 0)
+                <span class="badge bg-danger mt-1"><i class="bx bx-error me-1"></i>{{ $lowStockVehicleCount }} Variant(s) Low Stock</span>
+                @endif
             </div>
             <i class="bx bx-chevron-right dashboard-card-chevron"></i>
         </a>

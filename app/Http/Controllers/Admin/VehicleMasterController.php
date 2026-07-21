@@ -59,7 +59,8 @@ class VehicleMasterController extends Controller
         $sheet->setCellValue('E1', 'Ex-Showroom Price');
         $sheet->setCellValue('F1', 'Battery Type');
         $sheet->setCellValue('G1', 'Battery Make');
-        $sheet->setCellValue('H1', 'Status');
+        $sheet->setCellValue('H1', 'Min Stock');
+        $sheet->setCellValue('I1', 'Status');
 
         $row = 2;
         foreach ($vehicles as $v) {
@@ -70,7 +71,8 @@ class VehicleMasterController extends Controller
             $sheet->setCellValue('E' . $row, $v->ex_showroom_price);
             $sheet->setCellValue('F' . $row, $v->battery_type);
             $sheet->setCellValue('G' . $row, $v->battery_make);
-            $sheet->setCellValue('H' . $row, $v->is_active ? 'Active' : 'Inactive');
+            $sheet->setCellValue('H' . $row, $v->min_stock ?? 0);
+            $sheet->setCellValue('I' . $row, $v->is_active ? 'Active' : 'Inactive');
             $row++;
         }
 
@@ -96,7 +98,9 @@ class VehicleMasterController extends Controller
             'ex_showroom_price' => 'required|numeric|min:0',
             'battery_type' => 'nullable|string|max:255',
             'battery_make' => 'nullable|string|max:255',
+            'min_stock' => 'nullable|integer|min:0',
         ]);
+        $data['min_stock'] = $data['min_stock'] ?? 0;
         try {
             VehicleMaster::create($data);
             return redirect()->route('admin.vehicle-masters.index')->withSuccess('Vehicle master created successfully.');
@@ -120,7 +124,9 @@ class VehicleMasterController extends Controller
             'ex_showroom_price' => 'required|numeric|min:0',
             'battery_type' => 'nullable|string|max:255',
             'battery_make' => 'nullable|string|max:255',
+            'min_stock' => 'nullable|integer|min:0',
         ]);
+        $data['min_stock'] = $data['min_stock'] ?? 0;
         try {
             $vehicleMaster->update($data);
             return redirect()->route('admin.vehicle-masters.index')->withSuccess('Vehicle master updated successfully.');
@@ -152,6 +158,7 @@ class VehicleMasterController extends Controller
         $sheet->setCellValue('E1', 'ex_showroom_price');
         $sheet->setCellValue('F1', 'battery_type');
         $sheet->setCellValue('G1', 'battery_make');
+        $sheet->setCellValue('H1', 'min_stock');
         // Example row
         $sheet->setCellValue('A2', 'ARZOO ECO LI');
         $sheet->setCellValue('B2', 'BLACK');
@@ -160,6 +167,7 @@ class VehicleMasterController extends Controller
         $sheet->setCellValue('E2', '166666.00');
         $sheet->setCellValue('F2', 'LITHIUM');
         $sheet->setCellValue('G2', 'LITHIUM');
+        $sheet->setCellValue('H2', '2');
 
         $writer = new Xls($spreadsheet);
         $path = storage_path('app/vehicle_master_template.xls');
@@ -242,6 +250,7 @@ class VehicleMasterController extends Controller
 
             $batteryType = isset($data['battery_type']) ? trim($data['battery_type']) : '';
             $batteryMake = isset($data['battery_make']) ? trim($data['battery_make']) : '';
+            $minStock = isset($data['min_stock']) && is_numeric(trim($data['min_stock'])) ? (int)trim($data['min_stock']) : 0;
 
             if (empty($variantName)) {
                 $errors[] = "Row {$rowCount}: Variant Name is required.";
@@ -283,6 +292,7 @@ class VehicleMasterController extends Controller
                 'ex_showroom_price' => floatval($exShowroomPrice),
                 'battery_type' => $batteryType ?: null,
                 'battery_make' => $batteryMake ?: null,
+                'min_stock' => $minStock,
                 'is_active' => true,
             ]);
 

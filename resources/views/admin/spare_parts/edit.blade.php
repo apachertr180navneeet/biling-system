@@ -36,6 +36,12 @@
                     <input type="text" name="unit" class="form-control @error('unit') is-invalid @enderror" value="{{ old('unit', $sparePart->unit) }}">
                     @error('unit') <div class="text-danger small">{{ $message }}</div> @enderror
                 </div>
+                <div class="mb-3">
+                    <label class="form-label">Minimum Stock Level</label>
+                    <input type="number" name="min_stock" class="form-control @error('min_stock') is-invalid @enderror" value="{{ old('min_stock', $sparePart->min_stock ?? 0) }}" min="0">
+                    <div class="form-text text-muted">Low stock alert triggers when quantity falls to or below this level.</div>
+                    @error('min_stock') <div class="text-danger small">{{ $message }}</div> @enderror
+                </div>
                 <button type="submit" class="btn btn-primary">Update</button>
                 <a href="{{ route('admin.spare-parts.index') }}" class="btn btn-secondary">Cancel</a>
             </form>
