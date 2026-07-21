@@ -167,7 +167,7 @@
                                     <tr><td><strong>FRONT FIBER WIND SHIELD:</strong></td><td>{{ $quotation->front_fiber_wind_shield ?? 'YES' }}</td></tr>
                                     <tr><td><strong>METER:</strong></td><td>{{ $quotation->meter_type ?? 'DIGITAL' }}</td></tr>
                                     <tr><td><strong>ON ROAD PRICE:</strong></td><td>₹{{ number_format($quotation->total_amount, 2) }}/- INCLUDING GST, RTO, INSURANCE</td></tr>
-                                    <tr><td><strong>ACCESSORIES:</strong></td><td>{{ $quotation->accessories ?? 'STEPNY, JACK, TOOL KIT,STERIO, SIDE MIRROR' }}</td></tr>
+                                    <tr><td><strong>ACCESSORIES:</strong></td><td>STEPNY, JACK, TOOL KIT,STERIO, SIDE MIRROR</td></tr>
                                 </table>
                             </div>
                         </div>
@@ -177,7 +177,9 @@
                                 <h6 class="mb-0 text-primary fw-bold">TERMS AND CONDITIONS</h6>
                             </div>
                             <div class="card-body py-2 small">
-                                {!! nl2br(e($quotation->terms_and_conditions ?? "1. THERE IS 12 MONTH WARRANTY FOR MOTOR, CONTROLLER\n2. THERE IS 36 MONTH WARRANTY FOR BATTERY, CHARGER\n3. THERE IS NO WARRANTY OR GURANTEE FOR THE WORK CARRIED OUT AND PARTS REPLACED OTHER THAN FOR THE PARTS LIKE BATTERIES, CHARGER, CONTROLLER, MOTOR.")) !!}
+                                1. THERE IS 12 MONTH WARRANTY FOR MOTOR, CONTROLLER<br>
+                                2. THERE IS 36 MONTH WARRANTY FOR BATTERY, CHARGER<br>
+                                3. THERE IS NO WARRANTY OR GURANTEE FOR THE WORK CARRIED OUT AND PARTS REPLACED OTHER THAN FOR THE PARTS LIKE BATTERIES, CHARGER, CONTROLLER, MOTOR.
                             </div>
                         </div>
 

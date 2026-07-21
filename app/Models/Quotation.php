@@ -54,8 +54,6 @@ class Quotation extends Model
         'roof_top_abs',
         'front_fiber_wind_shield',
         'meter_type',
-        'accessories',
-        'terms_and_conditions',
     ];
 
     protected function casts(): array

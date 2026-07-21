@@ -255,13 +255,15 @@
                             <tr><td style="padding: 1px 0;"><strong>FRONT FIBER WIND SHIELD:</strong></td><td>;- {{ $quotation->front_fiber_wind_shield ?? 'YES' }}</td></tr>
                             <tr><td style="padding: 1px 0;"><strong>METER:</strong></td><td>:- {{ $quotation->meter_type ?? 'DIGITAL' }}</td></tr>
                             <tr><td style="padding: 1px 0;"><strong>ON ROAD PRICE:</strong></td><td>:- {{ number_format($quotation->total_amount, 0, '', '') }}/- INCLUDING GST, RTO, INSURANCE</td></tr>
-                            <tr><td style="padding: 1px 0;"><strong>ACCESSORIES:</strong></td><td>:- {{ $quotation->accessories ?? 'STEPNY, JACK, TOOL KIT,STERIO, SIDE MIRROR' }}</td></tr>
+                            <tr><td style="padding: 1px 0;"><strong>ACCESSORIES:</strong></td><td>:- STEPNY, JACK, TOOL KIT,STERIO, SIDE MIRROR</td></tr>
                         </table>
                     </div>
 
                     <div style="font-size: 8px; border: 1px solid #ccc; padding: 6px; border-radius: 4px; background: #fafafa; margin-right: 10px; margin-bottom: 8px;">
                         <strong style="font-size: 9px; color: #111; display: block; margin-bottom: 3px;">TERMS AND CONDITION –</strong>
-                        {!! nl2br(e($quotation->terms_and_conditions ?? "THERE IS 12 MONTH WARRANTY FOR MOTOR, CONTROLLER\nTHERE IS 36 MONTH WARRANTY FOR BATTERY, CHARGER\nTHERE IS NO WARRANTY OR GURANTEE FOR THE WORK CARRIED OUT AND PARTS REPLACED OTHER THAN FOR THE PARTS LIKE BATTERIES, CHARGER, CONTROLLER, MOTOR.")) !!}
+                        THERE IS 12 MONTH WARRANTY FOR MOTOR, CONTROLLER<br>
+                        THERE IS 36 MONTH WARRANTY FOR BATTERY, CHARGER<br>
+                        THERE IS NO WARRANTY OR GURANTEE FOR THE WORK CARRIED OUT AND PARTS REPLACED OTHER THAN FOR THE PARTS LIKE BATTERIES, CHARGER, CONTROLLER, MOTOR.
                     </div>
 
                     <div style="font-size: 8.5px; border: 1px solid #ccc; padding: 6px; border-radius: 4px; background: #fafafa; margin-right: 10px;">

@@ -204,18 +204,6 @@
                         <label class="form-label">Meter</label>
                         <input type="text" name="meter_type" class="form-control" value="{{ old('meter_type', $quotation->meter_type ?? 'DIGITAL') }}">
                     </div>
-                    <div class="col-md-12">
-                        <label class="form-label">Accessories</label>
-                        <input type="text" name="accessories" class="form-control" value="{{ old('accessories', $quotation->accessories ?? 'STEPNY, JACK, TOOL KIT,STERIO, SIDE MIRROR') }}">
-                    </div>
-                </div>
-
-                <h5 class="card-title text-primary mb-3">Terms & Conditions</h5>
-                <div class="row g-3 mb-4">
-                    <div class="col-md-12">
-                        <label class="form-label">Terms & Conditions</label>
-                        <textarea name="terms_and_conditions" class="form-control" rows="4">{{ old('terms_and_conditions', $quotation->terms_and_conditions ?? "1. THERE IS 12 MONTH WARRANTY FOR MOTOR, CONTROLLER\n2. THERE IS 36 MONTH WARRANTY FOR BATTERY, CHARGER\n3. THERE IS NO WARRANTY OR GURANTEE FOR THE WORK CARRIED OUT AND PARTS REPLACED OTHER THAN FOR THE PARTS LIKE BATTERIES, CHARGER, CONTROLLER, MOTOR.") }}</textarea>
-                    </div>
                 </div>
 
                 <div class="row g-3 mb-4">

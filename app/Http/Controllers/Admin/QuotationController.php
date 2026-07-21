@@ -115,8 +115,7 @@ class QuotationController extends Controller
                 'customer_pan', 'place_of_supply', 'tax_regime', 'remarks',
                 'model_maker_name', 'gross_weight', 'charging_time', 'performance',
                 'charger_output', 'motor_output', 'seating_capacity', 'type_of_break',
-                'roof_top_abs', 'front_fiber_wind_shield', 'meter_type', 'accessories',
-                'terms_and_conditions'
+                'roof_top_abs', 'front_fiber_wind_shield', 'meter_type'
             ]);
             $data['created_by'] = Auth::id();
 
@@ -292,8 +291,7 @@ class QuotationController extends Controller
                     'customer_pan', 'place_of_supply', 'tax_regime', 'remarks',
                     'model_maker_name', 'gross_weight', 'charging_time', 'performance',
                     'charger_output', 'motor_output', 'seating_capacity', 'type_of_break',
-                    'roof_top_abs', 'front_fiber_wind_shield', 'meter_type', 'accessories',
-                    'terms_and_conditions'
+                    'roof_top_abs', 'front_fiber_wind_shield', 'meter_type'
                 ]);
 
                 $data['vehicle_master_id'] = $request->input('vehicle_master_id');

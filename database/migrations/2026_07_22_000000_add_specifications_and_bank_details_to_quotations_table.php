@@ -20,8 +20,6 @@ return new class extends Migration
             $table->string('roof_top_abs')->nullable()->default('YES');
             $table->string('front_fiber_wind_shield')->nullable()->default('YES');
             $table->string('meter_type')->nullable()->default('DIGITAL');
-            $table->text('accessories')->nullable()->default('STEPNY, JACK, TOOL KIT,STERIO, SIDE MIRROR');
-            $table->text('terms_and_conditions')->nullable();
         });
     }
 
@@ -40,8 +38,6 @@ return new class extends Migration
                 'roof_top_abs',
                 'front_fiber_wind_shield',
                 'meter_type',
-                'accessories',
-                'terms_and_conditions',
             ]);
         });
     }
