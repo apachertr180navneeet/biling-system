@@ -16,6 +16,7 @@ use App\Models\Customer;
 use App\Models\VehicleInventory;
 use App\Models\VehiclePurchaseOrder;
 use App\Models\SparePartStock;
+use App\Models\VehicleMaster;
 
 class AdminAuthController extends Controller
 {
