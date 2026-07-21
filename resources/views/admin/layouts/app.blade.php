@@ -74,12 +74,13 @@
                 <script async defer src="https://buttons.github.io/buttons.js"></script>
                 <script>
                 $(document).ready(function() {
-                    $('select').not('.no-select2').select2({
+                    $('select').not('.no-select2').not('.swal2-select').select2({
                         width: '100%',
                         theme: 'bootstrap-5'
                     });
                 });
                 function initSelect2(el) {
+                    if ($(el).hasClass('swal2-select')) return;
                     $(el).select2({
                         width: '100%',
                         theme: 'bootstrap-5'
