@@ -61,6 +61,28 @@ body {
     background-attachment: fixed;
 }
 
+/* Full Width Container Overrides for Full Project */
+.container-xxl,
+.container-xl,
+.container-lg,
+.container-md,
+.container-sm,
+.container,
+.layout-page .container-xxl,
+.content-wrapper > .container-xxl,
+.container-p-y {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+}
+
+.layout-navbar .container-xxl,
+.layout-navbar.navbar-detached {
+    max-width: 100% !important;
+    width: 100% !important;
+}
+
 /* Headings */
 h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
     font-family: 'Outfit', sans-serif !important;
