@@ -8,10 +8,10 @@
             margin: 40px;
         }
         body {
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-family: 'DejaVu Sans', sans-serif;
             color: #333;
-            font-size: 12px;
-            line-height: 1.6;
+            font-size: 11px;
+            line-height: 1.5;
         }
         #watermark {
             position: fixed;
