@@ -160,9 +160,9 @@ document.addEventListener('DOMContentLoaded', function() {
     let rowIndex = 0;
 
     // Customer Selection Change
-    customerSelect.addEventListener('change', function() {
-        const option = this.options[this.selectedIndex];
-        if (option.value) {
+    $(customerSelect).on('change', function() {
+        const option = this.options ? this.options[this.selectedIndex] : null;
+        if (option && option.value) {
             document.getElementById('customer_name').value = option.getAttribute('data-name') || '';
             document.getElementById('customer_mobile').value = option.getAttribute('data-mobile') || '';
             document.getElementById('customer_address').value = option.getAttribute('data-address') || '';
@@ -248,9 +248,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const qtyInput = tr.querySelector('.quantity-input');
         const removeBtn = tr.querySelector('.remove-row-btn');
 
-        partSelect.addEventListener('change', function() {
-            const selectedOpt = this.options[this.selectedIndex];
-            if (selectedOpt.value) {
+        initSelect2(partSelect);
+        $(partSelect).on('change', function() {
+            const selectedOpt = this.options ? this.options[this.selectedIndex] : null;
+            if (selectedOpt && selectedOpt.value) {
                 rateInput.value = parseFloat(selectedOpt.getAttribute('data-price')) || 0;
             } else {
                 rateInput.value = 0;
@@ -395,8 +396,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 $(customerSelect).trigger('change.select2');
                 
                 // Trigger change event to populate input fields
-                var event = new Event('change');
-                customerSelect.dispatchEvent(event);
+                $(customerSelect).trigger('change');
                 
                 // Close modal
                 var modalEl = document.getElementById('quickAddCustomerModal');
