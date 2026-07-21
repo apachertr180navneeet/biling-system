@@ -331,10 +331,88 @@ class AdminAuthController extends Controller
             ->sum('grand_total');
         $thisWeeksSale = $partSalesThisWeek + $vehicleSalesThisWeek;
 
+        // Latest Transactions
+        $partInvoices = \App\Models\PartSalesInvoice::where('is_active', true)
+            ->latest('invoice_date')
+            ->latest('id')
+            ->take(10)
+            ->get()
+            ->map(function ($inv) {
+                return [
+                    'date' => $inv->invoice_date ? $inv->invoice_date->format('d M Y') : '-',
+                    'raw_date' => $inv->invoice_date ? $inv->invoice_date->format('Y-m-d') : '',
+                    'id' => $inv->id,
+                    'type' => 'Sales Invoices',
+                    'txn_no' => $inv->invoice_number,
+                    'party_name' => $inv->customer_name ?: ($inv->customer ? $inv->customer->name : 'N/A'),
+                    'amount' => $inv->total_amount,
+                    'url' => route('admin.part-sales-invoices.show', $inv->id),
+                ];
+            });
+
+        $vehicleInvoices = \App\Models\VehicleSalesInvoice::where('is_active', true)
+            ->latest('invoice_date')
+            ->latest('id')
+            ->take(10)
+            ->get()
+            ->map(function ($inv) {
+                return [
+                    'date' => $inv->invoice_date ? $inv->invoice_date->format('d M Y') : '-',
+                    'raw_date' => $inv->invoice_date ? $inv->invoice_date->format('Y-m-d') : '',
+                    'id' => $inv->id,
+                    'type' => 'Sales Invoices',
+                    'txn_no' => $inv->invoice_number,
+                    'party_name' => $inv->customer_name ?: ($inv->customer ? $inv->customer->name : 'N/A'),
+                    'amount' => $inv->grand_total,
+                    'url' => route('admin.vehicle-sales-invoices.show', $inv->id),
+                ];
+            });
+
+        $latestTransactions = $partInvoices->concat($vehicleInvoices)
+            ->sortByDesc(function ($item) {
+                return $item['raw_date'] . '_' . sprintf('%08d', $item['id']);
+            })
+            ->take(6)
+            ->values();
+
+        // Monthly Sales Report Graph Data (Last 6 Months)
+        $months = [];
+        $partSalesData = [];
+        $vehicleSalesData = [];
+        $totalSalesData = [];
+
+        for ($i = 5; $i >= 0; $i--) {
+            $date = Carbon::now()->subMonths($i);
+            $monthName = $date->format('M Y');
+            $startOfMonth = $date->copy()->startOfMonth();
+            $endOfMonth = $date->copy()->endOfMonth();
+
+            $pSales = \App\Models\PartSalesInvoice::where('is_active', true)
+                ->whereBetween('invoice_date', [$startOfMonth, $endOfMonth])
+                ->sum('total_amount');
+
+            $vSales = \App\Models\VehicleSalesInvoice::where('is_active', true)
+                ->whereBetween('invoice_date', [$startOfMonth, $endOfMonth])
+                ->sum('grand_total');
+
+            $months[] = $monthName;
+            $partSalesData[] = (float) $pSales;
+            $vehicleSalesData[] = (float) $vSales;
+            $totalSalesData[] = (float) ($pSales + $vSales);
+        }
+
+        $salesChartData = [
+            'categories' => $months,
+            'vehicle_sales' => $vehicleSalesData,
+            'part_sales' => $partSalesData,
+            'total_sales' => $totalSalesData,
+        ];
+
         return view("admin.dashboard.index", compact(
             'totalCustomers',
             'vehicleInventoryCount', 'pendingVehiclePOs', 'lowStockCount', 'lowStockVehicleCount',
-            'toCollect', 'toPay', 'stockValue', 'stockCountParts', 'stockCountVehicles', 'thisWeeksSale'
+            'toCollect', 'toPay', 'stockValue', 'stockCountParts', 'stockCountVehicles', 'thisWeeksSale',
+            'latestTransactions', 'salesChartData'
         ));
     }
 
