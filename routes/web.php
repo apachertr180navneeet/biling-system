@@ -148,6 +148,10 @@ Route::name('admin.')->prefix('admin')->group(function () {
             Route::get('reports/vehicle-ledger', [ReportController::class, 'vehicleLedger'])->name('reports.vehicle-ledger');
             Route::get('reports/part-ledger', [ReportController::class, 'partLedger'])->name('reports.part-ledger');
             Route::get('reports/outstanding-ledger', [ReportController::class, 'outstandingLedger'])->name('reports.outstanding-ledger');
+            Route::get('reports/party-report-by-item', [ReportController::class, 'partyReportByItem'])->name('reports.party-report-by-item');
+            Route::get('reports/party-report-by-item/export-excel', [ReportController::class, 'exportPartyReportExcel'])->name('reports.party-report-by-item.export-excel');
+            Route::post('reports/party-report-by-item/email-excel', [ReportController::class, 'emailPartyReportExcel'])->name('reports.party-report-by-item.email-excel');
+            Route::get('reports/party-report-by-item/print-pdf', [ReportController::class, 'printPartyReportPdf'])->name('reports.party-report-by-item.print-pdf');
     });
 
 

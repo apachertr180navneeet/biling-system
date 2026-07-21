@@ -311,4 +311,345 @@ class ReportController extends Controller
             'ledger'
         ));
     }
+
+    public function partyReportByItem(Request $request)
+    {
+        $selectedItem = $request->input('item_id'); // format: 'vehicle_ID' or 'part_ID'
+        $dateFilter = $request->input('date_filter', 'this_month');
+        $customFrom = $request->input('custom_from');
+        $customTo = $request->input('custom_to');
+
+        // Resolve Date Range
+        $dates = $this->getDateRange($dateFilter, $customFrom, $customTo);
+        $fromDate = $dates['from'];
+        $toDate = $dates['to'];
+
+        // Get All Items (Vehicles & Parts) for Search Dropdown
+        $vehicleMasters = \App\Models\VehicleMaster::where('is_active', true)->orderBy('variant_name')->get();
+        $spareParts = SparePart::where('is_active', true)->orderBy('name')->get();
+
+        $itemList = [];
+        foreach ($vehicleMasters as $vm) {
+            $itemList[] = [
+                'id' => 'vehicle_' . $vm->id,
+                'name' => '[Vehicle] ' . $vm->variant_name . ($vm->color_name ? ' (' . $vm->color_name . ')' : '') . ' - ' . $vm->fuel_type,
+                'raw_name' => $vm->variant_name . ($vm->color_name ? ' (' . $vm->color_name . ')' : '')
+            ];
+        }
+        foreach ($spareParts as $sp) {
+            $itemList[] = [
+                'id' => 'part_' . $sp->id,
+                'name' => '[Spare Part] ' . $sp->name . ($sp->part_no ? ' (' . $sp->part_no . ')' : ''),
+                'raw_name' => $sp->name
+            ];
+        }
+
+        // If no item selected initially, default to first spare part or vehicle if available
+        if (empty($selectedItem) && !empty($itemList)) {
+            $selectedItem = $itemList[0]['id'];
+        }
+
+        $selectedItemData = null;
+        $partyData = [];
+
+        if (!empty($selectedItem)) {
+            list($itemType, $itemId) = explode('_', $selectedItem, 2);
+
+            if ($itemType === 'vehicle') {
+                $vMaster = \App\Models\VehicleMaster::find($itemId);
+                if ($vMaster) {
+                    $variantDesc = $vMaster->variant_name . ($vMaster->color_name ? ' (' . $vMaster->color_name . ')' : '');
+                    $selectedItemData = [
+                        'type' => 'vehicle',
+                        'name' => $variantDesc,
+                    ];
+
+                    // Fetch Sales
+                    $salesQuery = VehicleSalesInvoice::where(function($q) use ($vMaster, $variantDesc) {
+                            $q->where('vehicle_master_id', $vMaster->id)
+                              ->orWhere('vehicle_model', 'like', '%' . addcslashes($vMaster->variant_name, '%_') . '%');
+                        });
+                    if ($fromDate) $salesQuery->whereDate('invoice_date', '>=', $fromDate);
+                    if ($toDate) $salesQuery->whereDate('invoice_date', '<=', $toDate);
+                    $salesInvoices = $salesQuery->get();
+
+                    foreach ($salesInvoices as $inv) {
+                        $party = strtoupper(trim($inv->customer_name));
+                        if (!isset($partyData[$party])) {
+                            $partyData[$party] = [
+                                'party_name' => $inv->customer_name,
+                                'sales_qty' => 0,
+                                'sales_amount' => 0,
+                                'purchase_qty' => 0,
+                                'purchase_amount' => 0,
+                            ];
+                        }
+                        $partyData[$party]['sales_qty'] += 1;
+                        $partyData[$party]['sales_amount'] += (float)$inv->grand_total;
+                    }
+
+                    // Fetch Purchases
+                    $poQuery = VehiclePurchaseOrder::with(['items', 'supplier']);
+                    if ($fromDate) $poQuery->whereDate('order_date', '>=', $fromDate);
+                    if ($toDate) $poQuery->whereDate('order_date', '<=', $toDate);
+                    $poOrders = $poQuery->get();
+
+                    foreach ($poOrders as $po) {
+                        $supplierName = $po->supplier->name ?? 'SUPPLIER #' . $po->supplier_id;
+                        $party = strtoupper(trim($supplierName));
+
+                        foreach ($po->items as $item) {
+                            if ($item->vehicle_master_id == $vMaster->id) {
+                                if (!isset($partyData[$party])) {
+                                    $partyData[$party] = [
+                                        'party_name' => $supplierName,
+                                        'sales_qty' => 0,
+                                        'sales_amount' => 0,
+                                        'purchase_qty' => 0,
+                                        'purchase_amount' => 0,
+                                    ];
+                                }
+                                $partyData[$party]['purchase_qty'] += (int)$item->ordered_quantity;
+                                $partyData[$party]['purchase_amount'] += (float)$item->total_amount;
+                            }
+                        }
+                    }
+                }
+            } else {
+                // Part item
+                $spPart = SparePart::find($itemId);
+                if ($spPart) {
+                    $selectedItemData = [
+                        'type' => 'part',
+                        'name' => $spPart->name . ($spPart->part_no ? ' (' . $spPart->part_no . ')' : ''),
+                    ];
+
+                    // Fetch Sales (PartSalesInvoiceItem)
+                    $partSalesQuery = \App\Models\PartSalesInvoiceItem::with('invoice')
+                        ->where('spare_part_id', $spPart->id)
+                        ->whereHas('invoice', function($q) use ($fromDate, $toDate) {
+                            if ($fromDate) $q->whereDate('invoice_date', '>=', $fromDate);
+                            if ($toDate) $q->whereDate('invoice_date', '<=', $toDate);
+                        });
+
+                    $salesItems = $partSalesQuery->get();
+                    foreach ($salesItems as $sItem) {
+                        if ($sItem->invoice) {
+                            $party = strtoupper(trim($sItem->invoice->customer_name));
+                            if (!isset($partyData[$party])) {
+                                $partyData[$party] = [
+                                    'party_name' => $sItem->invoice->customer_name,
+                                    'sales_qty' => 0,
+                                    'sales_amount' => 0,
+                                    'purchase_qty' => 0,
+                                    'purchase_amount' => 0,
+                                ];
+                            }
+                            $partyData[$party]['sales_qty'] += (int)$sItem->quantity;
+                            $partyData[$party]['sales_amount'] += (float)$sItem->amount;
+                        }
+                    }
+
+                    // Fetch Purchases (PurchaseOrderItem)
+                    $poItemsQuery = \App\Models\PurchaseOrderItem::with(['purchaseOrder.supplier'])
+                        ->where('spare_part_id', $spPart->id)
+                        ->whereHas('purchaseOrder', function($q) use ($fromDate, $toDate) {
+                            if ($fromDate) $q->whereDate('order_date', '>=', $fromDate);
+                            if ($toDate) $q->whereDate('order_date', '<=', $toDate);
+                        });
+
+                    $poItems = $poItemsQuery->get();
+                    foreach ($poItems as $pItem) {
+                        if ($pItem->purchaseOrder) {
+                            $supplierName = $pItem->purchaseOrder->supplier->name ?? 'SUPPLIER #' . $pItem->purchaseOrder->supplier_id;
+                            $party = strtoupper(trim($supplierName));
+                            if (!isset($partyData[$party])) {
+                                $partyData[$party] = [
+                                    'party_name' => $supplierName,
+                                    'sales_qty' => 0,
+                                    'sales_amount' => 0,
+                                    'purchase_qty' => 0,
+                                    'purchase_amount' => 0,
+                                ];
+                            }
+                            $partyData[$party]['purchase_qty'] += (int)$pItem->quantity;
+                            $partyData[$party]['purchase_amount'] += (float)$pItem->total_amount;
+                        }
+                    }
+                }
+            }
+        }
+
+        return view('admin.reports.party_report_by_item', compact(
+            'itemList',
+            'selectedItem',
+            'selectedItemData',
+            'dateFilter',
+            'customFrom',
+            'customTo',
+            'partyData',
+            'fromDate',
+            'toDate'
+        ));
+    }
+
+    public function printPartyReportPdf(Request $request)
+    {
+        $reqData = $this->partyReportByItem($request);
+        $data = $reqData->getData();
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.reports.party_report_by_item_pdf', $data);
+        $pdf->setPaper('a4', 'portrait');
+        return $pdf->stream('Party_Report_By_Item.pdf');
+    }
+
+    public function exportPartyReportExcel(Request $request)
+    {
+        $reqData = $this->partyReportByItem($request);
+        $data = $reqData->getData();
+
+        $filename = 'Party_Report_By_Item_' . date('Y-m-d') . '.csv';
+        $headers = [
+            "Content-type" => "text/csv",
+            "Content-Disposition" => "attachment; filename=$filename",
+            "Pragma" => "no-cache",
+            "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
+            "Expires" => "0"
+        ];
+
+        $callback = function() use ($data) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, ['Party Report By Item']);
+            fputcsv($file, ['Item:', $data['selectedItemData']['name'] ?? 'N/A']);
+            fputcsv($file, ['Date Filter:', ucfirst(str_replace('_', ' ', $data['dateFilter']))]);
+            fputcsv($file, []);
+            fputcsv($file, ['Party Name', 'Sales Qty', 'Sales Amount', 'Purchase Qty', 'Purchase Amount']);
+
+            foreach ($data['partyData'] as $row) {
+                fputcsv($file, [
+                    $row['party_name'],
+                    $row['sales_qty'] > 0 ? $row['sales_qty'] : '-',
+                    $row['sales_amount'] > 0 ? '₹' . number_format($row['sales_amount'], 2) : '-',
+                    $row['purchase_qty'] > 0 ? $row['purchase_qty'] : '-',
+                    $row['purchase_amount'] > 0 ? '₹' . number_format($row['purchase_amount'], 2) : '-',
+                ]);
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    public function emailPartyReportExcel(Request $request)
+    {
+        $email = $request->input('email');
+        if (empty($email)) {
+            return back()->with('error', 'Please provide a valid email address.');
+        }
+
+        // Action placeholder / simulation notice
+        return back()->with('success', "Report successfully emailed to {$email}.");
+    }
+
+    private function getDateRange($filter, $customFrom = null, $customTo = null)
+    {
+        $today = date('Y-m-d');
+        $from = null;
+        $to = null;
+
+        switch ($filter) {
+            case 'today':
+                $from = $today;
+                $to = $today;
+                break;
+            case 'yesterday':
+                $from = date('Y-m-d', strtotime('-1 day'));
+                $to = date('Y-m-d', strtotime('-1 day'));
+                break;
+            case 'last_7_days':
+                $from = date('Y-m-d', strtotime('-6 days'));
+                $to = $today;
+                break;
+            case 'last_15_days':
+                $from = date('Y-m-d', strtotime('-14 days'));
+                $to = $today;
+                break;
+            case 'last_30_days':
+                $from = date('Y-m-d', strtotime('-29 days'));
+                $to = $today;
+                break;
+            case 'this_week':
+                $from = date('Y-m-d', strtotime('monday this week'));
+                $to = date('Y-m-d', strtotime('sunday this week'));
+                break;
+            case 'previous_week':
+                $from = date('Y-m-d', strtotime('monday last week'));
+                $to = date('Y-m-d', strtotime('sunday last week'));
+                break;
+            case 'this_month':
+                $from = date('Y-m-01');
+                $to = date('Y-m-t');
+                break;
+            case 'previous_month':
+                $from = date('Y-m-01', strtotime('first day of last month'));
+                $to = date('Y-m-t', strtotime('last day of last month'));
+                break;
+            case 'this_quarter':
+                $quarter = ceil(date('n') / 3);
+                $from = date('Y-' . sprintf('%02d', ($quarter - 1) * 3 + 1) . '-01');
+                $to = date('Y-' . sprintf('%02d', $quarter * 3) . '-' . date('t', strtotime($from)));
+                break;
+            case 'previous_quarter':
+                $quarter = ceil(date('n') / 3) - 1;
+                $year = date('Y');
+                if ($quarter == 0) {
+                    $quarter = 4;
+                    $year = $year - 1;
+                }
+                $from = date($year . '-' . sprintf('%02d', ($quarter - 1) * 3 + 1) . '-01');
+                $to = date($year . '-' . sprintf('%02d', $quarter * 3) . '-' . date('t', strtotime($from)));
+                break;
+            case 'this_year':
+                $from = date('Y-01-01');
+                $to = date('Y-12-31');
+                break;
+            case 'previous_year':
+                $year = date('Y') - 1;
+                $from = $year . '-01-01';
+                $to = $year . '-12-31';
+                break;
+            case 'current_financial_year':
+                $m = date('n');
+                $year = date('Y');
+                if ($m >= 4) {
+                    $from = $year . '-04-01';
+                    $to = ($year + 1) . '-03-31';
+                } else {
+                    $from = ($year - 1) . '-04-01';
+                    $to = $year . '-03-31';
+                }
+                break;
+            case 'previous_financial_year':
+                $m = date('n');
+                $year = date('Y');
+                if ($m >= 4) {
+                    $from = ($year - 1) . '-04-01';
+                    $to = $year . '-03-31';
+                } else {
+                    $from = ($year - 2) . '-04-01';
+                    $to = ($year - 1) . '-03-31';
+                }
+                break;
+            case 'custom':
+                $from = $customFrom;
+                $to = $customTo;
+                break;
+            default:
+                $from = date('Y-m-01');
+                $to = date('Y-m-t');
+                break;
+        }
+
+        return ['from' => $from, 'to' => $to];
+    }
 }

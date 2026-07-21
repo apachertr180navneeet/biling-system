@@ -174,5 +174,12 @@
 				<div data-i18n="Outstanding Ledger">Outstanding Ledger</div>
 			</a>
 		</li>
+
+		<li class="menu-item {{ request()->routeIs('admin.reports.party-report-by-item') ? 'active' : ''}}">
+			<a href="{{route('admin.reports.party-report-by-item')}}" class="menu-link">
+				<i class="menu-icon tf-icons bx bx-group"></i>
+				<div data-i18n="Party Report By Item">Party Report By Item</div>
+			</a>
+		</li>
 	</ul>
 </aside>
