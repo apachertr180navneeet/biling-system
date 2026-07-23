@@ -108,6 +108,7 @@ class CustomerController extends Controller
 
         $data['type'] = $data['type'] ?? 'individual';
         $data['name'] = $data['name'] ?? ($data['company_name'] ?? 'Customer');
+        $data['phone'] = !empty($data['phone']) ? $data['phone'] : null;
 
         try {
             $customer = Customer::create($data);
@@ -150,6 +151,7 @@ class CustomerController extends Controller
 
         $data['type'] = $data['type'] ?? 'individual';
         $data['name'] = $data['name'] ?? ($data['company_name'] ?? 'Customer');
+        $data['phone'] = !empty($data['phone']) ? $data['phone'] : null;
 
         try {
             $customer->update($data);
@@ -253,13 +255,13 @@ class CustomerController extends Controller
 
         foreach ($dataRows as $row) {
             $rowCount++;
-            if (count($row) !== count($header)) {
-                if (count(array_filter($row)) === 0) {
-                    continue;
-                }
-                $errors[] = "Row {$rowCount}: Column count mismatch.";
-                $skipped++;
+            if (count(array_filter($row)) === 0) {
                 continue;
+            }
+            if (count($row) < count($header)) {
+                $row = array_pad($row, count($header), '');
+            } elseif (count($row) > count($header)) {
+                $row = array_slice($row, 0, count($header));
             }
 
             $data = array_combine($header, $row);

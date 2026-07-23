@@ -131,7 +131,8 @@ class MasterImportTest extends TestCase
     {
         $csvContent = "type,name,company_name,phone,email,address,state,gstin,pan_no,aadhaar_no\n"
             . "individual,Jane Smith,,9876543210,jane@example.com,,State,,,\n"
-            . "corporate,ACME Inc,,8888888888,acme@example.com,,,,,\n";
+            . "corporate,ACME Inc,,8888888888,acme@example.com,,,,,\n"
+            . "individual,12 ARTY BDE,,,,,,,,,\n";
 
         $file = UploadedFile::fake()->createWithContent('customers.csv', $csvContent);
 
@@ -146,6 +147,12 @@ class MasterImportTest extends TestCase
         $this->assertDatabaseHas('customers', [
             'name' => 'Jane Smith',
             'phone' => '9876543210',
+            'type' => 'individual',
+        ]);
+
+        $this->assertDatabaseHas('customers', [
+            'name' => '12 ARTY BDE',
+            'phone' => null,
             'type' => 'individual',
         ]);
     }

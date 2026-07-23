@@ -15,6 +15,11 @@ return new class extends Migration
             }
         });
 
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE customers MODIFY phone VARCHAR(255) NULL");
+            DB::statement("ALTER TABLE customers MODIFY name VARCHAR(255) NULL");
+        }
+
         // Combine first_name and last_name into name for existing rows
         if (Schema::hasColumn('customers', 'first_name') && Schema::hasColumn('customers', 'last_name')) {
             if (DB::getDriverName() === 'sqlite') {
