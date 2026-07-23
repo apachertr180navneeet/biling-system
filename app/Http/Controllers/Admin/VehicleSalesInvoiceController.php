@@ -208,7 +208,7 @@ class VehicleSalesInvoiceController extends Controller
 
     public function create()
     {
-        $customers = Customer::where('is_active', true)->orderBy('first_name')->get();
+        $customers = Customer::where('is_active', true)->orderBy('name')->get();
         
         $vehicles = VehicleInventory::where('status', 'available')
             ->where('is_active', true)
@@ -365,7 +365,7 @@ class VehicleSalesInvoiceController extends Controller
     public function edit(VehicleSalesInvoice $vehicleSalesInvoice)
     {
         $vehicleSalesInvoice->load('customer', 'vehicleInventory');
-        $customers = Customer::where('is_active', true)->orderBy('first_name')->get();
+        $customers = Customer::where('is_active', true)->orderBy('name')->get();
         
         $vehicles = VehicleInventory::where(function($q) use ($vehicleSalesInvoice) {
                 $q->where('status', 'available')

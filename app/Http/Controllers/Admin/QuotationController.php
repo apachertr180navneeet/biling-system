@@ -44,21 +44,21 @@ class QuotationController extends Controller
 
     public function createVehicle()
     {
-        $customers = Customer::where('is_active', true)->orderBy('first_name')->get();
+        $customers = Customer::where('is_active', true)->orderBy('name')->get();
         $vehicles = VehicleMaster::where('is_active', true)->orderBy('variant_name')->get();
         return view('admin.quotations.create_vehicle', compact('customers', 'vehicles'));
     }
 
     public function editVehicle(Quotation $quotation)
     {
-        $customers = Customer::where('is_active', true)->orderBy('first_name')->get();
+        $customers = Customer::where('is_active', true)->orderBy('name')->get();
         $vehicles = VehicleMaster::where('is_active', true)->orderBy('variant_name')->get();
         return view('admin.quotations.edit_vehicle', compact('quotation', 'customers', 'vehicles'));
     }
 
     public function createParts()
     {
-        $customers = Customer::where('is_active', true)->orderBy('first_name')->get();
+        $customers = Customer::where('is_active', true)->orderBy('name')->get();
         $spareParts = SparePart::where('is_active', true)->orderBy('name')->get();
         return view('admin.quotations.create_parts', compact('customers', 'spareParts'));
     }

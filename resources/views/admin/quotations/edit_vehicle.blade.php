@@ -18,12 +18,12 @@
                             @foreach($customers as $c)
                             <option value="{{ $c->id }}" 
                                     {{ old('customer_id', $quotation->customer_id) == $c->id ? 'selected' : '' }}
-                                    data-name="{{ $c->first_name }} {{ $c->last_name }}"
+                                    data-name="{{ $c->name }}"
                                     data-mobile="{{ $c->phone }}"
                                     data-address="{{ $c->address }}"
                                     data-gstin="{{ $c->gstin }}"
                                     data-pan="{{ $c->pan_no }}">
-                                {{ $c->first_name }} {{ $c->last_name }} ({{ $c->phone }})
+                                {{ $c->name }} ({{ $c->phone }})
                             </option>
                             @endforeach
                         </select>

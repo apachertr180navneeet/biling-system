@@ -24,11 +24,11 @@
                                 <option value="">-- New Customer / Walk-in --</option>
                                 @foreach($customers as $c)
                                 <option value="{{ $c->id }}" 
-                                        data-name="{{ $c->first_name }} {{ $c->last_name }}"
+                                        data-name="{{ $c->name }}"
                                         data-mobile="{{ $c->phone }}"
                                         data-address="{{ $c->address }}"
                                         {{ old('customer_id', $vehicleSalesInvoice->customer_id) == $c->id ? 'selected' : '' }}>
-                                    {{ $c->first_name }} {{ $c->last_name }} ({{ $c->phone }})
+                                    {{ $c->name }} ({{ $c->phone }})
                                 </option>
                                 @endforeach
                             </select>
@@ -274,13 +274,9 @@
                 <div class="modal-body">
                     <div id="modalErrorAlert" class="alert alert-danger d-none" role="alert"></div>
                     <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label">First Name <span class="text-danger">*</span></label>
-                            <input type="text" name="first_name" class="form-control" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Last Name</label>
-                            <input type="text" name="last_name" class="form-control">
+                        <div class="col-md-12">
+                            <label class="form-label">Name <span class="text-danger">*</span></label>
+                            <input type="text" name="name" class="form-control" required>
                         </div>
                         <div class="col-md-12">
                             <label class="form-label">Mobile Number <span class="text-danger">*</span></label>
@@ -504,7 +500,7 @@ document.addEventListener('DOMContentLoaded', function () {
             
             if (res.status === 200 || res.status === 201) {
                 var customer = res.body.customer;
-                var fullName = customer.first_name + ' ' + (customer.last_name || '');
+                var fullName = customer.name;
                 
                 var option = document.createElement('option');
                 option.value = customer.id;

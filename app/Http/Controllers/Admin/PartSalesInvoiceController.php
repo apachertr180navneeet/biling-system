@@ -216,7 +216,7 @@ class PartSalesInvoiceController extends Controller
 
     public function create()
     {
-        $customers = Customer::where('is_active', true)->orderBy('first_name')->get();
+        $customers = Customer::where('is_active', true)->orderBy('name')->get();
         
         $spareParts = SparePart::where('is_active', true)
             ->orderBy('name')

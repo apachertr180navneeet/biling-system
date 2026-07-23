@@ -14,13 +14,12 @@ class CustomerController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search');
-        $query = Customer::orderBy('first_name');
+        $query = Customer::orderBy('name');
 
         if ($search) {
             $escapedSearch = '%' . addcslashes($search, '%_') . '%';
             $query->where(function($q) use ($escapedSearch) {
-                $q->where('first_name', 'like', $escapedSearch)
-                  ->orWhere('last_name', 'like', $escapedSearch)
+                $q->where('name', 'like', $escapedSearch)
                   ->orWhere('phone', 'like', $escapedSearch)
                   ->orWhere('email', 'like', $escapedSearch)
                   ->orWhere('gstin', 'like', $escapedSearch)
@@ -35,13 +34,12 @@ class CustomerController extends Controller
     public function export(Request $request)
     {
         $search = $request->input('search');
-        $query = Customer::orderBy('first_name');
+        $query = Customer::orderBy('name');
 
         if ($search) {
             $escapedSearch = '%' . addcslashes($search, '%_') . '%';
             $query->where(function($q) use ($escapedSearch) {
-                $q->where('first_name', 'like', $escapedSearch)
-                  ->orWhere('last_name', 'like', $escapedSearch)
+                $q->where('name', 'like', $escapedSearch)
                   ->orWhere('phone', 'like', $escapedSearch)
                   ->orWhere('email', 'like', $escapedSearch)
                   ->orWhere('gstin', 'like', $escapedSearch)
@@ -54,32 +52,30 @@ class CustomerController extends Controller
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setCellValue('A1', 'Type');
-        $sheet->setCellValue('B1', 'First Name');
-        $sheet->setCellValue('C1', 'Last Name');
-        $sheet->setCellValue('D1', 'Company Name');
-        $sheet->setCellValue('E1', 'Phone');
-        $sheet->setCellValue('F1', 'Email');
-        $sheet->setCellValue('G1', 'Address');
-        $sheet->setCellValue('H1', 'State');
-        $sheet->setCellValue('I1', 'GSTIN');
-        $sheet->setCellValue('J1', 'PAN No');
-        $sheet->setCellValue('K1', 'Aadhaar No');
-        $sheet->setCellValue('L1', 'Status');
+        $sheet->setCellValue('B1', 'Name');
+        $sheet->setCellValue('C1', 'Company Name');
+        $sheet->setCellValue('D1', 'Phone');
+        $sheet->setCellValue('E1', 'Email');
+        $sheet->setCellValue('F1', 'Address');
+        $sheet->setCellValue('G1', 'State');
+        $sheet->setCellValue('H1', 'GSTIN');
+        $sheet->setCellValue('I1', 'PAN No');
+        $sheet->setCellValue('J1', 'Aadhaar No');
+        $sheet->setCellValue('K1', 'Status');
 
         $row = 2;
         foreach ($customers as $c) {
             $sheet->setCellValue('A' . $row, $c->type);
-            $sheet->setCellValue('B' . $row, $c->first_name);
-            $sheet->setCellValue('C' . $row, $c->last_name);
-            $sheet->setCellValue('D' . $row, $c->company_name);
-            $sheet->setCellValue('E' . $row, $c->phone);
-            $sheet->setCellValue('F' . $row, $c->email);
-            $sheet->setCellValue('G' . $row, $c->address);
-            $sheet->setCellValue('H' . $row, $c->state);
-            $sheet->setCellValue('I' . $row, $c->gstin);
-            $sheet->setCellValue('J' . $row, $c->pan_no);
-            $sheet->setCellValue('K' . $row, $c->aadhaar_no);
-            $sheet->setCellValue('L' . $row, $c->is_active ? 'Active' : 'Inactive');
+            $sheet->setCellValue('B' . $row, $c->name);
+            $sheet->setCellValue('C' . $row, $c->company_name);
+            $sheet->setCellValue('D' . $row, $c->phone);
+            $sheet->setCellValue('E' . $row, $c->email);
+            $sheet->setCellValue('F' . $row, $c->address);
+            $sheet->setCellValue('G' . $row, $c->state);
+            $sheet->setCellValue('H' . $row, $c->gstin);
+            $sheet->setCellValue('I' . $row, $c->pan_no);
+            $sheet->setCellValue('J' . $row, $c->aadhaar_no);
+            $sheet->setCellValue('K' . $row, $c->is_active ? 'Active' : 'Inactive');
             $row++;
         }
 
@@ -99,8 +95,7 @@ class CustomerController extends Controller
     {
         $data = $request->validate([
             'type' => 'required|in:individual,corporate',
-            'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'company_name' => 'nullable|string|max:255',
             'phone' => 'required|digits:10',
             'email' => 'nullable|email|max:255',
@@ -138,8 +133,7 @@ class CustomerController extends Controller
     {
         $data = $request->validate([
             'type' => 'required|in:individual,corporate',
-            'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'company_name' => 'nullable|string|max:255',
             'phone' => 'required|digits:10',
             'email' => 'nullable|email|max:255',
@@ -174,29 +168,27 @@ class CustomerController extends Controller
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setCellValue('A1', 'type');
-        $sheet->setCellValue('B1', 'first_name');
-        $sheet->setCellValue('C1', 'last_name');
-        $sheet->setCellValue('D1', 'company_name');
-        $sheet->setCellValue('E1', 'phone');
-        $sheet->setCellValue('F1', 'email');
-        $sheet->setCellValue('G1', 'address');
-        $sheet->setCellValue('H1', 'state');
-        $sheet->setCellValue('I1', 'gstin');
-        $sheet->setCellValue('J1', 'pan_no');
-        $sheet->setCellValue('K1', 'aadhaar_no');
+        $sheet->setCellValue('B1', 'name');
+        $sheet->setCellValue('C1', 'company_name');
+        $sheet->setCellValue('D1', 'phone');
+        $sheet->setCellValue('E1', 'email');
+        $sheet->setCellValue('F1', 'address');
+        $sheet->setCellValue('G1', 'state');
+        $sheet->setCellValue('H1', 'gstin');
+        $sheet->setCellValue('I1', 'pan_no');
+        $sheet->setCellValue('J1', 'aadhaar_no');
         
         // Example row
         $sheet->setCellValue('A2', 'individual');
-        $sheet->setCellValue('B2', 'John');
-        $sheet->setCellValue('C2', 'Doe');
-        $sheet->setCellValue('D2', '');
-        $sheet->setCellValue('E2', '9876543210');
-        $sheet->setCellValue('F2', 'john@example.com');
-        $sheet->setCellValue('G2', '456 Elm Street');
-        $sheet->setCellValue('H2', 'Maharashtra');
-        $sheet->setCellValue('I2', '');
-        $sheet->setCellValue('J2', 'ABCDE1234F');
-        $sheet->setCellValue('K2', '123456789012');
+        $sheet->setCellValue('B2', 'John Doe');
+        $sheet->setCellValue('C2', '');
+        $sheet->setCellValue('D2', '9876543210');
+        $sheet->setCellValue('E2', 'john@example.com');
+        $sheet->setCellValue('F2', '456 Elm Street');
+        $sheet->setCellValue('G2', 'Maharashtra');
+        $sheet->setCellValue('H2', '');
+        $sheet->setCellValue('I2', 'ABCDE1234F');
+        $sheet->setCellValue('J2', '123456789012');
 
         $writer = new Xls($spreadsheet);
         $path = storage_path('app/customer_template.xls');
@@ -245,7 +237,15 @@ class CustomerController extends Controller
             fclose($handle);
         }
 
-        $required = ['type', 'first_name', 'last_name', 'phone'];
+        // Support both single 'name' or legacy 'first_name' / 'last_name' header
+        $hasName = in_array('name', $header);
+        $hasFirstLast = in_array('first_name', $header);
+
+        if (!$hasName && !$hasFirstLast) {
+            return redirect()->back()->withErrors(['csv_file' => "Missing required header column: name"]);
+        }
+
+        $required = ['type', 'phone'];
         foreach ($required as $req) {
             if (!in_array($req, $header)) {
                 return redirect()->back()->withErrors(['csv_file' => "Missing required header column: {$req}"]);
@@ -272,8 +272,10 @@ class CustomerController extends Controller
             $data = array_combine($header, $row);
             
             $type = isset($data['type']) ? trim($data['type']) : '';
-            $firstName = isset($data['first_name']) ? trim($data['first_name']) : '';
-            $lastName = isset($data['last_name']) ? trim($data['last_name']) : '';
+            $name = isset($data['name']) ? trim($data['name']) : '';
+            if (empty($name) && isset($data['first_name'])) {
+                $name = trim($data['first_name'] . ' ' . ($data['last_name'] ?? ''));
+            }
             $companyName = isset($data['company_name']) ? trim($data['company_name']) : '';
             $phone = isset($data['phone']) ? trim($data['phone']) : '';
             $email = isset($data['email']) ? trim($data['email']) : '';
@@ -283,8 +285,8 @@ class CustomerController extends Controller
             $panNo = isset($data['pan_no']) ? trim($data['pan_no']) : '';
             $aadhaarNo = isset($data['aadhaar_no']) ? trim($data['aadhaar_no']) : '';
 
-            if (empty($type) || empty($firstName) || empty($lastName) || empty($phone)) {
-                $errors[] = "Row {$rowCount}: Type, First Name, Last Name and Phone are required.";
+            if (empty($type) || empty($name) || empty($phone)) {
+                $errors[] = "Row {$rowCount}: Type, Name and Phone are required.";
                 $skipped++;
                 continue;
             }
@@ -327,8 +329,7 @@ class CustomerController extends Controller
 
             Customer::create([
                 'type' => $type,
-                'first_name' => $firstName,
-                'last_name' => $lastName,
+                'name' => $name,
                 'company_name' => $companyName ?: null,
                 'phone' => $phone,
                 'email' => $email ?: null,

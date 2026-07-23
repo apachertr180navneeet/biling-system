@@ -66,7 +66,7 @@
                     @forelse($customers as $customer)
                     <tr>
                         <td>{{ $loop->iteration }}</td>
-                        <td>{{ $customer->first_name }} {{ $customer->last_name }}</td>
+                        <td>{{ $customer->name }}</td>
                         <td>{{ ucfirst($customer->type) }}</td>
                         <td>{{ $customer->phone }}</td>
                         <td>{{ $customer->email ?? '-' }}</td>
@@ -109,7 +109,7 @@
                         <input type="file" name="csv_file" class="form-control" accept=".csv,.txt,.xls,.xlsx" required>
                         <div class="form-text text-muted mt-2">
                             Please upload a valid CSV/Excel file using the template headers:<br>
-                            <code>type, first_name, last_name, company_name, phone, email, address, state, gstin, pan_no, aadhaar_no</code><br>
+                            <code>type, name, company_name, phone, email, address, state, gstin, pan_no, aadhaar_no</code><br>
                             <span class="text-danger">*Note: Type must be either 'individual' or 'corporate'. Phone must be 10 digits.</span>
                         </div>
                     </div>

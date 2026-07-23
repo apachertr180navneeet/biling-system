@@ -129,9 +129,9 @@ class MasterImportTest extends TestCase
 
     public function test_can_import_valid_customers(): void
     {
-        $csvContent = "type,first_name,last_name,company_name,phone,email,address,state,gstin,pan_no,aadhaar_no\n"
-            . "individual,Jane,Smith,,9876543210,jane@example.com,,State,,,\n"
-            . "corporate,ACME,Corp,ACME Inc,8888888888,acme@example.com,,,,,\n";
+        $csvContent = "type,name,company_name,phone,email,address,state,gstin,pan_no,aadhaar_no\n"
+            . "individual,Jane Smith,,9876543210,jane@example.com,,State,,,\n"
+            . "corporate,ACME Inc,,8888888888,acme@example.com,,,,,\n";
 
         $file = UploadedFile::fake()->createWithContent('customers.csv', $csvContent);
 
@@ -144,8 +144,7 @@ class MasterImportTest extends TestCase
         $response->assertSessionHas('success');
 
         $this->assertDatabaseHas('customers', [
-            'first_name' => 'Jane',
-            'last_name' => 'Smith',
+            'name' => 'Jane Smith',
             'phone' => '9876543210',
             'type' => 'individual',
         ]);
