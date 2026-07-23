@@ -99,7 +99,7 @@
                         </td>
                         <td class="fw-bold">{{ number_format($q->total_amount, 2) }}</td>
                         <td>
-                            <div class="d-flex gap-2">
+                            <div class="d-flex gap-1">
                                 <a href="{{ route('admin.quotations.show', $q) }}" class="btn btn-sm btn-outline-secondary" title="View">
                                     <i class="bx bx-show-alt"></i>
                                 </a>
@@ -111,6 +111,9 @@
                                 <a href="{{ route('admin.quotations.pdf', $q) }}" class="btn btn-sm btn-outline-danger" target="_blank" title="Download PDF">
                                     <i class="bx bxs-file-pdf"></i>
                                 </a>
+                                <button type="button" class="btn btn-sm btn-outline-dark" onclick="directPrintPdf('{{ route('admin.quotations.pdf', $q) }}')" title="Direct Print PDF">
+                                    <i class="bx bx-printer"></i>
+                                </button>
                                 <a href="{{ route('admin.quotations.whatsapp', $q) }}" class="btn btn-sm btn-outline-success" target="_blank" title="Send WhatsApp">
                                     <i class="bx bxl-whatsapp"></i>
                                 </a>

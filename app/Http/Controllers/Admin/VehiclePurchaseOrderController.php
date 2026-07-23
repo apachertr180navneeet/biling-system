@@ -630,7 +630,7 @@ class VehiclePurchaseOrderController extends Controller
         return back()->withSuccess("Vehicle status updated to {$newStatus}.");
     }
 
-    public function generatePdf(VehiclePurchaseOrder $vehiclePurchaseOrder)
+    public function generatePdf(Request $request, VehiclePurchaseOrder $vehiclePurchaseOrder)
     {
         $vehiclePurchaseOrder->load('supplier', 'items');
 
@@ -639,6 +639,12 @@ class VehiclePurchaseOrderController extends Controller
         ]);
         $pdf->setPaper('a4');
         $pdf->setOption('isRemoteEnabled', true);
+
+        if ($request->has('print')) {
+            $pdf->render();
+            $canvas = $pdf->getCanvas();
+            $canvas->javascript("this.print();");
+        }
 
         return $pdf->stream('VPO-' . $vehiclePurchaseOrder->po_number . '.pdf');
     }

@@ -361,7 +361,7 @@ class QuotationController extends Controller
         return view('admin.quotations.show', compact('quotation'));
     }
 
-    public function generatePdf(Quotation $quotation)
+    public function generatePdf(Request $request, Quotation $quotation)
     {
         $quotation->load('customer', 'vehicleMaster', 'items.sparePart', 'creator');
         
@@ -370,6 +370,12 @@ class QuotationController extends Controller
         ]);
         $pdf->setPaper('a4');
         $pdf->setOption('isRemoteEnabled', true);
+
+        if ($request->has('print')) {
+            $pdf->render();
+            $canvas = $pdf->getCanvas();
+            $canvas->javascript("this.print();");
+        }
 
         return $pdf->stream($quotation->quotation_number . '.pdf');
     }

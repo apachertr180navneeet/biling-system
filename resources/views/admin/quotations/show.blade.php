@@ -21,10 +21,13 @@
                         <i class="bx bx-edit-alt"></i> Edit Quotation
                     </a>
                 @endif
-                <a href="{{ route('admin.quotations.pdf', $quotation) }}" class="btn btn-sm btn-danger" target="_blank">
+                <button type="button" onclick="directPrintPdf('{{ route('admin.quotations.pdf', $quotation) }}')" class="btn btn-sm btn-dark me-1">
+                    <i class="bx bx-printer"></i> Print PDF
+                </button>
+                <a href="{{ route('admin.quotations.pdf', $quotation) }}" class="btn btn-sm btn-danger me-1" target="_blank">
                     <i class="bx bxs-file-pdf"></i> Download PDF
                 </a>
-                <a href="{{ route('admin.quotations.whatsapp', $quotation) }}" class="btn btn-sm btn-success" target="_blank">
+                <a href="{{ route('admin.quotations.whatsapp', $quotation) }}" class="btn btn-sm btn-success me-1" target="_blank">
                     <i class="bx bxl-whatsapp"></i> Send to WhatsApp
                 </a>
                 <a href="{{ route('admin.quotations.index') }}" class="btn btn-secondary btn-sm">Back</a>
