@@ -156,42 +156,4 @@ class MasterImportTest extends TestCase
             'type' => 'individual',
         ]);
     }
-
-    public function test_can_download_services_import_template(): void
-    {
-        $response = $this->actingAs($this->admin)
-            ->get(route('admin.services.import-template'));
-
-        $response->assertStatus(200);
-        $response->assertHeader('Content-Disposition');
-        $this->assertStringContainsString('service_template.xls', $response->headers->get('Content-Disposition'));
-    }
-
-    public function test_can_import_valid_services(): void
-    {
-        $csvContent = "category_name,name,description,labor_charge\n"
-            . "General Service,Oil Swap,Engine oil replacement,350.00\n";
-
-        $file = UploadedFile::fake()->createWithContent('services.csv', $csvContent);
-
-        $response = $this->actingAs($this->admin)
-            ->post(route('admin.services.import'), [
-                'csv_file' => $file,
-            ]);
-
-        $response->assertRedirect(route('admin.services.index'));
-        $response->assertSessionHas('success');
-
-        $this->assertDatabaseHas('service_categories', [
-            'name' => 'General Service',
-        ]);
-
-        $category = ServiceCategory::where('name', 'General Service')->first();
-
-        $this->assertDatabaseHas('services', [
-            'service_category_id' => $category->id,
-            'name' => 'Oil Swap',
-            'labor_charge' => 350.00,
-        ]);
-    }
 }

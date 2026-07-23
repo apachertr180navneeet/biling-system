@@ -18,6 +18,13 @@ return new class extends Migration
         if (DB::getDriverName() === 'mysql') {
             DB::statement("ALTER TABLE customers MODIFY phone VARCHAR(255) NULL");
             DB::statement("ALTER TABLE customers MODIFY name VARCHAR(255) NULL");
+            DB::statement("ALTER TABLE customers MODIFY company_name VARCHAR(255) NULL");
+            DB::statement("ALTER TABLE customers MODIFY email VARCHAR(255) NULL");
+            DB::statement("ALTER TABLE customers MODIFY address TEXT NULL");
+            DB::statement("ALTER TABLE customers MODIFY state VARCHAR(255) NULL");
+            DB::statement("ALTER TABLE customers MODIFY gstin VARCHAR(15) NULL");
+            DB::statement("ALTER TABLE customers MODIFY pan_no VARCHAR(10) NULL");
+            DB::statement("ALTER TABLE customers MODIFY aadhaar_no VARCHAR(12) NULL");
         }
 
         // Combine first_name and last_name into name for existing rows
