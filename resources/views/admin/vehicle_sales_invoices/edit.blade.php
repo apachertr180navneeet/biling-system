@@ -275,12 +275,12 @@
                     <div id="modalErrorAlert" class="alert alert-danger d-none" role="alert"></div>
                     <div class="row g-3">
                         <div class="col-md-12">
-                            <label class="form-label">Name <span class="text-danger">*</span></label>
-                            <input type="text" name="name" class="form-control" required>
+                            <label class="form-label">Name</label>
+                            <input type="text" name="name" class="form-control">
                         </div>
                         <div class="col-md-12">
-                            <label class="form-label">Mobile Number <span class="text-danger">*</span></label>
-                            <input type="text" name="phone" class="form-control" required>
+                            <label class="form-label">Mobile Number</label>
+                            <input type="text" name="phone" class="form-control">
                         </div>
                         <div class="col-md-12">
                             <label class="form-label">Address</label>

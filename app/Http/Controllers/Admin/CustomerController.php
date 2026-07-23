@@ -94,10 +94,10 @@ class CustomerController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'type' => 'required|in:individual,corporate',
-            'name' => 'required|string|max:255',
+            'type' => 'nullable|in:individual,corporate',
+            'name' => 'nullable|string|max:255',
             'company_name' => 'nullable|string|max:255',
-            'phone' => 'required|digits:10',
+            'phone' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:255',
             'address' => 'nullable|string',
             'state' => 'nullable|string|max:100',
@@ -105,6 +105,10 @@ class CustomerController extends Controller
             'pan_no' => 'nullable|string|max:10',
             'aadhaar_no' => 'nullable|string|max:12',
         ]);
+
+        $data['type'] = $data['type'] ?? 'individual';
+        $data['name'] = $data['name'] ?? ($data['company_name'] ?? 'Customer');
+
         try {
             $customer = Customer::create($data);
             if ($request->ajax() || $request->wantsJson()) {
@@ -132,10 +136,10 @@ class CustomerController extends Controller
     public function update(Request $request, Customer $customer)
     {
         $data = $request->validate([
-            'type' => 'required|in:individual,corporate',
-            'name' => 'required|string|max:255',
+            'type' => 'nullable|in:individual,corporate',
+            'name' => 'nullable|string|max:255',
             'company_name' => 'nullable|string|max:255',
-            'phone' => 'required|digits:10',
+            'phone' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:255',
             'address' => 'nullable|string',
             'state' => 'nullable|string|max:100',
@@ -143,6 +147,10 @@ class CustomerController extends Controller
             'pan_no' => 'nullable|string|max:10',
             'aadhaar_no' => 'nullable|string|max:12',
         ]);
+
+        $data['type'] = $data['type'] ?? 'individual';
+        $data['name'] = $data['name'] ?? ($data['company_name'] ?? 'Customer');
+
         try {
             $customer->update($data);
             return redirect()->route('admin.customers.index')->withSuccess('Customer updated successfully.');
@@ -237,21 +245,6 @@ class CustomerController extends Controller
             fclose($handle);
         }
 
-        // Support both single 'name' or legacy 'first_name' / 'last_name' header
-        $hasName = in_array('name', $header);
-        $hasFirstLast = in_array('first_name', $header);
-
-        if (!$hasName && !$hasFirstLast) {
-            return redirect()->back()->withErrors(['csv_file' => "Missing required header column: name"]);
-        }
-
-        $required = ['type', 'phone'];
-        foreach ($required as $req) {
-            if (!in_array($req, $header)) {
-                return redirect()->back()->withErrors(['csv_file' => "Missing required header column: {$req}"]);
-            }
-        }
-
         $imported = 0;
         $skipped = 0;
         $errors = [];
@@ -271,12 +264,15 @@ class CustomerController extends Controller
 
             $data = array_combine($header, $row);
             
-            $type = isset($data['type']) ? trim($data['type']) : '';
+            $type = isset($data['type']) && !empty(trim($data['type'])) ? trim($data['type']) : 'individual';
             $name = isset($data['name']) ? trim($data['name']) : '';
             if (empty($name) && isset($data['first_name'])) {
                 $name = trim($data['first_name'] . ' ' . ($data['last_name'] ?? ''));
             }
             $companyName = isset($data['company_name']) ? trim($data['company_name']) : '';
+            if (empty($name)) {
+                $name = $companyName ?: 'Customer';
+            }
             $phone = isset($data['phone']) ? trim($data['phone']) : '';
             $email = isset($data['email']) ? trim($data['email']) : '';
             $address = isset($data['address']) ? trim($data['address']) : '';
@@ -285,22 +281,20 @@ class CustomerController extends Controller
             $panNo = isset($data['pan_no']) ? trim($data['pan_no']) : '';
             $aadhaarNo = isset($data['aadhaar_no']) ? trim($data['aadhaar_no']) : '';
 
-            if (empty($type) || empty($name) || empty($phone)) {
-                $errors[] = "Row {$rowCount}: Type, Name and Phone are required.";
-                $skipped++;
-                continue;
-            }
-
-            if (!in_array($type, ['individual', 'corporate'])) {
-                $errors[] = "Row {$rowCount}: Type must be 'individual' or 'corporate'.";
-                $skipped++;
-                continue;
-            }
-
-            if (!is_numeric($phone) || strlen($phone) !== 10) {
-                $errors[] = "Row {$rowCount}: Phone must be a 10-digit number.";
-                $skipped++;
-                continue;
+            if (!empty($phone)) {
+                $phoneKey = strtolower($phone);
+                if (in_array($phoneKey, $seenInFile)) {
+                    $errors[] = "Row {$rowCount}: Duplicate Phone '{$phone}' in the CSV file.";
+                    $skipped++;
+                    continue;
+                }
+                $exists = Customer::where('phone', $phone)->exists();
+                if ($exists) {
+                    $errors[] = "Row {$rowCount}: Customer with Phone '{$phone}' already exists in the database.";
+                    $skipped++;
+                    continue;
+                }
+                $seenInFile[] = $phoneKey;
             }
 
             if (!empty($email) && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -309,29 +303,11 @@ class CustomerController extends Controller
                 continue;
             }
 
-            $phoneKey = strtolower($phone);
-
-            if (in_array($phoneKey, $seenInFile)) {
-                $errors[] = "Row {$rowCount}: Duplicate Phone '{$phone}' in the CSV file.";
-                $skipped++;
-                continue;
-            }
-
-            $exists = Customer::where('phone', $phone)->exists();
-
-            if ($exists) {
-                $errors[] = "Row {$rowCount}: Customer with Phone '{$phone}' already exists in the database.";
-                $skipped++;
-                continue;
-            }
-
-            $seenInFile[] = $phoneKey;
-
             Customer::create([
-                'type' => $type,
+                'type' => in_array($type, ['individual', 'corporate']) ? $type : 'individual',
                 'name' => $name,
                 'company_name' => $companyName ?: null,
-                'phone' => $phone,
+                'phone' => $phone ?: null,
                 'email' => $email ?: null,
                 'address' => $address ?: null,
                 'state' => $state ?: null,

@@ -444,16 +444,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="alert alert-danger d-none" id="modalErrorAlert"></div>
                     <div class="row g-3">
                         <div class="col-md-12">
-                            <label class="form-label">Name <span class="text-danger">*</span></label>
-                            <input type="text" name="name" id="modal_name" class="form-control" required>
+                            <label class="form-label">Name</label>
+                            <input type="text" name="name" id="modal_name" class="form-control">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Mobile Number <span class="text-danger">*</span></label>
-                            <input type="text" name="phone" id="modal_phone" class="form-control" maxlength="10" placeholder="10 digits" required>
+                            <label class="form-label">Mobile Number</label>
+                            <input type="text" name="phone" id="modal_phone" class="form-control" maxlength="10" placeholder="10 digits">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Type <span class="text-danger">*</span></label>
-                            <select name="type" id="modal_type" class="form-select no-select2" required>
+                            <label class="form-label">Type</label>
+                            <select name="type" id="modal_type" class="form-select no-select2">
                                 <option value="individual">Individual</option>
                                 <option value="corporate">Corporate</option>
                             </select>
