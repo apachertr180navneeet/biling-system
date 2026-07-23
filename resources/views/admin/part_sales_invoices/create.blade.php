@@ -73,6 +73,11 @@
                 <h5 class="card-title text-primary mb-3">Invoice Details</h5>
                 <div class="row g-3 mb-4">
                     <div class="col-md-3">
+                        <label class="form-label">Invoice Number <span class="text-danger">*</span></label>
+                        <input type="text" name="invoice_number" class="form-control @error('invoice_number') is-invalid @enderror" value="{{ old('invoice_number', $nextInvoiceNumber ?? '') }}" required>
+                        @error('invoice_number')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-md-3">
                         <label class="form-label">Invoice Date <span class="text-danger">*</span></label>
                         <input type="date" name="invoice_date" class="form-control @error('invoice_date') is-invalid @enderror" value="{{ old('invoice_date', date('Y-m-d')) }}" required>
                         @error('invoice_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
@@ -93,7 +98,6 @@
                             <option value="igst" {{ old('tax_regime') === 'igst' ? 'selected' : '' }}>IGST</option>
                         </select>
                     </div>
-                    <div class="col-md-3"></div>
                 </div>
 
                 <h5 class="card-title text-primary mb-3">Invoice Items (Parts)</h5>

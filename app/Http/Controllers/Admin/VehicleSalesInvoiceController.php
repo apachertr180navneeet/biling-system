@@ -157,13 +157,44 @@ class VehicleSalesInvoiceController extends Controller
         return response()->download($path, 'vehicle_sales_invoices_' . date('Ymd_His') . '.xls')->deleteFileAfterSend(true);
     }
 
+    private function isLastFourDigitsUnique($invoiceNumber, $ignoreVehicleId = null, $ignorePartId = null)
+    {
+        if (preg_match('/(\d{4})$/', trim($invoiceNumber), $matches)) {
+            $digits = $matches[1];
+            
+            $vQuery = DB::table('vehicle_sales_invoices')
+                ->whereNull('deleted_at')
+                ->whereRaw("RIGHT(invoice_number, 4) = ?", [$digits]);
+            if ($ignoreVehicleId) {
+                $vQuery->where('id', '!=', $ignoreVehicleId);
+            }
+            if ($vQuery->exists()) {
+                return false;
+            }
+
+            $pQuery = DB::table('part_sales_invoices')
+                ->whereNull('deleted_at')
+                ->whereRaw("RIGHT(invoice_number, 4) = ?", [$digits]);
+            if ($ignorePartId) {
+                $pQuery->where('id', '!=', $ignorePartId);
+            }
+            if ($pQuery->exists()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public function generateNextInvoiceNumber($invoiceDate = null)
     {
         $dateStr = $invoiceDate ? date('Ymd', strtotime($invoiceDate)) : date('Ymd');
         
-        $invoices = DB::table('vehicle_sales_invoices')->whereNull('deleted_at')->pluck('invoice_number');
+        $vInvoices = DB::table('vehicle_sales_invoices')->whereNull('deleted_at')->pluck('invoice_number');
+        $pInvoices = DB::table('part_sales_invoices')->whereNull('deleted_at')->pluck('invoice_number');
+        $allInvoices = $vInvoices->concat($pInvoices);
+
         $maxNum = 850;
-        foreach ($invoices as $invNum) {
+        foreach ($allInvoices as $invNum) {
             if (preg_match('/(\d+)$/', $invNum, $matches)) {
                 $num = (int)$matches[1];
                 if ($num > $maxNum) {
@@ -228,6 +259,12 @@ class VehicleSalesInvoiceController extends Controller
             'received_amount' => 'nullable|numeric|min:0',
             'warranty_notes' => 'nullable|string',
         ]);
+
+        if ($request->filled('invoice_number')) {
+            if (!$this->isLastFourDigitsUnique($request->invoice_number)) {
+                return back()->withErrors(['invoice_number' => 'The last 4 digits of the invoice number must be unique across both vehicle and parts invoices.'])->withInput();
+            }
+        }
 
         $vehicle = VehicleInventory::findOrFail($request->vehicle_inventory_id);
         if ($vehicle->status !== 'available') {
@@ -381,6 +418,10 @@ class VehicleSalesInvoiceController extends Controller
             'warranty_notes' => 'nullable|string',
         ]);
 
+        if (!$this->isLastFourDigitsUnique($request->invoice_number, $vehicleSalesInvoice->id, null)) {
+            return back()->withErrors(['invoice_number' => 'The last 4 digits of the invoice number must be unique across both vehicle and parts invoices.'])->withInput();
+        }
+
         if ($vehicleSalesInvoice->vehicle_inventory_id != $request->vehicle_inventory_id) {
             $newVehicle = VehicleInventory::findOrFail($request->vehicle_inventory_id);
             if ($newVehicle->status !== 'available') {
@@ -483,6 +524,10 @@ class VehicleSalesInvoiceController extends Controller
             'invoice_number' => 'required|string|max:255|unique:vehicle_sales_invoices,invoice_number,' . $vehicleSalesInvoice->id,
             'invoice_date' => 'required|date',
         ]);
+
+        if (!$this->isLastFourDigitsUnique($request->invoice_number, $vehicleSalesInvoice->id, null)) {
+            return response()->json(['success' => false, 'message' => 'The last 4 digits of the invoice number must be unique across both vehicle and parts invoices.']);
+        }
 
         $vehicleSalesInvoice->update([
             'invoice_number' => $request->invoice_number,

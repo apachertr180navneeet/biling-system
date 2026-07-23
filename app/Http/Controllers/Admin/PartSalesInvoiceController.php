@@ -165,6 +165,55 @@ class PartSalesInvoiceController extends Controller
         return response()->download($path, 'part_sales_invoices_' . date('Ymd_His') . '.xls')->deleteFileAfterSend(true);
     }
 
+    private function isLastFourDigitsUnique($invoiceNumber, $ignoreVehicleId = null, $ignorePartId = null)
+    {
+        if (preg_match('/(\d{4})$/', trim($invoiceNumber), $matches)) {
+            $digits = $matches[1];
+            
+            $vQuery = DB::table('vehicle_sales_invoices')
+                ->whereNull('deleted_at')
+                ->whereRaw("RIGHT(invoice_number, 4) = ?", [$digits]);
+            if ($ignoreVehicleId) {
+                $vQuery->where('id', '!=', $ignoreVehicleId);
+            }
+            if ($vQuery->exists()) {
+                return false;
+            }
+
+            $pQuery = DB::table('part_sales_invoices')
+                ->whereNull('deleted_at')
+                ->whereRaw("RIGHT(invoice_number, 4) = ?", [$digits]);
+            if ($ignorePartId) {
+                $pQuery->where('id', '!=', $ignorePartId);
+            }
+            if ($pQuery->exists()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public function generateNextInvoiceNumber($invoiceDate = null)
+    {
+        $dateStr = $invoiceDate ? date('Ymd', strtotime($invoiceDate)) : date('Ymd');
+        
+        $vInvoices = DB::table('vehicle_sales_invoices')->whereNull('deleted_at')->pluck('invoice_number');
+        $pInvoices = DB::table('part_sales_invoices')->whereNull('deleted_at')->pluck('invoice_number');
+        $allInvoices = $vInvoices->concat($pInvoices);
+
+        $maxNum = 550;
+        foreach ($allInvoices as $invNum) {
+            if (preg_match('/(\d+)$/', $invNum, $matches)) {
+                $num = (int)$matches[1];
+                if ($num >= 550 && $num < 850 && $num > $maxNum) {
+                    $maxNum = $num;
+                }
+            }
+        }
+        $nextNum = $maxNum + 1;
+        return 'INV-' . $dateStr . '-' . str_pad($nextNum, 4, '0', STR_PAD_LEFT);
+    }
+
     public function create()
     {
         $customers = Customer::where('is_active', true)->orderBy('first_name')->get();
@@ -178,12 +227,15 @@ class PartSalesInvoiceController extends Controller
                 return $part;
             });
 
-        return view('admin.part_sales_invoices.create', compact('customers', 'spareParts'));
+        $nextInvoiceNumber = $this->generateNextInvoiceNumber();
+
+        return view('admin.part_sales_invoices.create', compact('customers', 'spareParts', 'nextInvoiceNumber'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
+            'invoice_number' => 'nullable|string|max:255|unique:part_sales_invoices,invoice_number',
             'invoice_date' => 'required|date',
             'customer_id' => 'nullable|exists:customers,id',
             'customer_name' => 'required|string|max:255',
@@ -204,6 +256,12 @@ class PartSalesInvoiceController extends Controller
             'items.*.gst_type' => 'required|string|in:exclusive,inclusive',
             'items.*.serial_no_warranty_notes' => 'nullable|string|max:255',
         ]);
+
+        if ($request->filled('invoice_number')) {
+            if (!$this->isLastFourDigitsUnique($request->invoice_number)) {
+                return back()->withErrors(['invoice_number' => 'The last 4 digits of the invoice number must be unique across both vehicle and parts invoices.'])->withInput();
+            }
+        }
 
         // Validate stock availability first
         foreach ($request->items as $itemData) {
@@ -261,10 +319,10 @@ class PartSalesInvoiceController extends Controller
         $curr_bal = $prev_bal + $balance;
 
         $invoice = DB::transaction(function () use ($request, $taxable_amount, $cgst_amount, $sgst_amount, $igst_amount, $tax_regime, $round_off, $total_rounded, $received, $balance, $prev_bal, $curr_bal) {
-            // Generate Invoice number
-            $last = DB::table('part_sales_invoices')->lockForUpdate()->orderBy('id', 'desc')->first();
-            $nextId = $last ? $last->id + 1 : 1;
-            $invoiceNumber = 'INV-P-' . date('Ymd') . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
+            // Generate or use provided invoice number
+            $invoiceNumber = $request->filled('invoice_number')
+                ? trim($request->input('invoice_number'))
+                : $this->generateNextInvoiceNumber($request->invoice_date);
 
             $inv = PartSalesInvoice::create([
                 'invoice_number' => $invoiceNumber,
@@ -390,5 +448,24 @@ class PartSalesInvoiceController extends Controller
         });
 
         return response()->json(['success' => true, 'message' => 'Payment received successfully.']);
+    }
+
+    public function quickUpdateDate(Request $request, PartSalesInvoice $partSalesInvoice)
+    {
+        $request->validate([
+            'invoice_number' => 'required|string|max:255|unique:part_sales_invoices,invoice_number,' . $partSalesInvoice->id,
+            'invoice_date' => 'required|date',
+        ]);
+
+        if (!$this->isLastFourDigitsUnique($request->invoice_number, null, $partSalesInvoice->id)) {
+            return response()->json(['success' => false, 'message' => 'The last 4 digits of the invoice number must be unique across both vehicle and parts invoices.']);
+        }
+
+        $partSalesInvoice->update([
+            'invoice_number' => $request->invoice_number,
+            'invoice_date' => $request->invoice_date,
+        ]);
+
+        return response()->json(['success' => true, 'message' => 'Invoice Date & Number updated successfully.']);
     }
 }

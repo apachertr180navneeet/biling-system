@@ -138,6 +138,7 @@ Route::name('admin.')->prefix('admin')->group(function () {
             Route::get('part-sales-invoices/outstanding/list', [PartSalesInvoiceController::class, 'outstanding'])->name('part-sales-invoices.outstanding');
             Route::get('part-sales-invoices/outstanding/export', [PartSalesInvoiceController::class, 'exportOutstanding'])->name('part-sales-invoices.outstanding.export');
             Route::post('part-sales-invoices/{part_sales_invoice}/receive-payment', [PartSalesInvoiceController::class, 'receivePayment'])->name('part-sales-invoices.receive-payment');
+            Route::post('part-sales-invoices/{part_sales_invoice}/quick-update-date', [PartSalesInvoiceController::class, 'quickUpdateDate'])->name('part-sales-invoices.quick-update-date');
 
             Route::get('quotations/create/vehicle', [QuotationController::class, 'createVehicle'])->name('quotations.create-vehicle');
             Route::get('quotations/create/parts', [QuotationController::class, 'createParts'])->name('quotations.create-parts');
