@@ -412,7 +412,12 @@
 @media print {
     @page {
         size: A4 portrait;
-        margin: 5mm;
+        margin: 4mm 6mm 4mm 6mm;
+    }
+    html, body {
+        height: 100%;
+        overflow: hidden;
+        background: #fff !important;
     }
     body * {
         visibility: hidden;
@@ -425,96 +430,158 @@
         left: 0;
         top: 0;
         width: 100%;
+        height: 100%;
         background: #fff;
         padding: 0 !important;
         margin: 0 !important;
+        display: block !important;
     }
     .invoice-card {
-        box-shadow: none;
-        border: none;
+        box-shadow: none !important;
+        border: none !important;
         width: 100% !important;
         max-width: 100% !important;
         margin: 0 !important;
         padding: 0 !important;
         transform: none !important;
-        transform-origin: top left;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
     }
     .invoice-card::before {
-        display: none;
+        display: none !important;
     }
     .invoice-padding {
-        padding: 5px !important;
+        padding: 4px 8px !important;
     }
     .company-section {
-        margin-bottom: 8px !important;
-        padding-bottom: 6px !important;
+        margin-bottom: 4px !important;
+        padding-bottom: 4px !important;
+    }
+    .company-details h2 {
+        font-size: 20px !important;
+        margin-bottom: 2px !important;
+    }
+    .company-details p {
+        font-size: 11px !important;
+        line-height: 1.2 !important;
+    }
+    .logo-block img {
+        max-height: 70px !important;
     }
     .invoice-meta-grid {
-        margin-bottom: 8px !important;
-        gap: 8px !important;
+        margin-bottom: 4px !important;
+        gap: 6px !important;
     }
     .meta-box {
-        padding: 6px 12px !important;
+        padding: 4px 8px !important;
+        border-radius: 4px !important;
+    }
+    .meta-table td {
+        padding: 2px 0 !important;
+        font-size: 11px !important;
     }
     .billing-section {
-        margin-bottom: 8px !important;
-        gap: 8px !important;
+        margin-bottom: 4px !important;
+        gap: 6px !important;
     }
     .billing-card, .info-card {
-        padding: 8px 12px !important;
+        padding: 4px 8px !important;
+        border-radius: 4px !important;
+    }
+    .billing-card h3, .info-card h3 {
+        font-size: 9px !important;
+        margin-bottom: 3px !important;
+    }
+    .billing-card h4 {
+        font-size: 12px !important;
+        margin-bottom: 2px !important;
+    }
+    .billing-card p, .info-table td {
+        font-size: 10.5px !important;
+        line-height: 1.2 !important;
+        padding: 1px 0 !important;
     }
     .items-table {
-        margin-bottom: 8px !important;
+        margin-bottom: 4px !important;
     }
-    .items-table th, .items-table td {
-        padding: 6px 10px !important;
-    }
-    .warranty-box {
-        margin-top: 4px !important;
+    .items-table th {
         padding: 4px 8px !important;
         font-size: 10.5px !important;
+    }
+    .items-table td {
+        padding: 6px 8px !important;
+        font-size: 11px !important;
+    }
+    .item-name {
+        font-size: 13px !important;
+    }
+    .item-badge {
+        font-size: 9.5px !important;
+        padding: 1px 5px !important;
+    }
+    .warranty-box {
+        margin-top: 3px !important;
+        padding: 3px 6px !important;
+        font-size: 9.5px !important;
+        line-height: 1.2 !important;
+    }
+    .warranty-box strong {
+        margin-bottom: 2px !important;
     }
     .specs-grid {
         margin-top: 4px !important;
         padding: 4px 8px !important;
-        gap: 3px 8px !important;
+        gap: 2px 6px !important;
+        border-radius: 4px !important;
+    }
+    .specs-cell {
+        font-size: 10px !important;
     }
     .bottom-section {
-        margin-top: 8px !important;
+        margin-top: 4px !important;
+    }
+    .terms-box h4 {
+        font-size: 10.5px !important;
+        margin-bottom: 3px !important;
+    }
+    .terms-box ol {
+        font-size: 9.5px !important;
+        line-height: 1.25 !important;
+        padding-left: 14px !important;
+    }
+    .terms-box ol li {
+        margin-bottom: 2px !important;
     }
     .summary-card {
-        padding: 6px 10px !important;
+        padding: 4px 8px !important;
+        border-radius: 4px !important;
     }
     .summary-table td {
-        padding: 2px 0 !important;
-        font-size: 12px !important;
+        padding: 1.5px 0 !important;
+        font-size: 10.5px !important;
+    }
+    .summary-total-row td {
+        padding-top: 3px !important;
+        margin-top: 2px !important;
+    }
+    .summary-total-label, .summary-total-value {
+        font-size: 13px !important;
     }
     .signature-row {
-        margin-top: 10px !important;
-        padding-top: 8px !important;
+        margin-top: 6px !important;
+        padding-top: 4px !important;
     }
-    .btn-print-group {
-        display: none !important;
+    .sig-text {
+        font-size: 10px !important;
     }
-    .layout-navbar, .layout-menu-toggle, .menu-vertical, .footer {
+    .btn-print-group, .layout-navbar, .layout-menu-toggle, .menu-vertical, .footer {
         display: none !important;
     }
     .content-wrapper {
         padding: 0 !important;
         margin: 0 !important;
     }
-    .specs-grid {
-        background-color: #f8fafc !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-    }
-    .summary-card {
-        background-color: #ecfdf5 !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-    }
-    .warranty-box {
-        background-color: #f0fdf4 !important;
+    .specs-grid, .summary-card, .warranty-box {
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
     }
@@ -527,7 +594,8 @@
     <div class="d-flex justify-content-between align-items-center mb-4 btn-print-group">
         <h4 class="fw-bold mb-0">Invoice Detail</h4>
         <div>
-            <button onclick="window.print();" class="btn btn-primary"><i class="bx bx-printer"></i> Print Invoice</button>
+            <a href="{{ route('admin.vehicle-sales-invoices.edit', $vehicleSalesInvoice) }}" class="btn btn-warning me-1"><i class="bx bx-edit"></i> Edit Invoice</a>
+            <button onclick="window.print();" class="btn btn-primary me-1"><i class="bx bx-printer"></i> Print Invoice</button>
             <a href="{{ route('admin.vehicle-sales-invoices.index') }}" class="btn btn-secondary">Back to List</a>
         </div>
     </div>
@@ -561,7 +629,7 @@
                         <table class="meta-table">
                             <tr>
                                 <td class="meta-label">Invoice#</td>
-                                <td class="meta-value">INV-{{ str_pad($vehicleSalesInvoice->id, 6, '0', STR_PAD_LEFT) }}</td>
+                                <td class="meta-value">{{ $vehicleSalesInvoice->invoice_number }}</td>
                             </tr>
                             <tr>
                                 <td class="meta-label">Invoice Date</td>

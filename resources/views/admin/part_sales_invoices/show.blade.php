@@ -356,7 +356,12 @@
 @media print {
     @page {
         size: A4 portrait;
-        margin: 5mm;
+        margin: 4mm 6mm 4mm 6mm;
+    }
+    html, body {
+        height: 100%;
+        overflow: hidden;
+        background: #fff !important;
     }
     body * {
         visibility: hidden;
@@ -369,29 +374,106 @@
         left: 0;
         top: 0;
         width: 100%;
+        height: 100%;
         background: #fff;
         padding: 0 !important;
         margin: 0 !important;
+        display: block !important;
     }
     .invoice-card {
-        box-shadow: none;
-        border: none;
+        box-shadow: none !important;
+        border: none !important;
         width: 100% !important;
         max-width: 100% !important;
         margin: 0 !important;
         padding: 0 !important;
         transform: none !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
     }
     .invoice-card::before {
-        display: none;
-    }
-    .invoice-padding {
-        padding: 5px !important;
-    }
-    .btn-print-group {
         display: none !important;
     }
-    .layout-navbar, .layout-menu-toggle, .menu-vertical, .footer {
+    .invoice-padding {
+        padding: 4px 8px !important;
+    }
+    .company-section {
+        margin-bottom: 4px !important;
+        padding-bottom: 4px !important;
+    }
+    .company-details h2 {
+        font-size: 20px !important;
+        margin-bottom: 2px !important;
+    }
+    .company-details p {
+        font-size: 11px !important;
+        line-height: 1.2 !important;
+    }
+    .logo-block img {
+        max-height: 70px !important;
+    }
+    .invoice-meta-grid {
+        margin-bottom: 4px !important;
+        gap: 6px !important;
+    }
+    .meta-box {
+        padding: 4px 8px !important;
+        border-radius: 4px !important;
+    }
+    .meta-table td {
+        padding: 2px 0 !important;
+        font-size: 11px !important;
+    }
+    .billing-section {
+        margin-bottom: 4px !important;
+        gap: 6px !important;
+    }
+    .billing-card, .info-card {
+        padding: 4px 8px !important;
+        border-radius: 4px !important;
+    }
+    .items-table {
+        margin-bottom: 4px !important;
+    }
+    .items-table th {
+        padding: 4px 8px !important;
+        font-size: 10.5px !important;
+    }
+    .items-table td {
+        padding: 4px 8px !important;
+        font-size: 11px !important;
+    }
+    .bottom-section {
+        margin-top: 4px !important;
+    }
+    .terms-box h4 {
+        font-size: 10.5px !important;
+        margin-bottom: 3px !important;
+    }
+    .terms-box ol {
+        font-size: 9.5px !important;
+        line-height: 1.25 !important;
+        padding-left: 14px !important;
+    }
+    .terms-box ol li {
+        margin-bottom: 2px !important;
+    }
+    .summary-card {
+        padding: 4px 8px !important;
+        border-radius: 4px !important;
+    }
+    .summary-table td {
+        padding: 1.5px 0 !important;
+        font-size: 10.5px !important;
+    }
+    .signature-row {
+        margin-top: 6px !important;
+        padding-top: 4px !important;
+    }
+    .sig-text {
+        font-size: 10px !important;
+    }
+    .btn-print-group, .layout-navbar, .layout-menu-toggle, .menu-vertical, .footer {
         display: none !important;
     }
     .content-wrapper {
