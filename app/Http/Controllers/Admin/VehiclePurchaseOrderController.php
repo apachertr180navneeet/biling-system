@@ -317,11 +317,13 @@ class VehiclePurchaseOrderController extends Controller
             'edit_vehicles.*.id' => 'required_with:edit_vehicles|exists:vehicle_inventories,id',
             'edit_vehicles.*.chassis_number' => 'required_with:edit_vehicles|string|max:255',
             'edit_vehicles.*.motor_number' => 'required_with:edit_vehicles|string|max:255',
+            'edit_vehicles.*.color_name' => 'nullable|string|max:255',
             'edit_vehicles.*.battery_number' => 'nullable|string|max:255',
             'edit_vehicles.*.charger_number' => 'nullable|string|max:255',
             'edit_vehicles.*.controller_number' => 'nullable|string|max:255',
             'edit_vehicles.*.convertor_number' => 'nullable|string|max:255',
             'edit_vehicles.*.manual_number' => 'nullable|string|max:255',
+            'items.*.vehicles.*.color_name' => 'nullable|string|max:255',
             'delete_vehicles' => 'nullable|array',
             'delete_vehicles.*' => 'exists:vehicle_inventories,id',
         ]);
@@ -431,6 +433,7 @@ class VehiclePurchaseOrderController extends Controller
                         'chassis_number' => $val['chassis_number'],
                         'engine_number' => $val['motor_number'],
                         'motor_number' => $val['motor_number'],
+                        'color_name' => $val['color_name'] ?? null,
                         'battery_number' => $val['battery_number'] ?? null,
                         'charger_number' => $val['charger_number'] ?? null,
                         'controller_number' => $val['controller_number'] ?? null,
@@ -461,6 +464,8 @@ class VehiclePurchaseOrderController extends Controller
                                     'chassis_number' => $vehicle['chassis_number'],
                                     'engine_number' => $vehicle['motor_number'],
                                     'motor_number' => $vehicle['motor_number'],
+                                    'color_name' => !empty($vehicle['color_name']) ? $vehicle['color_name'] : $poItem->color_name,
+                                    'mfg_year' => $poItem->mfg_year,
                                     'battery_number' => $vehicle['battery_number'] ?? null,
                                     'charger_number' => $vehicle['charger_number'] ?? null,
                                     'controller_number' => $vehicle['controller_number'] ?? null,
@@ -578,6 +583,7 @@ class VehiclePurchaseOrderController extends Controller
                 $q->where('vehicle_description', 'like', $escapedSearch)
                   ->orWhere('chassis_number', 'like', $escapedSearch)
                   ->orWhere('motor_number', 'like', $escapedSearch)
+                  ->orWhere('color_name', 'like', $escapedSearch)
                   ->orWhere('battery_number', 'like', $escapedSearch);
             });
         }
@@ -587,30 +593,32 @@ class VehiclePurchaseOrderController extends Controller
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setCellValue('A1', 'Vehicle');
-        $sheet->setCellValue('B1', 'Chassis No');
-        $sheet->setCellValue('C1', 'Motor No');
-        $sheet->setCellValue('D1', 'Battery No');
-        $sheet->setCellValue('E1', 'Charger No');
-        $sheet->setCellValue('F1', 'Controller No');
-        $sheet->setCellValue('G1', 'Convertor No');
-        $sheet->setCellValue('H1', 'Manual No');
-        $sheet->setCellValue('I1', 'Purchase Price');
-        $sheet->setCellValue('J1', 'Status');
-        $sheet->setCellValue('K1', 'PO Ref');
+        $sheet->setCellValue('B1', 'Color');
+        $sheet->setCellValue('C1', 'Chassis No');
+        $sheet->setCellValue('D1', 'Motor No');
+        $sheet->setCellValue('E1', 'Battery No');
+        $sheet->setCellValue('F1', 'Charger No');
+        $sheet->setCellValue('G1', 'Controller No');
+        $sheet->setCellValue('H1', 'Convertor No');
+        $sheet->setCellValue('I1', 'Manual No');
+        $sheet->setCellValue('J1', 'Purchase Price');
+        $sheet->setCellValue('K1', 'Status');
+        $sheet->setCellValue('L1', 'PO Ref');
 
         $row = 2;
         foreach ($inventories as $i) {
             $sheet->setCellValue('A' . $row, $i->vehicle_description);
-            $sheet->setCellValue('B' . $row, $i->chassis_number);
-            $sheet->setCellValue('C' . $row, $i->motor_number);
-            $sheet->setCellValue('D' . $row, $i->battery_number);
-            $sheet->setCellValue('E' . $row, $i->charger_number);
-            $sheet->setCellValue('F' . $row, $i->controller_number);
-            $sheet->setCellValue('G' . $row, $i->convertor_number);
-            $sheet->setCellValue('H' . $row, $i->manual_number);
-            $sheet->setCellValue('I' . $row, $i->purchase_price);
-            $sheet->setCellValue('J' . $row, ucfirst($i->status));
-            $sheet->setCellValue('K' . $row, $i->purchaseOrder->po_number ?? '-');
+            $sheet->setCellValue('B' . $row, $i->color_name ?? '-');
+            $sheet->setCellValue('C' . $row, $i->chassis_number);
+            $sheet->setCellValue('D' . $row, $i->motor_number);
+            $sheet->setCellValue('E' . $row, $i->battery_number);
+            $sheet->setCellValue('F' . $row, $i->charger_number);
+            $sheet->setCellValue('G' . $row, $i->controller_number);
+            $sheet->setCellValue('H' . $row, $i->convertor_number);
+            $sheet->setCellValue('I' . $row, $i->manual_number);
+            $sheet->setCellValue('J' . $row, $i->purchase_price);
+            $sheet->setCellValue('K' . $row, ucfirst($i->status));
+            $sheet->setCellValue('L' . $row, $i->purchaseOrder->po_number ?? '-');
             $row++;
         }
 

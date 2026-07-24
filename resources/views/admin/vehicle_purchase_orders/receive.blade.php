@@ -83,6 +83,10 @@
                                                         <input type="text" name="edit_vehicles[{{ $rev->id }}][motor_number]" class="form-control bg-white" required maxlength="255" value="{{ old("edit_vehicles.{$rev->id}.motor_number", $rev->motor_number) }}">
                                                     </div>
                                                     <div class="col-md-3">
+                                                        <label class="form-label small text-muted">Color</label>
+                                                        <input type="text" name="edit_vehicles[{{ $rev->id }}][color_name]" class="form-control bg-white" maxlength="255" value="{{ old("edit_vehicles.{$rev->id}.color_name", $rev->color_name ?? $item->color_name) }}">
+                                                    </div>
+                                                    <div class="col-md-3">
                                                         <label class="form-label small text-muted">Battery Number</label>
                                                         <input type="text" name="edit_vehicles[{{ $rev->id }}][battery_number]" class="form-control bg-white" maxlength="255" value="{{ old("edit_vehicles.{$rev->id}.battery_number", $rev->battery_number) }}">
                                                     </div>
@@ -116,7 +120,7 @@
                         <div class="vehicle-rows" id="vehicles-{{ $item->id }}">
                             @php
                                 $oldVehicles = old("items.{$i}.vehicles");
-                                $vehiclesToRender = is_array($oldVehicles) ? $oldVehicles : [['chassis_number' => '', 'motor_number' => '', 'battery_number' => '', 'charger_number' => '', 'controller_number' => '', 'convertor_number' => '', 'manual_number' => '']];
+                                $vehiclesToRender = is_array($oldVehicles) ? $oldVehicles : [['chassis_number' => '', 'motor_number' => '', 'color_name' => $item->color_name ?? '', 'battery_number' => '', 'charger_number' => '', 'controller_number' => '', 'convertor_number' => '', 'manual_number' => '']];
                             @endphp
                             @foreach($vehiclesToRender as $vIdx => $vVal)
                             <div class="vehicle-row p-3 mb-3 border rounded bg-white">
@@ -133,6 +137,10 @@
                                     <div class="col-md-3">
                                         <label class="form-label small">Motor Number *</label>
                                         <input type="text" name="items[{{ $i }}][vehicles][{{ $vIdx }}][motor_number]" class="form-control" required maxlength="255" value="{{ old("items.{$i}.vehicles.{$vIdx}.motor_number", $vVal['motor_number'] ?? '') }}">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label small">Color</label>
+                                        <input type="text" name="items[{{ $i }}][vehicles][{{ $vIdx }}][color_name]" class="form-control" maxlength="255" value="{{ old("items.{$i}.vehicles.{$vIdx}.color_name", $vVal['color_name'] ?? $item->color_name) }}">
                                     </div>
                                     <div class="col-md-3">
                                         <label class="form-label small">Battery Number</label>
@@ -311,12 +319,17 @@ document.querySelectorAll('.add-vehicle-btn').forEach(function(btn) {
         var newIndex = rows.length;
         var newRow = rows[0].cloneNode(true);
         newRow.querySelectorAll('input').forEach(function(input) {
-            input.value = '';
-            input.style.border = '';
             var name = input.name;
             // e.g. items[0][vehicles][0][chassis_number]
             name = name.replace(/\[vehicles\]\[\d+\]/, '[vehicles][' + newIndex + ']');
             input.name = name;
+            if (name.indexOf('color_name') !== -1) {
+                var firstColorInp = rows[0].querySelector('input[name*="[color_name]"]');
+                if (firstColorInp) input.value = firstColorInp.value;
+            } else {
+                input.value = '';
+            }
+            input.style.border = '';
             var msg = input.parentNode.querySelector('.validation-message');
             if (msg) { msg.textContent = ''; msg.className = 'validation-message small mt-1'; }
         });
