@@ -26,6 +26,11 @@
         <p><strong>Supplier:</strong> {{ $vehiclePurchaseOrder->supplier->name ?? '-' }}</p>
         <p><strong>Order Date:</strong> {{ $vehiclePurchaseOrder->order_date->format('d-m-Y') }}</p>
         <hr>
+        <datalist id="colorOptions">
+            @foreach($colorOptions ?? [] as $colOpt)
+                <option value="{{ $colOpt }}">
+            @endforeach
+        </datalist>
         <form method="POST" action="{{ route('admin.vehicle-purchase-orders.receive-store', $vehiclePurchaseOrder) }}" id="receiveForm">
             @csrf
             <div id="deleted-vehicles-container"></div>
@@ -84,7 +89,7 @@
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label small text-muted">Color</label>
-                                                        <input type="text" name="edit_vehicles[{{ $rev->id }}][color_name]" class="form-control bg-white" maxlength="255" value="{{ old("edit_vehicles.{$rev->id}.color_name", $rev->color_name ?? $item->color_name) }}">
+                                                        <input type="text" name="edit_vehicles[{{ $rev->id }}][color_name]" list="colorOptions" class="form-control bg-white" maxlength="255" placeholder="Select/Type Color" value="{{ old("edit_vehicles.{$rev->id}.color_name", $rev->color_name ?? $item->color_name) }}">
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label small text-muted">Battery Number</label>
@@ -106,8 +111,8 @@
                                                         <label class="form-label small text-muted">Manual Number</label>
                                                         <input type="text" name="edit_vehicles[{{ $rev->id }}][manual_number]" class="form-control bg-white" maxlength="255" value="{{ old("edit_vehicles.{$rev->id}.manual_number", $rev->manual_number) }}">
                                                     </div>
-                                                    <div class="col-md-3 d-flex align-items-end justify-content-end">
-                                                        <button type="button" class="btn btn-outline-danger btn-remove-received w-100" data-id="{{ $rev->id }}"><i class="bx bx-trash me-1"></i> Remove</button>
+                                                    <div class="col-md-12 d-flex justify-content-end mt-2">
+                                                        <button type="button" class="btn btn-outline-danger btn-remove-received" data-id="{{ $rev->id }}"><i class="bx bx-trash me-1"></i> Remove</button>
                                                     </div>
                                                 </div>
                                             </div>
@@ -140,7 +145,7 @@
                                     </div>
                                     <div class="col-md-3">
                                         <label class="form-label small">Color</label>
-                                        <input type="text" name="items[{{ $i }}][vehicles][{{ $vIdx }}][color_name]" class="form-control" maxlength="255" value="{{ old("items.{$i}.vehicles.{$vIdx}.color_name", $vVal['color_name'] ?? $item->color_name) }}">
+                                        <input type="text" name="items[{{ $i }}][vehicles][{{ $vIdx }}][color_name]" list="colorOptions" class="form-control" maxlength="255" placeholder="Select/Type Color" value="{{ old("items.{$i}.vehicles.{$vIdx}.color_name", $vVal['color_name'] ?? $item->color_name) }}">
                                     </div>
                                     <div class="col-md-3">
                                         <label class="form-label small">Battery Number</label>
@@ -162,9 +167,9 @@
                                         <label class="form-label small">Manual Number</label>
                                         <input type="text" name="items[{{ $i }}][vehicles][{{ $vIdx }}][manual_number]" class="form-control" maxlength="255" value="{{ old("items.{$i}.vehicles.{$vIdx}.manual_number", $vVal['manual_number'] ?? '') }}">
                                     </div>
-                                    <div class="col-md-3 d-flex align-items-end justify-content-end remove-btn-col">
+                                    <div class="col-md-12 d-flex justify-content-end mt-2 remove-btn-col">
                                         @if($vIdx > 0)
-                                            <button type="button" class="btn btn-outline-danger btn-remove w-100"><i class="bx bx-trash me-1"></i> Remove</button>
+                                            <button type="button" class="btn btn-outline-danger btn-remove"><i class="bx bx-trash me-1"></i> Remove</button>
                                         @endif
                                     </div>
                                 </div>
@@ -336,7 +341,7 @@ document.querySelectorAll('.add-vehicle-btn').forEach(function(btn) {
         
         var actionDiv = newRow.querySelector('.remove-btn-col');
         if (actionDiv) {
-            actionDiv.innerHTML = '<button type="button" class="btn btn-outline-danger btn-remove w-100"><i class="bx bx-trash me-1"></i> Remove</button>';
+            actionDiv.innerHTML = '<button type="button" class="btn btn-outline-danger btn-remove"><i class="bx bx-trash me-1"></i> Remove</button>';
         }
         container.appendChild(newRow);
     });
@@ -360,7 +365,7 @@ document.addEventListener('click', function(e) {
                 if (index === 0) {
                     actionDiv.innerHTML = '';
                 } else if (!actionDiv.querySelector('.btn-remove')) {
-                    actionDiv.innerHTML = '<button type="button" class="btn btn-outline-danger btn-remove w-100"><i class="bx bx-trash me-1"></i> Remove</button>';
+                    actionDiv.innerHTML = '<button type="button" class="btn btn-outline-danger btn-remove"><i class="bx bx-trash me-1"></i> Remove</button>';
                 }
             }
         });

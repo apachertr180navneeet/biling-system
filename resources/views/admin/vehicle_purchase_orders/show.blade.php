@@ -48,7 +48,10 @@
                     @foreach($vehiclePurchaseOrder->items as $i => $item)
                     <tr>
                         <td>{{ $i + 1 }}</td>
-                        <td>{{ $item->vehicle_description }}</td>
+                        <td>
+                            {{ $item->vehicle_description }}
+                            @if($item->color_name) <span class="badge bg-secondary ms-1">{{ $item->color_name }}</span> @endif
+                        </td>
                         <td>{{ $item->quantity }}</td>
                         <td>{{ number_format($item->unit_price, 2) }}</td>
                         <td>{{ number_format($item->total_price, 2) }}</td>

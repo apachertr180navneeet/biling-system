@@ -167,7 +167,11 @@ class VehiclePurchaseOrderController extends Controller
         $vehicleData = $this->getVehicleOptions();
         $vehicleList = $vehicleData['list'];
         $vehiclePrices = $vehicleData['prices'];
-        return view('admin.vehicle_purchase_orders.create', compact('suppliers', 'vehicleList', 'vehiclePrices'));
+        $colorOptions = VehicleInventory::whereNotNull('color_name')->where('color_name', '!=', '')->distinct()->pluck('color_name')->toArray();
+        if (empty($colorOptions)) {
+            $colorOptions = ['Black', 'Red', 'Blue', 'White', 'Silver', 'Grey', 'Green'];
+        }
+        return view('admin.vehicle_purchase_orders.create', compact('suppliers', 'vehicleList', 'vehiclePrices', 'colorOptions'));
     }
 
     public function store(Request $request)
@@ -179,6 +183,7 @@ class VehiclePurchaseOrderController extends Controller
             'notes' => 'nullable|string',
             'items' => 'required|array|min:1',
             'items.*.vehicle_description' => 'required|string|max:255',
+            'items.*.color_name' => 'nullable|string|max:255',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.unit_price' => 'required|numeric|min:0',
         ]);
@@ -190,8 +195,10 @@ class VehiclePurchaseOrderController extends Controller
         foreach ($data['items'] as $item) {
             $lineTotal = $item['quantity'] * $item['unit_price'];
             $total += $lineTotal;
+
             $items[] = new VehiclePoItem([
                 'vehicle_description' => $item['vehicle_description'],
+                'color_name' => $item['color_name'] ?? null,
                 'quantity' => $item['quantity'],
                 'unit_price' => $item['unit_price'],
                 'total_price' => $lineTotal,
@@ -230,7 +237,11 @@ class VehiclePurchaseOrderController extends Controller
         $vehicleData = $this->getVehicleOptions();
         $vehicleList = $vehicleData['list'];
         $vehiclePrices = $vehicleData['prices'];
-        return view('admin.vehicle_purchase_orders.edit', compact('vehiclePurchaseOrder', 'suppliers', 'vehicleList', 'vehiclePrices'));
+        $colorOptions = VehicleInventory::whereNotNull('color_name')->where('color_name', '!=', '')->distinct()->pluck('color_name')->toArray();
+        if (empty($colorOptions)) {
+            $colorOptions = ['Black', 'Red', 'Blue', 'White', 'Silver', 'Grey', 'Green'];
+        }
+        return view('admin.vehicle_purchase_orders.edit', compact('vehiclePurchaseOrder', 'suppliers', 'vehicleList', 'vehiclePrices', 'colorOptions'));
     }
 
     public function update(Request $request, VehiclePurchaseOrder $vehiclePurchaseOrder)
@@ -246,6 +257,7 @@ class VehiclePurchaseOrderController extends Controller
             'notes' => 'nullable|string',
             'items' => 'required|array|min:1',
             'items.*.vehicle_description' => 'required|string|max:255',
+            'items.*.color_name' => 'nullable|string|max:255',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.unit_price' => 'required|numeric|min:0',
         ]);
@@ -255,8 +267,10 @@ class VehiclePurchaseOrderController extends Controller
         foreach ($data['items'] as $item) {
             $lineTotal = $item['quantity'] * $item['unit_price'];
             $total += $lineTotal;
+
             $newItems[] = new VehiclePoItem([
                 'vehicle_description' => $item['vehicle_description'],
+                'color_name' => $item['color_name'] ?? null,
                 'quantity' => $item['quantity'],
                 'unit_price' => $item['unit_price'],
                 'total_price' => $lineTotal,
@@ -300,7 +314,11 @@ class VehiclePurchaseOrderController extends Controller
         }
         $vehiclePurchaseOrder->load('items');
         $receivedVehicles = VehicleInventory::where('vehicle_po_id', $vehiclePurchaseOrder->id)->get();
-        return view('admin.vehicle_purchase_orders.receive', compact('vehiclePurchaseOrder', 'receivedVehicles'));
+        $colorOptions = VehicleInventory::whereNotNull('color_name')->where('color_name', '!=', '')->distinct()->pluck('color_name')->toArray();
+        if (empty($colorOptions)) {
+            $colorOptions = ['Black', 'Red', 'Blue', 'White', 'Silver', 'Grey', 'Green'];
+        }
+        return view('admin.vehicle_purchase_orders.receive', compact('vehiclePurchaseOrder', 'receivedVehicles', 'colorOptions'));
     }
 
     public function receiveStore(Request $request, VehiclePurchaseOrder $vehiclePurchaseOrder)
@@ -458,14 +476,13 @@ class VehiclePurchaseOrderController extends Controller
                             });
                             $delta = count($validVehicles);
                             foreach ($validVehicles as $vehicle) {
-                                VehicleInventory::create([
+                                $inventoryData = [
                                     'vehicle_po_id' => $vehiclePurchaseOrder->id,
                                     'vehicle_description' => $poItem->vehicle_description,
                                     'chassis_number' => $vehicle['chassis_number'],
                                     'engine_number' => $vehicle['motor_number'],
                                     'motor_number' => $vehicle['motor_number'],
                                     'color_name' => !empty($vehicle['color_name']) ? $vehicle['color_name'] : $poItem->color_name,
-                                    'mfg_year' => $poItem->mfg_year,
                                     'battery_number' => $vehicle['battery_number'] ?? null,
                                     'charger_number' => $vehicle['charger_number'] ?? null,
                                     'controller_number' => $vehicle['controller_number'] ?? null,
@@ -474,7 +491,11 @@ class VehiclePurchaseOrderController extends Controller
                                     'quantity' => 1,
                                     'purchase_price' => $poItem->unit_price,
                                     'status' => 'available',
-                                ]);
+                                ];
+                                if (\Illuminate\Support\Facades\Schema::hasColumn('vehicle_inventories', 'mfg_year')) {
+                                    $inventoryData['mfg_year'] = $poItem->mfg_year ?? null;
+                                }
+                                VehicleInventory::create($inventoryData);
                             }
                         }
                     }
@@ -550,22 +571,13 @@ class VehiclePurchaseOrderController extends Controller
 
         $lowStockVariants = [];
         foreach ($vehicleMasters as $vm) {
-            $name = $vm->variant_name;
-            if ($vm->color_name) {
-                $name .= ' (' . $vm->color_name . ')';
-            }
-            $available = $variantCounts[$name] ?? ($variantCounts[$vm->variant_name] ?? 0);
+            $name = trim($vm->variant_name);
+            $available = $variantCounts[$name] ?? 0;
             if ($vm->min_stock > 0 && $available <= $vm->min_stock) {
                 $lowStockVariants[$name] = [
                     'min_stock' => $vm->min_stock,
                     'available' => $available,
                 ];
-                if ($vm->variant_name !== $name) {
-                    $lowStockVariants[$vm->variant_name] = [
-                        'min_stock' => $vm->min_stock,
-                        'available' => $available,
-                    ];
-                }
             }
         }
 
@@ -722,9 +734,11 @@ class VehiclePurchaseOrderController extends Controller
         $list = [];
         $prices = [];
         VehicleMaster::where('is_active', true)->orderBy('variant_name')->get()->each(function ($v) use (&$list, &$prices) {
-            $desc = trim($v->variant_name . ' ' . $v->color_name);
-            $list[] = $desc;
-            if ($v->ex_showroom_price) {
+            $desc = trim($v->variant_name);
+            if ($desc && !in_array($desc, $list)) {
+                $list[] = $desc;
+            }
+            if ($v->ex_showroom_price && !isset($prices[$desc])) {
                 $prices[$desc] = $v->ex_showroom_price;
             }
         });
