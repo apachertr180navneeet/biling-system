@@ -865,7 +865,6 @@
                             <li>Received vehicle, tool kit, charger, jack, stepny and Battery in good and running condition.</li>
                             <li>Our responsibility ceases upon delivery & claim for loss/ shortage etc. will not be entertained thereafter.</li>
                             <li>Goods Once sold will not be taken back or exchanged under any circumstances.</li>
-                            <li>Warranty as per Company's policy given in owner's manual. 12Month motor and Controller.</li>
                             <li>Subject to JODHPUR Jurisdiction only.</li>
                             <li>Getting any work done on the vehicle outside of our authorized office workshop will void the entire warranty.</li>
                         </ol>

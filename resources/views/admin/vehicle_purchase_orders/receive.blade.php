@@ -26,11 +26,6 @@
         <p><strong>Supplier:</strong> {{ $vehiclePurchaseOrder->supplier->name ?? '-' }}</p>
         <p><strong>Order Date:</strong> {{ $vehiclePurchaseOrder->order_date->format('d-m-Y') }}</p>
         <hr>
-        <datalist id="colorOptions">
-            @foreach($colorOptions ?? [] as $colOpt)
-                <option value="{{ $colOpt }}">
-            @endforeach
-        </datalist>
         <form method="POST" action="{{ route('admin.vehicle-purchase-orders.receive-store', $vehiclePurchaseOrder) }}" id="receiveForm">
             @csrf
             <div id="deleted-vehicles-container"></div>
@@ -89,7 +84,7 @@
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label small text-muted">Color</label>
-                                                        <input type="text" name="edit_vehicles[{{ $rev->id }}][color_name]" list="colorOptions" class="form-control bg-white" maxlength="255" placeholder="Select/Type Color" value="{{ old("edit_vehicles.{$rev->id}.color_name", $rev->color_name ?? $item->color_name) }}">
+                                                        <input type="text" name="edit_vehicles[{{ $rev->id }}][color_name]" class="form-control bg-white" maxlength="255" placeholder="Color" value="{{ old("edit_vehicles.{$rev->id}.color_name", $rev->color_name ?? $item->color_name) }}">
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label small text-muted">Battery Number</label>
@@ -145,7 +140,7 @@
                                     </div>
                                     <div class="col-md-3">
                                         <label class="form-label small">Color</label>
-                                        <input type="text" name="items[{{ $i }}][vehicles][{{ $vIdx }}][color_name]" list="colorOptions" class="form-control" maxlength="255" placeholder="Select/Type Color" value="{{ old("items.{$i}.vehicles.{$vIdx}.color_name", $vVal['color_name'] ?? $item->color_name) }}">
+                                        <input type="text" name="items[{{ $i }}][vehicles][{{ $vIdx }}][color_name]" class="form-control" maxlength="255" placeholder="Color" value="{{ old("items.{$i}.vehicles.{$vIdx}.color_name", $vVal['color_name'] ?? $item->color_name) }}">
                                     </div>
                                     <div class="col-md-3">
                                         <label class="form-label small">Battery Number</label>
