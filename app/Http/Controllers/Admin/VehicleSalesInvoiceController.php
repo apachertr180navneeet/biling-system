@@ -280,20 +280,22 @@ class VehicleSalesInvoiceController extends Controller
         $igst_rate = config('app.igst_rate', 5.00);
         
         if ($gst_type === 'inclusive') {
-            $sub_total = round($rate_input / 1.05, 2);
+            $total = round($rate_input, 2);
+            $tax_amount = $total - ($total / 1.05);
             if ($tax_regime === 'igst') {
                 $cgst_amount = 0;
                 $sgst_amount = 0;
-                $igst_amount = round(($sub_total * $igst_rate) / 100, 2);
+                $igst_amount = round($tax_amount, 2);
+                $sub_total = round($total - $igst_amount, 2);
             } else {
-                $cgst_amount = round(($sub_total * $cgst_rate) / 100, 2);
-                $sgst_amount = round(($sub_total * $sgst_rate) / 100, 2);
+                $cgst_amount = round($tax_amount / 2, 2);
+                $sgst_amount = round($tax_amount / 2, 2);
                 $igst_amount = 0;
+                $sub_total = round($total - $cgst_amount - $sgst_amount, 2);
             }
-            $total = $rate_input;
             $rate = $sub_total;
         } else {
-            $sub_total = $rate_input;
+            $sub_total = round($rate_input, 2);
             if ($tax_regime === 'igst') {
                 $cgst_amount = 0;
                 $sgst_amount = 0;
@@ -303,14 +305,14 @@ class VehicleSalesInvoiceController extends Controller
                 $sgst_amount = round(($sub_total * $sgst_rate) / 100, 2);
                 $igst_amount = 0;
             }
-            $total = $sub_total + $cgst_amount + $sgst_amount + $igst_amount;
-            $rate = $rate_input;
+            $total = round($sub_total + $cgst_amount + $sgst_amount + $igst_amount, 2);
+            $rate = $sub_total;
         }
         
         $nemmp = floatval($request->input('nemmp_incentive', 0));
         $discount = floatval($request->input('discount', 0));
         
-        $grand_total = $total - $nemmp - $discount;
+        $grand_total = round($total - $nemmp - $discount, 2);
 
         $prev_bal = floatval($request->input('previous_balance', 0));
         $received = floatval($request->input('received_amount', 0));
@@ -438,20 +440,22 @@ class VehicleSalesInvoiceController extends Controller
         $igst_rate = config('app.igst_rate', 5.00);
         
         if ($gst_type === 'inclusive') {
-            $sub_total = round($rate_input / 1.05, 2);
+            $total = round($rate_input, 2);
+            $tax_amount = $total - ($total / 1.05);
             if ($tax_regime === 'igst') {
                 $cgst_amount = 0;
                 $sgst_amount = 0;
-                $igst_amount = round(($sub_total * $igst_rate) / 100, 2);
+                $igst_amount = round($tax_amount, 2);
+                $sub_total = round($total - $igst_amount, 2);
             } else {
-                $cgst_amount = round(($sub_total * $cgst_rate) / 100, 2);
-                $sgst_amount = round(($sub_total * $sgst_rate) / 100, 2);
+                $cgst_amount = round($tax_amount / 2, 2);
+                $sgst_amount = round($tax_amount / 2, 2);
                 $igst_amount = 0;
+                $sub_total = round($total - $cgst_amount - $sgst_amount, 2);
             }
-            $total = $rate_input;
             $rate = $sub_total;
         } else {
-            $sub_total = $rate_input;
+            $sub_total = round($rate_input, 2);
             if ($tax_regime === 'igst') {
                 $cgst_amount = 0;
                 $sgst_amount = 0;
@@ -461,14 +465,14 @@ class VehicleSalesInvoiceController extends Controller
                 $sgst_amount = round(($sub_total * $sgst_rate) / 100, 2);
                 $igst_amount = 0;
             }
-            $total = $sub_total + $cgst_amount + $sgst_amount + $igst_amount;
-            $rate = $rate_input;
+            $total = round($sub_total + $cgst_amount + $sgst_amount + $igst_amount, 2);
+            $rate = $sub_total;
         }
         
         $nemmp = floatval($request->input('nemmp_incentive', 0));
         $discount = floatval($request->input('discount', 0));
         
-        $grand_total = $total - $nemmp - $discount;
+        $grand_total = round($total - $nemmp - $discount, 2);
 
         $prev_bal = floatval($request->input('previous_balance', 0));
         $received = floatval($request->input('received_amount', 0));
