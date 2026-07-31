@@ -378,52 +378,42 @@ document.addEventListener('DOMContentLoaded', function() {
         var gstType = gstTypeSelect.value;
         var taxRegime = taxRegimeSelect.value;
         var enteredRate = parseFloat(rateInp.dataset.enteredRate) || parseFloat(rateInp.value) || 0;
-        var subtotal = 0;
+        var baseRate = enteredRate;
         var cgst = 0;
         var sgst = 0;
         var igst = 0;
+        var total = 0;
 
         if (gstType === 'inclusive') {
-            var baseRate = enteredRate / 1.05;
+            baseRate = Math.round((enteredRate / 1.05) * 100) / 100;
+            rateInp.value = baseRate.toFixed(2);
             if (taxRegime === 'igst') {
-                igst = Math.round(baseRate * 5) / 100;
+                igst = Math.round((baseRate * 0.05) * 100) / 100;
             } else {
-                cgst = Math.round(baseRate * 2.5) / 100;
-                sgst = Math.round(baseRate * 2.5) / 100;
+                cgst = Math.round((baseRate * 0.025) * 100) / 100;
+                sgst = Math.round((baseRate * 0.025) * 100) / 100;
             }
-            subtotal = enteredRate;
+            total = Math.round(baseRate + cgst + sgst + igst);
         } else {
+            baseRate = enteredRate;
             if (taxRegime === 'igst') {
-                igst = Math.round(enteredRate * 5) / 100;
+                igst = Math.round((enteredRate * 0.05) * 100) / 100;
             } else {
-                cgst = Math.round(enteredRate * 2.5) / 100;
-                sgst = Math.round(enteredRate * 2.5) / 100;
+                cgst = Math.round((enteredRate * 0.025) * 100) / 100;
+                sgst = Math.round((enteredRate * 0.025) * 100) / 100;
             }
-            subtotal = enteredRate + cgst + sgst + igst;
+            total = Math.round(baseRate + cgst + sgst + igst);
         }
         
         var nemmp = parseFloat(nemmpInp.value) || 0;
         var discount = parseFloat(discountInp.value) || 0;
-        var grand = subtotal - nemmp - discount;
+        var grand = Math.round(total - nemmp - discount);
 
         sgstOut.value = sgst.toFixed(2);
         cgstOut.value = cgst.toFixed(2);
         igstOut.value = igst.toFixed(2);
-        subtotalOut.value = subtotal.toFixed(2);
+        subtotalOut.value = total.toFixed(2);
         grandTotalOut.value = grand.toFixed(2);
-    }
-
-    function convertInclusiveToExclusive() {
-        var gstType = gstTypeSelect.value;
-        var enteredRate = parseFloat(rateInp.dataset.enteredRate) || parseFloat(rateInp.value) || 0;
-
-        if (gstType === 'inclusive') {
-            var baseRate = enteredRate / 1.05;
-            rateInp.value = baseRate.toFixed(2);
-        } else {
-            rateInp.value = enteredRate.toFixed(2);
-        }
-        calculateInvoice();
     }
 
     rateInp.addEventListener('input', function() {
@@ -431,22 +421,8 @@ document.addEventListener('DOMContentLoaded', function() {
         calculateInvoice();
     });
 
-    rateInp.addEventListener('focus', function() {
-        if (gstTypeSelect.value === 'inclusive') {
-            var enteredRate = parseFloat(rateInp.dataset.enteredRate) || parseFloat(rateInp.value) || 0;
-            rateInp.value = enteredRate.toFixed(2);
-        }
-    });
-
     gstTypeSelect.addEventListener('change', function() {
-        convertInclusiveToExclusive();
-    });
-
-    document.getElementById('invoiceForm').addEventListener('submit', function(e) {
-        if (document.activeElement) {
-            document.activeElement.blur();
-        }
-        gstTypeSelect.value = 'exclusive';
+        calculateInvoice();
     });
 
     nemmpInp.addEventListener('input', calculateInvoice);

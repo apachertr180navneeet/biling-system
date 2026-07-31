@@ -280,7 +280,7 @@ class VehicleSalesInvoiceController extends Controller
         $igst_rate = config('app.igst_rate', 5.00);
         
         if ($gst_type === 'inclusive') {
-            $sub_total = round($rate_input / 1.05, 2);
+            $sub_total = round($rate_input, 2);
             if ($tax_regime === 'igst') {
                 $cgst_amount = 0;
                 $sgst_amount = 0;
@@ -290,7 +290,7 @@ class VehicleSalesInvoiceController extends Controller
                 $sgst_amount = round(($sub_total * $sgst_rate) / 100, 2);
                 $igst_amount = 0;
             }
-            $total = $rate_input;
+            $total = round($sub_total + $cgst_amount + $sgst_amount + $igst_amount);
             $rate = $sub_total;
         } else {
             $sub_total = $rate_input;
@@ -303,14 +303,14 @@ class VehicleSalesInvoiceController extends Controller
                 $sgst_amount = round(($sub_total * $sgst_rate) / 100, 2);
                 $igst_amount = 0;
             }
-            $total = $sub_total + $cgst_amount + $sgst_amount + $igst_amount;
+            $total = round($sub_total + $cgst_amount + $sgst_amount + $igst_amount);
             $rate = $rate_input;
         }
         
         $nemmp = floatval($request->input('nemmp_incentive', 0));
         $discount = floatval($request->input('discount', 0));
         
-        $grand_total = $total - $nemmp - $discount;
+        $grand_total = round($total - $nemmp - $discount);
 
         $prev_bal = floatval($request->input('previous_balance', 0));
         $received = floatval($request->input('received_amount', 0));
@@ -438,7 +438,7 @@ class VehicleSalesInvoiceController extends Controller
         $igst_rate = config('app.igst_rate', 5.00);
         
         if ($gst_type === 'inclusive') {
-            $sub_total = round($rate_input / 1.05, 2);
+            $sub_total = round($rate_input, 2);
             if ($tax_regime === 'igst') {
                 $cgst_amount = 0;
                 $sgst_amount = 0;
@@ -448,7 +448,7 @@ class VehicleSalesInvoiceController extends Controller
                 $sgst_amount = round(($sub_total * $sgst_rate) / 100, 2);
                 $igst_amount = 0;
             }
-            $total = $rate_input;
+            $total = round($sub_total + $cgst_amount + $sgst_amount + $igst_amount);
             $rate = $sub_total;
         } else {
             $sub_total = $rate_input;
@@ -461,14 +461,14 @@ class VehicleSalesInvoiceController extends Controller
                 $sgst_amount = round(($sub_total * $sgst_rate) / 100, 2);
                 $igst_amount = 0;
             }
-            $total = $sub_total + $cgst_amount + $sgst_amount + $igst_amount;
+            $total = round($sub_total + $cgst_amount + $sgst_amount + $igst_amount);
             $rate = $rate_input;
         }
         
         $nemmp = floatval($request->input('nemmp_incentive', 0));
         $discount = floatval($request->input('discount', 0));
         
-        $grand_total = $total - $nemmp - $discount;
+        $grand_total = round($total - $nemmp - $discount);
 
         $prev_bal = floatval($request->input('previous_balance', 0));
         $received = floatval($request->input('received_amount', 0));

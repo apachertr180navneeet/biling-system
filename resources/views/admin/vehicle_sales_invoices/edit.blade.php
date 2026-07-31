@@ -147,13 +147,7 @@
                         @error('invoice_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     @php
-                        $inputRate = $vehicleSalesInvoice->gst_type === 'inclusive' ? ($vehicleSalesInvoice->sub_total * 1.05) : $vehicleSalesInvoice->sub_total;
-                        // Or if total is already calculated:
-                        if ($vehicleSalesInvoice->gst_type === 'exclusive') {
-                            $inputRate = $vehicleSalesInvoice->rate;
-                        } else {
-                            $inputRate = $vehicleSalesInvoice->total;
-                        }
+                        $inputRate = $vehicleSalesInvoice->rate;
                     @endphp
                     <div class="col-md-3">
                         <label class="form-label">Rate / Ex-Showroom Price (INR) <span class="text-danger">*</span></label>
@@ -163,8 +157,8 @@
                     <div class="col-md-3">
                         <label class="form-label">GST Type <span class="text-danger">*</span></label>
                         <select name="gst_type" id="gst_type" class="form-select no-select2" required>
-                            <option value="exclusive" {{ old('gst_type', $vehicleSalesInvoice->cgst_amount > 0 && $vehicleSalesInvoice->sub_total == $vehicleSalesInvoice->rate ? 'exclusive' : ($vehicleSalesInvoice->sub_total != $vehicleSalesInvoice->total ? 'exclusive' : 'inclusive')) === 'exclusive' ? 'selected' : '' }}>GST Extra (Exclusive)</option>
-                            <option value="inclusive" {{ old('gst_type', $vehicleSalesInvoice->sub_total != $vehicleSalesInvoice->rate ? 'inclusive' : 'exclusive') === 'inclusive' ? 'selected' : '' }}>GST Included (Inclusive)</option>
+                            <option value="exclusive" {{ old('gst_type', $vehicleSalesInvoice->gst_type ?? 'exclusive') === 'exclusive' ? 'selected' : '' }}>GST Extra (Exclusive)</option>
+                            <option value="inclusive" {{ old('gst_type', $vehicleSalesInvoice->gst_type ?? 'exclusive') === 'inclusive' ? 'selected' : '' }}>GST Included (Inclusive)</option>
                         </select>
                     </div>
                     <div class="col-md-3">
@@ -387,7 +381,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var subTotal = 0, cgstAmt = 0, sgstAmt = 0, igstAmt = 0, totalVal = 0;
 
         if (gstType === 'inclusive') {
-            subTotal = Math.round((rateVal / 1.05) * 100) / 100;
+            subTotal = Math.round(rateVal * 100) / 100;
             if (taxRegime === 'igst') {
                 cgstAmt = 0;
                 sgstAmt = 0;
@@ -397,7 +391,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 sgstAmt = Math.round(((subTotal * sgstRate) / 100) * 100) / 100;
                 igstAmt = 0;
             }
-            totalVal = rateVal;
+            totalVal = Math.round(subTotal + cgstAmt + sgstAmt + igstAmt);
         } else {
             subTotal = rateVal;
             if (taxRegime === 'igst') {
@@ -409,7 +403,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 sgstAmt = Math.round(((subTotal * sgstRate) / 100) * 100) / 100;
                 igstAmt = 0;
             }
-            totalVal = subTotal + cgstAmt + sgstAmt + igstAmt;
+            totalVal = Math.round(subTotal + cgstAmt + sgstAmt + igstAmt);
         }
 
         subTotalOut.value = subTotal.toFixed(2);
@@ -420,7 +414,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         var nemmpVal = parseFloat(nemmpInp.value) || 0;
         var discountVal = parseFloat(discountInp.value) || 0;
-        var grandTotal = totalVal - nemmpVal - discountVal;
+        var grandTotal = Math.round(totalVal - nemmpVal - discountVal);
         grandTotalOut.value = grandTotal.toFixed(2);
 
         calculatePayment();
