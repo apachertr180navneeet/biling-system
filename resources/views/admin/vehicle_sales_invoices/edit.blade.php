@@ -147,19 +147,24 @@
                         @error('invoice_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     @php
-                        $defaultGstType = old('gst_type', ($vehicleSalesInvoice->sub_total != $vehicleSalesInvoice->rate || $vehicleSalesInvoice->cgst_amount > 0 || $vehicleSalesInvoice->igst_amount > 0) ? 'inclusive' : 'exclusive');
-                        $inputRate = old('rate', ($defaultGstType === 'inclusive' ? $vehicleSalesInvoice->total : $vehicleSalesInvoice->rate));
+                        $inputRate = $vehicleSalesInvoice->gst_type === 'inclusive' ? ($vehicleSalesInvoice->sub_total * 1.05) : $vehicleSalesInvoice->sub_total;
+                        // Or if total is already calculated:
+                        if ($vehicleSalesInvoice->gst_type === 'exclusive') {
+                            $inputRate = $vehicleSalesInvoice->rate;
+                        } else {
+                            $inputRate = $vehicleSalesInvoice->total;
+                        }
                     @endphp
                     <div class="col-md-3">
                         <label class="form-label">Rate / Ex-Showroom Price (INR) <span class="text-danger">*</span></label>
-                        <input type="number" step="0.01" id="rate" name="rate" class="form-control @error('rate') is-invalid @enderror" value="{{ $inputRate }}" required>
+                        <input type="number" step="0.01" id="rate" name="rate" class="form-control @error('rate') is-invalid @enderror" value="{{ old('rate', $inputRate) }}" required>
                         @error('rate')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">GST Type <span class="text-danger">*</span></label>
                         <select name="gst_type" id="gst_type" class="form-select no-select2" required>
-                            <option value="inclusive" {{ $defaultGstType === 'inclusive' ? 'selected' : '' }}>GST Included (Inclusive)</option>
-                            <option value="exclusive" {{ $defaultGstType === 'exclusive' ? 'selected' : '' }}>GST Extra (Exclusive)</option>
+                            <option value="exclusive" {{ old('gst_type', $vehicleSalesInvoice->cgst_amount > 0 && $vehicleSalesInvoice->sub_total == $vehicleSalesInvoice->rate ? 'exclusive' : ($vehicleSalesInvoice->sub_total != $vehicleSalesInvoice->total ? 'exclusive' : 'inclusive')) === 'exclusive' ? 'selected' : '' }}>GST Extra (Exclusive)</option>
+                            <option value="inclusive" {{ old('gst_type', $vehicleSalesInvoice->sub_total != $vehicleSalesInvoice->rate ? 'inclusive' : 'exclusive') === 'inclusive' ? 'selected' : '' }}>GST Included (Inclusive)</option>
                         </select>
                     </div>
                     <div class="col-md-3">
@@ -382,19 +387,17 @@ document.addEventListener('DOMContentLoaded', function () {
         var subTotal = 0, cgstAmt = 0, sgstAmt = 0, igstAmt = 0, totalVal = 0;
 
         if (gstType === 'inclusive') {
-            totalVal = rateVal;
-            var taxAmount = totalVal - (totalVal / 1.05);
+            subTotal = Math.round((rateVal / 1.05) * 100) / 100;
             if (taxRegime === 'igst') {
                 cgstAmt = 0;
                 sgstAmt = 0;
-                igstAmt = Math.round(taxAmount * 100) / 100;
-                subTotal = Math.round((totalVal - igstAmt) * 100) / 100;
+                igstAmt = Math.round(((subTotal * igstRate) / 100) * 100) / 100;
             } else {
-                cgstAmt = Math.round((taxAmount / 2) * 100) / 100;
-                sgstAmt = Math.round((taxAmount / 2) * 100) / 100;
+                cgstAmt = Math.round(((subTotal * cgstRate) / 100) * 100) / 100;
+                sgstAmt = Math.round(((subTotal * sgstRate) / 100) * 100) / 100;
                 igstAmt = 0;
-                subTotal = Math.round((totalVal - cgstAmt - sgstAmt) * 100) / 100;
             }
+            totalVal = rateVal;
         } else {
             subTotal = rateVal;
             if (taxRegime === 'igst') {
@@ -406,7 +409,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 sgstAmt = Math.round(((subTotal * sgstRate) / 100) * 100) / 100;
                 igstAmt = 0;
             }
-            totalVal = Math.round((subTotal + cgstAmt + sgstAmt + igstAmt) * 100) / 100;
+            totalVal = subTotal + cgstAmt + sgstAmt + igstAmt;
         }
 
         subTotalOut.value = subTotal.toFixed(2);
@@ -417,7 +420,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         var nemmpVal = parseFloat(nemmpInp.value) || 0;
         var discountVal = parseFloat(discountInp.value) || 0;
-        var grandTotal = Math.round((totalVal - nemmpVal - discountVal) * 100) / 100;
+        var grandTotal = totalVal - nemmpVal - discountVal;
         grandTotalOut.value = grandTotal.toFixed(2);
 
         calculatePayment();
