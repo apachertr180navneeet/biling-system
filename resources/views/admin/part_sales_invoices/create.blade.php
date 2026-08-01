@@ -174,44 +174,10 @@
                             </tr>
                         </thead>
                         <tbody id="itemsContainer">
-                            <tr class="item-row">
-                                <td>
-                                    <input type="hidden" name="items[0][spare_part_id]" class="part-id-input" value="" required>
-                                    <input type="text" class="form-control bg-white fw-bold part-name-input" readonly value="" placeholder="Click 'Search & Add Item' to select part" required>
-                                    <div class="mt-2">
-                                        <input type="text" name="items[0][serial_no_warranty_notes]" class="form-control form-control-sm notes-input" placeholder="Serial No. / Warranty Notes (Optional)">
-                                    </div>
-                                </td>
-                                <td class="text-center bg-light">
-                                    <span class="stock-badge fw-bold text-secondary">0</span>
-                                </td>
-                                <td>
-                                    <input type="number" name="items[0][quantity]" class="form-control qty-input text-center" min="1" value="1" required>
-                                </td>
-                                <td>
-                                    <input type="number" step="0.01" name="items[0][rate]" class="form-control rate-input" min="0" value="0.00" data-entered-rate="0.00" required>
-                                </td>
-                                <td>
-                                    <select name="items[0][gst_type]" class="form-select gst-type-select no-select2" required>
-                                        <option value="exclusive">Exclusive</option>
-                                        <option value="inclusive">Inclusive</option>
-                                    </select>
-                                </td>
-                                <td>
-                                    <select name="items[0][tax_percentage]" class="form-select tax-select no-select2" required>
-                                        <option value="0.00">0%</option>
-                                        <option value="5.00">5%</option>
-                                        <option value="12.00">12%</option>
-                                        <option value="18.00" selected>18%</option>
-                                        <option value="28.00">28%</option>
-                                    </select>
-                                </td>
-                                <td class="bg-light">
-                                    <input type="text" class="form-control line-total bg-transparent border-0 fw-bold" readonly value="0.00">
-                                </td>
-                                <td class="text-center">
-                                    <button type="button" class="btn btn-sm btn-outline-primary btn-edit-row me-1" title="Edit via Modal"><i class="bx bx-edit"></i></button>
-                                    <button type="button" class="btn btn-sm btn-outline-danger btn-remove-row" title="Remove"><i class="bx bx-trash"></i></button>
+                            <tr id="noItemsNotice">
+                                <td colspan="8" class="text-center p-4 text-muted bg-light">
+                                    <i class="bx bx-package fs-2 mb-2 d-block text-primary"></i>
+                                    No items added yet. Click <strong>"Search & Add Item (Modal)"</strong> below to select spare parts.
                                 </td>
                             </tr>
                         </tbody>
@@ -492,12 +458,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Create New Row HTML Helper
     function createRow(partId = '', partName = '', qty = 1, rate = 0.00, gstType = 'exclusive', taxPct = '18.00', notes = '', stock = 0) {
+        var notice = document.getElementById('noItemsNotice');
+        if (notice) notice.remove();
+
         var row = document.createElement('tr');
         row.className = 'item-row';
         row.innerHTML = `
             <td>
                 <input type="hidden" name="items[${itemIndex}][spare_part_id]" class="part-id-input" value="${partId}" required>
-                <input type="text" class="form-control bg-white fw-bold part-name-input" readonly value="${partName}" placeholder="Click 'Search & Add Item' to select part" required>
+                <input type="text" class="form-control bg-white fw-bold part-name-input" readonly value="${partName}" required>
                 <div class="mt-2">
                     <input type="text" name="items[${itemIndex}][serial_no_warranty_notes]" class="form-control form-control-sm notes-input" placeholder="Serial No. / Warranty Notes (Optional)" value="${notes}">
                 </div>
@@ -601,31 +570,26 @@ document.addEventListener('DOMContentLoaded', function() {
             qty = stock;
         }
 
-        // Check if there is an unselected first row in the table
-        var existingRows = itemsContainer.querySelectorAll('.item-row');
-        var targetRow = null;
-
-        if (existingRows.length === 1) {
-            var firstPartId = existingRows[0].querySelector('.part-id-input');
-            if (!firstPartId.value) {
-                targetRow = existingRows[0];
+        var existingRow = null;
+        itemsContainer.querySelectorAll('.item-row').forEach(function(r) {
+            if (r.querySelector('.part-id-input').value == partId) {
+                existingRow = r;
             }
-        }
+        });
 
-        if (targetRow) {
-            targetRow.querySelector('.part-id-input').value = partId;
-            targetRow.querySelector('.part-name-input').value = partName;
-            var stockBadge = targetRow.querySelector('.stock-badge');
-            stockBadge.textContent = stock;
-            stockBadge.className = 'stock-badge fw-bold ' + (stock > 0 ? 'text-success' : 'text-danger');
-
-            var qtyIn = targetRow.querySelector('.qty-input');
-            var rateIn = targetRow.querySelector('.rate-input');
-            qtyIn.value = qty;
+        if (existingRow) {
+            var qtyIn = existingRow.querySelector('.qty-input');
+            var rateIn = existingRow.querySelector('.rate-input');
+            var curQty = parseInt(qtyIn.value) || 0;
+            var newQty = curQty + qty;
+            if (stock > 0 && newQty > stock) {
+                alert('Total quantity cannot exceed available stock (' + stock + ')');
+                newQty = stock;
+            }
+            qtyIn.value = newQty;
             rateIn.value = rate.toFixed(2);
             rateIn.dataset.enteredRate = rate.toFixed(2);
-
-            calculateRow(targetRow);
+            calculateRow(existingRow);
         } else {
             var newRow = createRow(partId, partName, qty, rate, 'exclusive', '18.00', '', stock);
             calculateRow(newRow);
@@ -647,14 +611,9 @@ document.addEventListener('DOMContentLoaded', function() {
     itemsContainer.addEventListener('click', function(e) {
         var removeBtn = e.target.closest('.btn-remove-row');
         if (removeBtn) {
-            var rows = itemsContainer.querySelectorAll('.item-row');
-            if (rows.length > 1) {
-                var row = removeBtn.closest('.item-row');
-                row.remove();
-                calculateSummary();
-            } else {
-                alert('At least one item is required in the invoice.');
-            }
+            var row = removeBtn.closest('.item-row');
+            row.remove();
+            calculateSummary();
             return;
         }
 
@@ -863,6 +822,16 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     function calculateSummary() {
+        var rows = itemsContainer.querySelectorAll('.item-row');
+        if (rows.length === 0) {
+            if (!document.getElementById('noItemsNotice')) {
+                itemsContainer.innerHTML = '<tr id="noItemsNotice"><td colspan="8" class="text-center p-4 text-muted bg-light"><i class="bx bx-package fs-2 mb-2 d-block text-primary"></i>No items added yet. Click <strong>"Search & Add Item (Modal)"</strong> below to select spare parts.</td></tr>';
+            }
+        } else {
+            var notice = document.getElementById('noItemsNotice');
+            if (notice) notice.remove();
+        }
+
         var taxableTotal = 0;
         var cgstTotal = 0;
         var sgstTotal = 0;

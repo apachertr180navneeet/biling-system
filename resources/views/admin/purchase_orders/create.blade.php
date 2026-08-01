@@ -106,24 +106,9 @@
                 </div>
                 @error('items') <div class="text-danger small mb-2">{{ $message }}</div> @enderror
                 <div id="itemsContainer">
-                    <div class="item-row row mb-2 align-items-center">
-                        <div class="col-md-5">
-                            <input type="hidden" name="items[0][spare_part_id]" class="part-id-input" value="" required>
-                            <input type="text" class="form-control bg-white fw-bold part-name-input" readonly value="" placeholder="Click 'Search & Add Item' to select part" required>
-                        </div>
-                        <div class="col-md-2">
-                            <input type="number" name="items[0][quantity]" class="form-control qty text-center" placeholder="Qty" min="1" value="1" required>
-                        </div>
-                        <div class="col-md-2">
-                            <input type="number" step="0.01" name="items[0][unit_price]" class="form-control unit-price" placeholder="Price" min="0" value="0.00">
-                        </div>
-                        <div class="col-md-2">
-                            <input type="text" class="form-control line-total" readonly value="0.00">
-                        </div>
-                        <div class="col-md-1 text-center">
-                            <button type="button" class="btn btn-sm btn-outline-primary btn-edit-item me-1" title="Edit via Modal"><i class="bx bx-edit"></i></button>
-                            <button type="button" class="btn btn-sm btn-danger remove-item" title="Remove">X</button>
-                        </div>
+                    <div id="noItemsNotice" class="alert alert-light text-center border p-4 text-muted">
+                        <i class="bx bx-package fs-2 mb-2 d-block text-primary"></i>
+                        No items added yet. Click <strong>"Search & Add Item (Modal)"</strong> above to select spare parts.
                     </div>
                 </div>
 
@@ -247,10 +232,11 @@ $(document).ready(function() {
     var modalPartsCount = document.getElementById('modalPartsCount');
 
     function createRow(partId = '', partName = '', qty = 1, price = 0.00) {
+        $('#noItemsNotice').remove();
         var html = '<div class="item-row row mb-2 align-items-center">' +
             '<div class="col-md-5">' +
                 '<input type="hidden" name="items[' + itemIndex + '][spare_part_id]" class="part-id-input" value="' + partId + '" required>' +
-                '<input type="text" class="form-control bg-white fw-bold part-name-input" readonly value="' + partName + '" placeholder="Click \'Search & Add Item\' to select part" required>' +
+                '<input type="text" class="form-control bg-white fw-bold part-name-input" readonly value="' + partName + '" required>' +
             '</div>' +
             '<div class="col-md-2"><input type="number" name="items[' + itemIndex + '][quantity]" class="form-control qty text-center" placeholder="Qty" min="1" value="' + qty + '" required></div>' +
             '<div class="col-md-2"><input type="number" step="0.01" name="items[' + itemIndex + '][unit_price]" class="form-control unit-price" placeholder="Price" min="0" value="' + parseFloat(price).toFixed(2) + '"></div>' +
@@ -314,22 +300,19 @@ $(document).ready(function() {
         var qty = parseInt(qtyInput.value) || 1;
         var price = parseFloat(priceInput.value) || parseFloat(addBtn.getAttribute('data-price')) || 0;
 
-        var existingRows = $('#itemsContainer .item-row');
-        var targetRow = null;
-
-        if (existingRows.length === 1) {
-            var firstIdInput = existingRows.eq(0).find('.part-id-input');
-            if (!firstIdInput.val()) {
-                targetRow = existingRows.eq(0);
+        var existingRow = null;
+        $('#itemsContainer .item-row').each(function() {
+            if ($(this).find('.part-id-input').val() == partId) {
+                existingRow = $(this);
             }
-        }
+        });
 
-        if (targetRow) {
-            targetRow.find('.part-id-input').val(partId);
-            targetRow.find('.part-name-input').val(partName);
-            targetRow.find('.qty').val(qty);
-            targetRow.find('.unit-price').val(price.toFixed(2));
-            targetRow.find('.line-total').val((qty * price).toFixed(2));
+        if (existingRow) {
+            var curQty = parseInt(existingRow.find('.qty').val()) || 0;
+            var newQty = curQty + qty;
+            existingRow.find('.qty').val(newQty);
+            existingRow.find('.unit-price').val(price.toFixed(2));
+            existingRow.find('.line-total').val((newQty * price).toFixed(2));
             calcTotal();
         } else {
             createRow(partId, partName, qty, price);
@@ -348,11 +331,7 @@ $(document).ready(function() {
 
     // Remove item row
     $(document).on('click', '.remove-item', function() {
-        if ($('.item-row').length > 1) {
-            $(this).closest('.item-row').remove();
-        } else {
-            alert('At least one item is required in the purchase order.');
-        }
+        $(this).closest('.item-row').remove();
         calcTotal();
     });
 
@@ -407,6 +386,17 @@ $(document).ready(function() {
     });
 
     function calcTotal() {
+        var rows = $('.item-row');
+        if (rows.length === 0) {
+            if ($('#noItemsNotice').length === 0) {
+                $('#itemsContainer').html('<div id="noItemsNotice" class="alert alert-light text-center border p-4 text-muted"><i class="bx bx-package fs-2 mb-2 d-block text-primary"></i>No items added yet. Click <strong>"Search & Add Item (Modal)"</strong> above to select spare parts.</div>');
+            }
+            $('#grandTotal').text('0.00');
+            return;
+        } else {
+            $('#noItemsNotice').remove();
+        }
+
         var total = 0;
         $('.line-total').each(function() { total += parseFloat($(this).val()) || 0; });
         $('#grandTotal').text(total.toFixed(2));
