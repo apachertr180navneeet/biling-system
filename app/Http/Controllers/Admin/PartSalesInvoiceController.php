@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xls;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class PartSalesInvoiceController extends Controller
 {
@@ -460,5 +461,27 @@ class PartSalesInvoiceController extends Controller
         ]);
 
         return response()->json(['success' => true, 'message' => 'Invoice Date & Number updated successfully.']);
+    }
+
+    public function generatePdf(Request $request, PartSalesInvoice $partSalesInvoice)
+    {
+        $partSalesInvoice->load('customer', 'items.sparePart');
+
+        $pdf = Pdf::loadView('admin.part_sales_invoices.pdf', compact('partSalesInvoice'));
+        $pdf->setPaper('a4');
+        $pdf->setOption('isRemoteEnabled', true);
+
+        if ($request->has('print')) {
+            $pdf->render();
+            $canvas = $pdf->getCanvas();
+            $canvas->javascript("this.print();");
+            return $pdf->stream($partSalesInvoice->invoice_number . '.pdf');
+        }
+
+        if ($request->has('download') || $request->input('download') == 1) {
+            return $pdf->download($partSalesInvoice->invoice_number . '.pdf');
+        }
+
+        return $pdf->stream($partSalesInvoice->invoice_number . '.pdf');
     }
 }

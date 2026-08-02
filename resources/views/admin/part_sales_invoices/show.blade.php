@@ -664,7 +664,8 @@ if (!function_exists('getIndianRupeesInWords')) {
     <div class="d-flex justify-content-between align-items-center mb-4 btn-print-group">
         <h4 class="fw-bold mb-0">Parts Sales Invoice Detail</h4>
         <div>
-            <button onclick="window.print();" class="btn btn-primary"><i class="bx bx-printer"></i> Print Invoice</button>
+            <button onclick="window.print();" class="btn btn-primary me-1"><i class="bx bx-printer"></i> Print Invoice</button>
+            <a href="{{ route('admin.part-sales-invoices.pdf', [$partSalesInvoice, 'download' => 1]) }}" class="btn btn-danger me-1"><i class="bx bxs-file-pdf"></i> Download PDF</a>
             <a href="{{ route('admin.part-sales-invoices.index') }}" class="btn btn-secondary">Back to List</a>
         </div>
     </div>
