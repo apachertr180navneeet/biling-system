@@ -386,15 +386,14 @@
                                     <input type="number" step="0.01" class="form-control form-control-sm modal-part-rate" value="{{ number_format($p->selling_price, 2, '.', '') }}" min="0">
                                 </td>
                                 <td class="text-center">
-                                    <input type="number" class="form-control form-control-sm text-center modal-part-qty" value="1" min="1" max="{{ $p->qty_available }}" {{ $p->qty_available <= 0 ? 'disabled' : '' }}>
+                                    <input type="number" class="form-control form-control-sm text-center modal-part-qty" value="1" min="1">
                                 </td>
                                 <td class="text-center">
                                     <button type="button" class="btn btn-sm btn-primary btn-add-modal-part" 
                                             data-id="{{ $p->id }}"
                                             data-name="{{ $p->part_no }} - {{ $p->name }}"
                                             data-price="{{ number_format($p->selling_price, 2, '.', '') }}"
-                                            data-stock="{{ $p->qty_available }}"
-                                            {{ $p->qty_available <= 0 ? 'disabled' : '' }}>
+                                            data-stock="{{ $p->qty_available }}">
                                         <i class="bx bx-plus me-1"></i> Add to Invoice
                                     </button>
                                 </td>
@@ -555,16 +554,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var qty = parseInt(qtyInput.value) || 1;
         var rate = parseFloat(rateInput.value) || parseFloat(addBtn.getAttribute('data-price')) || 0;
 
-        if (stock <= 0) {
-            alert('This part is out of stock!');
-            return;
-        }
 
-        if (qty > stock) {
-            alert('Quantity cannot exceed available stock (' + stock + ')');
-            qtyInput.value = stock;
-            qty = stock;
-        }
 
         // Check if there is an unselected first row in the table
         var existingRows = itemsContainer.querySelectorAll('.item-row');
@@ -677,10 +667,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var newNotes = document.getElementById('editNotes').value;
         var stock = parseInt(document.getElementById('editPartStock').value) || 0;
 
-        if (stock > 0 && newQty > stock) {
-            alert('Quantity cannot exceed available stock (' + stock + ')');
-            return;
-        }
+
 
         var qtyInput = editingTargetRow.querySelector('.qty-input');
         var rateInput = editingTargetRow.querySelector('.rate-input');
@@ -731,12 +718,6 @@ document.addEventListener('DOMContentLoaded', function() {
         var stockBadge = row.querySelector('.stock-badge');
 
         qtyInput.addEventListener('input', function() {
-            var stock = parseInt(stockBadge.textContent) || 0;
-            var val = parseInt(qtyInput.value) || 0;
-            if (stock > 0 && val > stock) {
-                alert('Quantity cannot exceed available stock (' + stock + ')');
-                qtyInput.value = stock;
-            }
             calculateRow(row);
         });
 

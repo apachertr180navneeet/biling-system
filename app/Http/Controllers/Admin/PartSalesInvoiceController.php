@@ -263,17 +263,7 @@ class PartSalesInvoiceController extends Controller
             }
         }
 
-        // Validate stock availability first
-        foreach ($request->items as $itemData) {
-            $part = SparePart::findOrFail($itemData['spare_part_id']);
-            $stock = SparePartStock::where('spare_part_id', $part->id)->first();
-            $available = $stock ? $stock->quantity : 0;
-            if ($available < intval($itemData['quantity'])) {
-                return back()->withErrors([
-                    'items' => "Insufficient stock for part: {$part->name}. Available: {$available}, Requested: {$itemData['quantity']}"
-                ])->withInput();
-            }
-        }
+
 
         // Calculations
         $taxable_amount = 0;
@@ -364,7 +354,10 @@ class PartSalesInvoiceController extends Controller
                 $line_amount = $line_taxable + $line_tax;
 
                 // Decrement stock
-                $stock = SparePartStock::where('spare_part_id', $itemData['spare_part_id'])->lockForUpdate()->first();
+                $stock = SparePartStock::firstOrCreate(
+                    ['spare_part_id' => $itemData['spare_part_id']],
+                    ['quantity' => 0, 'min_quantity' => 0, 'purchase_price' => 0]
+                );
                 $stock->decrement('quantity', $qty);
 
                 // Transaction log
