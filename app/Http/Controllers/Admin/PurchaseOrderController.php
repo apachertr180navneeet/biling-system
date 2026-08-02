@@ -171,6 +171,17 @@ class PurchaseOrderController extends Controller
         $spareParts = SparePart::orderBy('name')->get()->map(function ($part) {
             $stock = SparePartStock::where('spare_part_id', $part->id)->first();
             $part->qty_available = $stock ? $stock->quantity : 0;
+            $price = floatval($part->purchase_price);
+            if ($price <= 0 && $stock && floatval($stock->purchase_price) > 0) {
+                $price = floatval($stock->purchase_price);
+            }
+            if ($price <= 0 && floatval($part->selling_price) > 0) {
+                $price = floatval($part->selling_price);
+            }
+            if ($price <= 0 && floatval($part->mrp) > 0) {
+                $price = floatval($part->mrp);
+            }
+            $part->purchase_price = $price;
             return $part;
         });
         return view('admin.purchase_orders.create', compact('suppliers', 'spareParts'));
@@ -236,6 +247,17 @@ class PurchaseOrderController extends Controller
         $spareParts = SparePart::orderBy('name')->get()->map(function ($part) {
             $stock = SparePartStock::where('spare_part_id', $part->id)->first();
             $part->qty_available = $stock ? $stock->quantity : 0;
+            $price = floatval($part->purchase_price);
+            if ($price <= 0 && $stock && floatval($stock->purchase_price) > 0) {
+                $price = floatval($stock->purchase_price);
+            }
+            if ($price <= 0 && floatval($part->selling_price) > 0) {
+                $price = floatval($part->selling_price);
+            }
+            if ($price <= 0 && floatval($part->mrp) > 0) {
+                $price = floatval($part->mrp);
+            }
+            $part->purchase_price = $price;
             return $part;
         });
         return view('admin.purchase_orders.edit', compact('purchaseOrder', 'suppliers', 'spareParts'));

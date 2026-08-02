@@ -122,12 +122,8 @@
                             @endphp
                             <tr class="item-row">
                                 <td>
-                                    <select name="items[{{ $i }}][spare_part_id]" class="form-select spare-part-select" required>
-                                        <option value="">Select Part</option>
-                                        @foreach($spareParts as $part)
-                                        <option value="{{ $part->id }}" data-price="{{ number_format($part->purchase_price, 2, '.', '') }}" data-stock="{{ $part->qty_available }}" {{ $item->spare_part_id == $part->id ? 'selected' : '' }}>{{ $part->part_no }} - {{ $part->name }}</option>
-                                        @endforeach
-                                    </select>
+                                    <input type="hidden" name="items[{{ $i }}][spare_part_id]" class="part-id-input" value="{{ $item->spare_part_id }}" required>
+                                    <input type="text" class="form-control bg-white fw-bold part-name-input" readonly value="{{ $item->sparePart ? $item->sparePart->part_no . ' - ' . $item->sparePart->name : '' }}" placeholder="Click 'Search & Add Item' to select part" required>
                                 </td>
                                 <td class="text-center bg-light">
                                     <span class="stock-badge fw-bold {{ $stockVal > 0 ? 'text-success' : 'text-secondary' }}">{{ $stockVal }}</span>
@@ -153,9 +149,6 @@
                 <div class="mb-4 d-flex gap-2">
                     <button type="button" class="btn btn-primary btn-sm" id="btnOpenSearchModal">
                         <i class="bx bx-search me-1"></i> Search & Add Item (Modal)
-                    </button>
-                    <button type="button" class="btn btn-outline-secondary btn-sm" id="btnAddRow">
-                        <i class="bx bx-plus me-1"></i> + Add Empty Row
                     </button>
                 </div>
 
@@ -283,25 +276,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function createRow(partId = '', qty = 1, unitPrice = 0.00, stock = 0) {
+    function createRow(partId = '', partName = '', qty = 1, unitPrice = 0.00, stock = 0) {
         var row = document.createElement('tr');
         row.className = 'item-row';
-        
-        var optionsHtml = '<option value="">Select Part</option>';
-        @foreach($spareParts as $part)
-        var pId = "{{ $part->id }}";
-        var pNoName = "{{ addslashes($part->part_no) }} - {{ addslashes($part->name) }}";
-        var pPrice = "{{ number_format($part->purchase_price, 2, '.', '') }}";
-        var pStock = "{{ $part->qty_available }}";
-        var sel = (partId == pId) ? 'selected' : '';
-        optionsHtml += `<option value="${pId}" data-price="${pPrice}" data-stock="${pStock}" ${sel}>${pNoName}</option>`;
-        @endforeach
 
         row.innerHTML = `
             <td>
-                <select name="items[${itemIndex}][spare_part_id]" class="form-select spare-part-select" required>
-                    ${optionsHtml}
-                </select>
+                <input type="hidden" name="items[${itemIndex}][spare_part_id]" class="part-id-input" value="${partId}" required>
+                <input type="text" class="form-control bg-white fw-bold part-name-input" readonly value="${partName}" placeholder="Click 'Search & Add Item' to select part" required>
             </td>
             <td class="text-center bg-light">
                 <span class="stock-badge fw-bold ${stock > 0 ? 'text-success' : 'text-secondary'}">${stock}</span>
@@ -326,12 +308,6 @@ document.addEventListener('DOMContentLoaded', function() {
         calculateRow(row);
         checkNoItemsNotice();
         return row;
-    }
-
-    if (btnAddRow) {
-        btnAddRow.addEventListener('click', function() {
-            createRow();
-        });
     }
 
     btnOpenSearchModal.addEventListener('click', function() {
@@ -400,32 +376,24 @@ document.addEventListener('DOMContentLoaded', function() {
             checkedBoxes.forEach(function(cb) {
                 var row = cb.closest('.modal-part-row');
                 var partId = cb.getAttribute('data-id');
+                var partName = cb.getAttribute('data-name');
                 var stock = parseInt(cb.getAttribute('data-stock')) || 0;
                 var qtyInput = row.querySelector('.modal-part-qty');
                 var rateInput = row.querySelector('.modal-part-rate');
                 var qty = parseInt(qtyInput.value) || 1;
-                var rate = parseFloat(rateInput.value) || parseFloat(cb.getAttribute('data-price')) || 0;
+                var rate = (rateInput && rateInput.value !== '' && !isNaN(parseFloat(rateInput.value))) ? parseFloat(rateInput.value) : (parseFloat(cb.getAttribute('data-price')) || 0);
 
                 var existingRows = itemsContainer.querySelectorAll('.item-row');
                 var targetRow = null;
 
                 existingRows.forEach(function(r) {
-                    var sel = r.querySelector('.spare-part-select');
-                    if (sel && sel.value == partId) {
+                    var pidInput = r.querySelector('.part-id-input');
+                    if (pidInput && pidInput.value == partId) {
                         targetRow = r;
                     }
                 });
 
-                if (!targetRow && existingRows.length === 1) {
-                    var firstSelect = existingRows[0].querySelector('.spare-part-select');
-                    if (firstSelect && !firstSelect.value) {
-                        targetRow = existingRows[0];
-                    }
-                }
-
                 if (targetRow) {
-                    var sel = targetRow.querySelector('.spare-part-select');
-                    sel.value = partId;
                     var qtyIn = targetRow.querySelector('.qty');
                     var rateIn = targetRow.querySelector('.unit-price');
                     qtyIn.value = qty;
@@ -437,8 +405,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                     calculateRow(targetRow);
                 } else {
-                    var newRow = createRow(partId, qty, rate, stock);
-                    calculateRow(newRow);
+                    createRow(partId, partName, qty, rate, stock);
                 }
 
                 cb.checked = false;
@@ -451,25 +418,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function bindRowEvents(row) {
-        var partSelect = row.querySelector('.spare-part-select');
         var qtyInput = row.querySelector('.qty');
         var priceInput = row.querySelector('.unit-price');
         var removeBtn = row.querySelector('.btn-remove-row');
-
-        if (partSelect) {
-            $(partSelect).on('change', function() {
-                var selected = $(this).find(':selected');
-                var price = parseFloat(selected.data('price')) || 0;
-                var stock = parseInt(selected.data('stock')) || 0;
-                priceInput.value = price.toFixed(2);
-                var stockBadge = row.querySelector('.stock-badge');
-                if (stockBadge) {
-                    stockBadge.textContent = stock;
-                    stockBadge.className = 'stock-badge fw-bold ' + (stock > 0 ? 'text-success' : 'text-secondary');
-                }
-                calculateRow(row);
-            });
-        }
 
         if (qtyInput) {
             qtyInput.addEventListener('input', function() { calculateRow(row); });
@@ -514,24 +465,22 @@ document.addEventListener('DOMContentLoaded', function() {
         calculateRow(row);
     });
     calcGrandTotal();
+    checkNoItemsNotice();
 });
 
 document.getElementById('poForm').addEventListener('submit', function(e) {
     var valid = true;
     var items = document.querySelectorAll('.item-row');
     if (items.length === 0) {
-        alert('Please add at least one item.');
+        alert('Please add at least one item using "Search & Add Item".');
         e.preventDefault();
         return;
     }
     items.forEach(function(row) {
-        var partSelect = row.querySelector('.spare-part-select');
+        var partIdInput = row.querySelector('.part-id-input');
         var qtyInput = row.querySelector('.qty');
-        if (partSelect && !partSelect.value) {
+        if (partIdInput && !partIdInput.value) {
             valid = false;
-            partSelect.classList.add('is-invalid');
-        } else if (partSelect) {
-            partSelect.classList.remove('is-invalid');
         }
         if (qtyInput && (parseInt(qtyInput.value) || 0) < 1) {
             valid = false;
