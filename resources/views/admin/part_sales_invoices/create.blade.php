@@ -361,16 +361,25 @@
                     <table class="table table-hover align-middle" id="modalPartsTable">
                         <thead class="table-dark sticky-top">
                             <tr>
-                                <th style="width: 35%;">Part Number & Name</th>
-                                <th style="width: 15%; text-align: center;">Stock Available</th>
-                                <th style="width: 18%;">Rate / Selling Price (INR)</th>
-                                <th style="width: 12%; text-align: center;">Qty</th>
-                                <th style="width: 20%; text-align: center;">Action</th>
+                                <th style="width: 5%; text-align: center;">
+                                    <input type="checkbox" id="selectAllModalParts" class="form-check-input" title="Select All">
+                                </th>
+                                <th style="width: 40%;">Part Number & Name</th>
+                                <th style="width: 18%; text-align: center;">Stock Available</th>
+                                <th style="width: 22%;">Rate / Selling Price (INR)</th>
+                                <th style="width: 15%; text-align: center;">Qty</th>
                             </tr>
                         </thead>
                         <tbody id="modalPartsBody">
                             @foreach($spareParts as $p)
                             <tr class="modal-part-row" data-id="{{ $p->id }}" data-name="{{ strtolower($p->name) }}" data-partno="{{ strtolower($p->part_no) }}">
+                                <td class="text-center">
+                                    <input type="checkbox" class="form-check-input modal-part-checkbox" 
+                                           data-id="{{ $p->id }}"
+                                           data-name="{{ $p->part_no }} - {{ $p->name }}"
+                                           data-price="{{ number_format($p->selling_price, 2, '.', '') }}"
+                                           data-stock="{{ $p->qty_available }}">
+                                </td>
                                 <td>
                                     <div class="fw-bold text-dark fs-6">{{ $p->name }}</div>
                                     <small class="text-muted"><i class="bx bx-purchase-tag me-1"></i>Part No: <strong>{{ $p->part_no }}</strong></small>
@@ -388,24 +397,19 @@
                                 <td class="text-center">
                                     <input type="number" class="form-control form-control-sm text-center modal-part-qty" value="1" min="1">
                                 </td>
-                                <td class="text-center">
-                                    <button type="button" class="btn btn-sm btn-primary btn-add-modal-part" 
-                                            data-id="{{ $p->id }}"
-                                            data-name="{{ $p->part_no }} - {{ $p->name }}"
-                                            data-price="{{ number_format($p->selling_price, 2, '.', '') }}"
-                                            data-stock="{{ $p->qty_available }}">
-                                        <i class="bx bx-plus me-1"></i> Add to Invoice
-                                    </button>
-                                </td>
                             </tr>
                             @endforeach
                         </tbody>
                     </table>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary d-none" id="btnUpdateModalItem"><i class="bx bx-check me-1"></i> Save Changes</button>
+            <div class="modal-footer justify-content-between">
+                <span class="text-muted fw-bold" id="selectedPartsCount">0 parts selected</span>
+                <div>
+                    <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-success" id="btnAddSelectedModalParts"><i class="bx bx-plus me-1"></i> Add Selected Items to Invoice</button>
+                    <button type="button" class="btn btn-primary d-none" id="btnUpdateModalItem"><i class="bx bx-check me-1"></i> Save Changes</button>
+                </div>
             </div>
         </div>
     </div>
@@ -452,8 +456,23 @@ document.addEventListener('DOMContentLoaded', function() {
     var modalTableWrapper = document.getElementById('modalTableWrapper');
     var modalEditPanel = document.getElementById('modalEditPanel');
     var btnUpdateModalItem = document.getElementById('btnUpdateModalItem');
+    var btnAddSelectedModalParts = document.getElementById('btnAddSelectedModalParts');
+    var selectAllModalParts = document.getElementById('selectAllModalParts');
+    var selectedPartsCount = document.getElementById('selectedPartsCount');
     var modalPartSearch = document.getElementById('modalPartSearch');
     var modalPartsCount = document.getElementById('modalPartsCount');
+
+    function checkNoItemsNotice() {
+        var noNotice = document.getElementById('noItemsNotice');
+        var rows = itemsContainer.querySelectorAll('.item-row');
+        if (noNotice) {
+            if (rows.length > 0) {
+                noNotice.classList.add('d-none');
+            } else {
+                noNotice.classList.remove('d-none');
+            }
+        }
+    }
 
     // Create New Row HTML Helper
     function createRow(partId = '', partName = '', qty = 1, rate = 0.00, gstType = 'exclusive', taxPct = '18.00', notes = '', stock = 0) {
@@ -501,6 +520,7 @@ document.addEventListener('DOMContentLoaded', function() {
         itemIndex++;
         itemsContainer.appendChild(row);
         bindRowEvents(row);
+        checkNoItemsNotice();
         return row;
     }
 
@@ -512,6 +532,14 @@ document.addEventListener('DOMContentLoaded', function() {
         modalTableWrapper.classList.remove('d-none');
         modalEditPanel.classList.add('d-none');
         btnUpdateModalItem.classList.add('d-none');
+        if (btnAddSelectedModalParts) btnAddSelectedModalParts.classList.remove('d-none');
+        if (selectedPartsCount) selectedPartsCount.classList.remove('d-none');
+        
+        // Reset checkboxes
+        document.querySelectorAll('.modal-part-checkbox').forEach(function(cb) { cb.checked = false; });
+        if (selectAllModalParts) selectAllModalParts.checked = false;
+        updateSelectedPartsCount();
+
         modalPartSearch.value = '';
         filterModalParts();
         itemModal.show();
@@ -540,76 +568,99 @@ document.addEventListener('DOMContentLoaded', function() {
 
     modalPartSearch.addEventListener('input', filterModalParts);
 
-    // Add Part from Modal Table to Main Invoice Table
-    document.getElementById('modalPartsBody').addEventListener('click', function(e) {
-        var addBtn = e.target.closest('.btn-add-modal-part');
-        if (!addBtn) return;
+    // Checkbox selection handlers
+    if (selectAllModalParts) {
+        selectAllModalParts.addEventListener('change', function() {
+            var isChecked = this.checked;
+            var visibleCheckboxes = document.querySelectorAll('.modal-part-row:not(.d-none) .modal-part-checkbox');
+            visibleCheckboxes.forEach(function(cb) {
+                cb.checked = isChecked;
+            });
+            updateSelectedPartsCount();
+        });
+    }
 
-        var row = addBtn.closest('.modal-part-row');
-        var partId = addBtn.getAttribute('data-id');
-        var partName = addBtn.getAttribute('data-name');
-        var stock = parseInt(addBtn.getAttribute('data-stock')) || 0;
-        var qtyInput = row.querySelector('.modal-part-qty');
-        var rateInput = row.querySelector('.modal-part-rate');
-        var qty = parseInt(qtyInput.value) || 1;
-        var rate = parseFloat(rateInput.value) || parseFloat(addBtn.getAttribute('data-price')) || 0;
-
-
-
-        // Check if there is an unselected first row in the table
-        var existingRows = itemsContainer.querySelectorAll('.item-row');
-        var targetRow = null;
-
-        if (existingRows.length === 1) {
-            var firstPartId = existingRows[0].querySelector('.part-id-input');
-            if (!firstPartId.value) {
-                targetRow = existingRows[0];
-            }
+    document.getElementById('modalPartsBody').addEventListener('change', function(e) {
+        if (e.target.classList.contains('modal-part-checkbox')) {
+            updateSelectedPartsCount();
         }
-
-        if (targetRow) {
-            targetRow.querySelector('.part-id-input').value = partId;
-            targetRow.querySelector('.part-name-input').value = partName;
-            var stockBadge = targetRow.querySelector('.stock-badge');
-            stockBadge.textContent = stock;
-            stockBadge.className = 'stock-badge fw-bold ' + (stock > 0 ? 'text-success' : 'text-danger');
-
-            var qtyIn = targetRow.querySelector('.qty-input');
-            var rateIn = targetRow.querySelector('.rate-input');
-            qtyIn.value = qty;
-            rateIn.value = rate.toFixed(2);
-            rateIn.dataset.enteredRate = rate.toFixed(2);
-
-            calculateRow(targetRow);
-        } else {
-            var newRow = createRow(partId, partName, qty, rate, 'exclusive', '18.00', '', stock);
-            calculateRow(newRow);
-        }
-
-        // Feedback on button
-        var originalText = addBtn.innerHTML;
-        addBtn.innerHTML = '<i class="bx bx-check me-1"></i> Added!';
-        addBtn.classList.remove('btn-primary');
-        addBtn.classList.add('btn-success');
-        setTimeout(function() {
-            addBtn.innerHTML = originalText;
-            addBtn.classList.remove('btn-success');
-            addBtn.classList.add('btn-primary');
-        }, 1000);
     });
+
+    function updateSelectedPartsCount() {
+        var checked = document.querySelectorAll('.modal-part-checkbox:checked');
+        if (selectedPartsCount) {
+            selectedPartsCount.textContent = checked.length + ' part(s) selected';
+        }
+    }
+
+    // Add Selected Parts from Modal to Main Invoice Table
+    if (btnAddSelectedModalParts) {
+        btnAddSelectedModalParts.addEventListener('click', function() {
+            var checkedBoxes = document.querySelectorAll('.modal-part-checkbox:checked');
+            if (checkedBoxes.length === 0) {
+                alert('Please select at least one part using the checkboxes.');
+                return;
+            }
+
+            checkedBoxes.forEach(function(cb) {
+                var row = cb.closest('.modal-part-row');
+                var partId = cb.getAttribute('data-id');
+                var partName = cb.getAttribute('data-name');
+                var stock = parseInt(cb.getAttribute('data-stock')) || 0;
+                var qtyInput = row.querySelector('.modal-part-qty');
+                var rateInput = row.querySelector('.modal-part-rate');
+                var qty = parseInt(qtyInput.value) || 1;
+                var rate = parseFloat(rateInput.value) || parseFloat(cb.getAttribute('data-price')) || 0;
+
+                // Check if there is an unselected first row in the table
+                var existingRows = itemsContainer.querySelectorAll('.item-row');
+                var targetRow = null;
+
+                if (existingRows.length === 1) {
+                    var firstPartId = existingRows[0].querySelector('.part-id-input');
+                    if (!firstPartId.value) {
+                        targetRow = existingRows[0];
+                    }
+                }
+
+                if (targetRow) {
+                    targetRow.querySelector('.part-id-input').value = partId;
+                    targetRow.querySelector('.part-name-input').value = partName;
+                    var stockBadge = targetRow.querySelector('.stock-badge');
+                    stockBadge.textContent = stock;
+                    stockBadge.className = 'stock-badge fw-bold ' + (stock > 0 ? 'text-success' : 'text-danger');
+
+                    var qtyIn = targetRow.querySelector('.qty-input');
+                    var rateIn = targetRow.querySelector('.rate-input');
+                    qtyIn.value = qty;
+                    rateIn.value = rate.toFixed(2);
+                    rateIn.dataset.enteredRate = rate.toFixed(2);
+
+                    calculateRow(targetRow);
+                } else {
+                    var newRow = createRow(partId, partName, qty, rate, 'exclusive', '18.00', '', stock);
+                    calculateRow(newRow);
+                }
+
+                cb.checked = false;
+            });
+
+            if (selectAllModalParts) selectAllModalParts.checked = false;
+            updateSelectedPartsCount();
+            checkNoItemsNotice();
+            calculateSummary();
+            itemModal.hide();
+        });
+    }
 
     // Remove or Edit Row Event Delegation
     itemsContainer.addEventListener('click', function(e) {
         var removeBtn = e.target.closest('.btn-remove-row');
         if (removeBtn) {
-            var rows = itemsContainer.querySelectorAll('.item-row');
-            if (rows.length > 1) {
-                var row = removeBtn.closest('.item-row');
-                row.remove();
-                calculateSummary();
-            } else {
-                alert('At least one item is required in the invoice.');
-            }
+            var row = removeBtn.closest('.item-row');
+            row.remove();
+            checkNoItemsNotice();
+            calculateSummary();
             return;
         }
 
@@ -652,6 +703,8 @@ document.addEventListener('DOMContentLoaded', function() {
         modalTableWrapper.classList.add('d-none');
         modalEditPanel.classList.remove('d-none');
         btnUpdateModalItem.classList.remove('d-none');
+        if (btnAddSelectedModalParts) btnAddSelectedModalParts.classList.add('d-none');
+        if (selectedPartsCount) selectedPartsCount.classList.add('d-none');
 
         itemModal.show();
     }
