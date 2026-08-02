@@ -496,7 +496,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 <input type="text" class="form-control line-total bg-transparent border-0 fw-bold" readonly value="0.00">
             </td>
             <td class="text-center">
-                <button type="button" class="btn btn-sm btn-outline-primary btn-edit-row me-1" title="Edit Item via Modal"><i class="bx bx-edit"></i></button>
                 <button type="button" class="btn btn-sm btn-outline-danger btn-remove-row" title="Remove"><i class="bx bx-trash"></i></button>
             </td>
         `;
