@@ -1,7 +1,75 @@
 @extends('admin.layouts.app')
+
+@section('style')
+<style>
+/* Custom Modal Styling for clean contrast & crisp table layout */
+#addItemModal .modal-header {
+    background-color: #233446 !important;
+    color: #ffffff !important;
+    padding: 1rem 1.5rem;
+}
+#addItemModal .modal-title {
+    color: #ffffff !important;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+#addItemModal .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+    opacity: 0.8;
+}
+#addItemModal .btn-close:hover {
+    opacity: 1;
+}
+#addItemModal .table-responsive {
+    border: 1px solid #d9dee3;
+    border-radius: 0.375rem;
+}
+#addItemModal #modalPartsTable {
+    margin-bottom: 0;
+}
+#addItemModal #modalPartsTable thead th {
+    background-color: #1e293b !important;
+    color: #ffffff !important;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    padding: 12px 14px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #0f172a !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+#addItemModal #modalPartsTable tbody td {
+    padding: 12px 14px;
+    vertical-align: middle;
+    background-color: #ffffff;
+}
+#addItemModal #modalPartsTable tbody tr:nth-of-type(even) td {
+    background-color: #f8fafc;
+}
+#addItemModal #modalPartsTable tbody tr:hover td {
+    background-color: #f1f5f9;
+}
+#addItemModal .btn-add-modal-part {
+    white-space: nowrap;
+    font-weight: 600;
+}
+</style>
+@endsection
+
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
     <h4 class="fw-bold mb-4">Create Parts Quotation</h4>
+
+    @if ($errors->has('items'))
+        <div class="alert alert-danger alert-dismissible" role="alert">
+            {{ $errors->first('items') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
     <div class="card">
         <div class="card-body">
             <form method="POST" action="{{ route('admin.quotations.store') }}" id="quotationForm">
@@ -73,25 +141,34 @@
                 </div>
 
                 <h5 class="card-title text-primary mb-3">Select Parts & Items</h5>
-                <div class="table-responsive mb-4">
-                    <table class="table table-bordered align-middle" id="partsTable">
-                        <thead class="table-light">
-                            <tr>
-                                <th style="width: 35%;">Spare Part <span class="text-danger">*</span></th>
-                                <th style="width: 10%;">GST Type</th>
-                                <th style="width: 10%;">Rate</th>
-                                <th style="width: 10%;">GST (%)</th>
-                                <th style="width: 10%;">Qty</th>
-                                <th style="width: 10%;">Total Amount</th>
-                                <th style="width: 10%;">Action</th>
+                <div class="table-responsive mb-3">
+                    <table class="table table-bordered align-middle" id="itemsTable">
+                        <thead>
+                            <tr class="table-dark">
+                                <th style="width: 30%;">Part Name / Number <span class="text-danger">*</span></th>
+                                <th style="width: 10%; text-align: center;">Stock Available</th>
+                                <th style="width: 8%; text-align: center;">Qty <span class="text-danger">*</span></th>
+                                <th style="width: 12%;">Rate <span class="text-danger">*</span></th>
+                                <th style="width: 12%;">GST Type <span class="text-danger">*</span></th>
+                                <th style="width: 10%;">GST %</th>
+                                <th style="width: 13%;">Total Amount</th>
+                                <th style="width: 5%; text-align: center;">Action</th>
                             </tr>
                         </thead>
-                        <tbody id="partsTableBody">
-                            <!-- Rows added dynamically via JavaScript -->
+                        <tbody id="itemsContainer">
+                            <tr id="noItemsNotice">
+                                <td colspan="8" class="text-center p-4 text-muted bg-light">
+                                    <i class="bx bx-package fs-2 mb-2 d-block text-primary"></i>
+                                    No items added yet. Click <strong>"Search & Add Item (Modal)"</strong> below to select spare parts.
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
-                    <button type="button" class="btn btn-outline-primary mt-2" id="addRowBtn">
-                        <i class="bx bx-plus"></i> Add Item
+                </div>
+
+                <div class="mb-4 d-flex gap-2">
+                    <button type="button" class="btn btn-primary btn-sm" id="btnOpenSearchModal">
+                        <i class="bx bx-search me-1"></i> Search & Add Item (Modal)
                     </button>
                 </div>
 
@@ -147,289 +224,6 @@
     </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const customerSelect = document.getElementById('customer_select');
-    const taxRegimeSelect = document.getElementById('tax_regime');
-    const addRowBtn = document.getElementById('addRowBtn');
-    const tableBody = document.getElementById('partsTableBody');
-    
-    // Store all spare parts details for easy lookup in JavaScript
-    const sparePartsList = @json($spareParts);
-
-    let rowIndex = 0;
-
-    // Customer Selection Change
-    $(customerSelect).on('change', function() {
-        const option = this.options ? this.options[this.selectedIndex] : null;
-        if (option && option.value) {
-            document.getElementById('customer_name').value = option.getAttribute('data-name') || '';
-            document.getElementById('customer_mobile').value = option.getAttribute('data-mobile') || '';
-            document.getElementById('customer_address').value = option.getAttribute('data-address') || '';
-            document.getElementById('customer_gstin').value = option.getAttribute('data-gstin') || '';
-            document.getElementById('customer_pan').value = option.getAttribute('data-pan') || '';
-        } else {
-            document.getElementById('customer_name').value = '';
-            document.getElementById('customer_mobile').value = '';
-            document.getElementById('customer_address').value = '';
-            document.getElementById('customer_gstin').value = '';
-            document.getElementById('customer_pan').value = '';
-        }
-    });
-
-    // Tax Regime Change
-    taxRegimeSelect.addEventListener('change', function() {
-        const regime = this.value;
-        if (regime === 'cgst_sgst') {
-            document.querySelectorAll('.cgst-summary, .sgst-summary').forEach(el => el.classList.remove('d-none'));
-            document.querySelector('.igst-summary').classList.add('d-none');
-        } else {
-            document.querySelectorAll('.cgst-summary, .sgst-summary').forEach(el => el.classList.add('d-none'));
-            document.querySelector('.igst-summary').classList.remove('d-none');
-        }
-        calculateTotals();
-    });
-
-    // Add Row button click
-    addRowBtn.addEventListener('click', function() {
-        addNewRow();
-    });
-
-    // Add initial row
-    addNewRow();
-
-    function addNewRow() {
-        const tr = document.createElement('tr');
-        tr.setAttribute('data-row-id', rowIndex);
-
-        let optionsHtml = '<option value="">-- Choose Part --</option>';
-        sparePartsList.forEach(part => {
-            optionsHtml += `<option value="${part.id}" data-price="${part.selling_price}">${part.name} (${part.part_no || ''})</option>`;
-        });
-
-        tr.innerHTML = `
-            <td>
-                <select name="items[${rowIndex}][spare_part_id]" class="form-select part-select select2-enable" required>
-                    ${optionsHtml}
-                </select>
-            </td>
-            <td>
-                <select name="items[${rowIndex}][gst_type]" class="form-select gst-type" required>
-                    <option value="inclusive">Inclusive</option>
-                    <option value="exclusive" selected>Exclusive</option>
-                </select>
-            </td>
-            <td>
-                <input type="number" step="0.01" name="items[${rowIndex}][rate]" class="form-control rate-input" value="0.00" required>
-            </td>
-            <td>
-                <input type="number" step="0.01" name="items[${rowIndex}][tax_percentage]" class="form-control tax-percentage" value="18.00" required>
-            </td>
-            <td>
-                <input type="number" name="items[${rowIndex}][quantity]" class="form-control quantity-input" value="1" required min="1">
-            </td>
-            <td>
-                <span class="row-total fw-bold">₹0.00</span>
-            </td>
-            <td>
-                <button type="button" class="btn btn-outline-danger btn-sm remove-row-btn">
-                    <i class="bx bx-trash"></i>
-                </button>
-            </td>
-        `;
-
-        tableBody.appendChild(tr);
-
-        // Bind events for the new row
-        const partSelect = tr.querySelector('.part-select');
-        const rateInput = tr.querySelector('.rate-input');
-        const gstTypeSelect = tr.querySelector('.gst-type');
-        const taxInput = tr.querySelector('.tax-percentage');
-        const qtyInput = tr.querySelector('.quantity-input');
-        const removeBtn = tr.querySelector('.remove-row-btn');
-
-        initSelect2(partSelect);
-        $(partSelect).on('change', function() {
-            const selectedOpt = this.options ? this.options[this.selectedIndex] : null;
-            if (selectedOpt && selectedOpt.value) {
-                rateInput.value = parseFloat(selectedOpt.getAttribute('data-price')) || 0;
-            } else {
-                rateInput.value = 0;
-            }
-            calculateRowTotal(tr);
-        });
-
-        [rateInput, gstTypeSelect, taxInput, qtyInput].forEach(el => {
-            el.addEventListener('input', () => calculateRowTotal(tr));
-            el.addEventListener('change', () => calculateRowTotal(tr));
-        });
-
-        removeBtn.addEventListener('click', function() {
-            const rows = tableBody.querySelectorAll('tr');
-            if (rows.length > 1) {
-                tr.remove();
-                calculateTotals();
-            } else {
-                alert('At least one item is required.');
-            }
-        });
-
-        rowIndex++;
-    }
-
-    function calculateRowTotal(row) {
-        const rate = parseFloat(row.querySelector('.rate-input').value) || 0;
-        const qty = parseInt(row.querySelector('.quantity-input').value) || 0;
-        const gstType = row.querySelector('.gst-type').value;
-        const taxPercentage = parseFloat(row.querySelector('.tax-percentage').value) || 0;
-        const rowTotalSpan = row.querySelector('.row-total');
-
-        const raw_total = rate * qty;
-        let amount = 0;
-
-        if (gstType === 'inclusive') {
-            amount = raw_total;
-        } else {
-            amount = raw_total + (raw_total * taxPercentage / 100);
-        }
-
-        rowTotalSpan.innerText = '₹' + amount.toFixed(2);
-        calculateTotals();
-    }
-
-    function calculateTotals() {
-        let total_taxable = 0;
-        let total_cgst = 0;
-        let total_sgst = 0;
-        let total_igst = 0;
-        let grand_sum = 0;
-
-        const regime = taxRegimeSelect.value;
-        const rows = tableBody.querySelectorAll('tr');
-
-        rows.forEach(row => {
-            const rate = parseFloat(row.querySelector('.rate-input').value) || 0;
-            const qty = parseInt(row.querySelector('.quantity-input').value) || 0;
-            const gstType = row.querySelector('.gst-type').value;
-            const taxPercentage = parseFloat(row.querySelector('.tax-percentage').value) || 0;
-
-            const raw_total = rate * qty;
-            let item_taxable = 0;
-            let item_tax = 0;
-            let item_amount = 0;
-
-            if (gstType === 'inclusive') {
-                item_taxable = raw_total / (1 + (taxPercentage / 100));
-                item_tax = raw_total - item_taxable;
-                item_amount = raw_total;
-            } else {
-                item_taxable = raw_total;
-                item_tax = (raw_total * taxPercentage) / 100;
-                item_amount = raw_total + item_tax;
-            }
-
-            total_taxable += item_taxable;
-            grand_sum += item_amount;
-
-            if (regime === 'cgst_sgst') {
-                total_cgst += item_tax / 2;
-                total_sgst += item_tax / 2;
-            } else {
-                total_igst += item_tax;
-            }
-        });
-
-        const grandTotalRounded = Math.round(grand_sum);
-        const roundOff = grandTotalRounded - grand_sum;
-
-        document.getElementById('summary_taxable').innerText = total_taxable.toFixed(2);
-        document.getElementById('summary_cgst').innerText = total_cgst.toFixed(2);
-        document.getElementById('summary_sgst').innerText = total_sgst.toFixed(2);
-        document.getElementById('summary_igst').innerText = total_igst.toFixed(2);
-        document.getElementById('summary_round_off').innerText = roundOff.toFixed(2);
-        document.getElementById('summary_grand_total').innerText = grandTotalRounded.toFixed(2);
-    }
-
-    // AJAX Quick Add Customer Form Handler
-    var quickAddForm = document.getElementById('quickAddCustomerForm');
-    var modalErrorAlert = document.getElementById('modalErrorAlert');
-    var saveCustomerBtn = document.getElementById('btnSaveCustomer');
-    
-    quickAddForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        saveCustomerBtn.disabled = true;
-        saveCustomerBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...';
-        modalErrorAlert.classList.add('d-none');
-        
-        var formData = new FormData(this);
-        
-        fetch('{{ route("admin.customers.store") }}', {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json'
-            }
-        })
-        .then(response => response.json().then(data => ({ status: response.status, body: data })))
-        .then(res => {
-            saveCustomerBtn.disabled = false;
-            saveCustomerBtn.innerHTML = 'Save Customer';
-            
-            if (res.status === 200 || res.status === 201) {
-                var customer = res.body.customer;
-                var fullName = customer.name;
-                
-                // Add new customer to select dropdown list
-                var option = document.createElement('option');
-                option.value = customer.id;
-                option.text = fullName + ' (' + customer.phone + ')';
-                option.setAttribute('data-name', fullName);
-                option.setAttribute('data-mobile', customer.phone);
-                option.setAttribute('data-address', customer.address || '');
-                option.setAttribute('data-gstin', customer.gstin || '');
-                option.setAttribute('data-pan', customer.pan_no || '');
-                
-                customerSelect.appendChild(option);
-                customerSelect.value = customer.id;
-                $(customerSelect).trigger('change.select2');
-                
-                // Trigger change event to populate input fields
-                $(customerSelect).trigger('change');
-                
-                // Close modal
-                var modalEl = document.getElementById('quickAddCustomerModal');
-                var modalInstance = bootstrap.Modal.getInstance(modalEl);
-                if (!modalInstance) {
-                    modalInstance = new bootstrap.Modal(modalEl);
-                }
-                modalInstance.hide();
-                
-                // Reset form
-                quickAddForm.reset();
-            } else {
-                var errorMsg = 'Error saving customer.';
-                if (res.body.errors) {
-                    errorMsg = Object.values(res.body.errors).flat().join('<br>');
-                } else if (res.body.message) {
-                    errorMsg = res.body.message;
-                }
-                modalErrorAlert.innerHTML = errorMsg;
-                modalErrorAlert.classList.remove('d-none');
-            }
-        })
-        .catch(err => {
-            saveCustomerBtn.disabled = false;
-            saveCustomerBtn.innerHTML = 'Save Customer';
-            modalErrorAlert.textContent = 'Server connection error.';
-            modalErrorAlert.classList.remove('d-none');
-            console.error(err);
-        });
-    });
-});
-</script>
-
 <!-- Quick Add Customer Modal -->
 <div class="modal fade" id="quickAddCustomerModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
@@ -480,4 +274,707 @@ document.addEventListener('DOMContentLoaded', function() {
         </form>
     </div>
 </div>
+
+<!-- Item Search & Add/Edit Modal -->
+<div class="modal fade" id="addItemModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title text-white" id="itemModalTitle"><i class="bx bx-package me-2"></i>Select Spare Parts</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-3">
+                <!-- Search Box -->
+                <div class="row g-3 mb-3 align-items-center" id="modalSearchContainer">
+                    <div class="col-md-8">
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bx bx-search fs-5"></i></span>
+                            <input type="text" id="modalPartSearch" class="form-control form-control-lg" placeholder="Search by Part Name or Part Number...">
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <span class="badge bg-label-primary p-2 fs-6" id="modalPartsCount">Showing {{ count($spareParts) }} parts</span>
+                    </div>
+                </div>
+
+                <!-- Single Item Edit Panel (visible only in Edit Mode) -->
+                <div id="modalEditPanel" class="d-none alert alert-info mb-3">
+                    <h6 class="fw-bold mb-3"><i class="bx bx-edit me-1"></i> Edit Selected Item</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Spare Part</label>
+                            <input type="text" id="editPartName" class="form-control bg-white fw-bold" readonly>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">Stock Available</label>
+                            <input type="text" id="editPartStock" class="form-control bg-white text-center fw-bold" readonly>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">Quantity <span class="text-danger">*</span></label>
+                            <input type="number" id="editQty" class="form-control text-center fw-bold" min="1" value="1">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Rate (INR) <span class="text-danger">*</span></label>
+                            <input type="number" step="0.01" id="editRate" class="form-control fw-bold" min="0">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">GST Type <span class="text-danger">*</span></label>
+                            <select id="editGstType" class="form-select no-select2">
+                                <option value="exclusive">Exclusive</option>
+                                <option value="inclusive">Inclusive</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">GST % <span class="text-danger">*</span></label>
+                            <select id="editTaxPct" class="form-select no-select2">
+                                <option value="0.00">0%</option>
+                                <option value="5.00">5%</option>
+                                <option value="12.00">12%</option>
+                                <option value="18.00">18%</option>
+                                <option value="28.00">28%</option>
+                            </select>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Serial No. / Warranty Notes</label>
+                            <input type="text" id="editNotes" class="form-control" placeholder="Serial No. / Warranty Notes (Optional)">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Spare Parts Table (visible in Search/Add Mode) -->
+                <div class="table-responsive" id="modalTableWrapper" style="max-height: 420px; overflow-y: auto;">
+                    <table class="table table-hover align-middle" id="modalPartsTable">
+                        <thead class="table-dark sticky-top">
+                            <tr>
+                                <th style="width: 5%; text-align: center;">
+                                    <input type="checkbox" id="selectAllModalParts" class="form-check-input" title="Select All">
+                                </th>
+                                <th style="width: 40%;">Part Number & Name</th>
+                                <th style="width: 18%; text-align: center;">Stock Available</th>
+                                <th style="width: 22%;">Rate / Selling Price (INR)</th>
+                                <th style="width: 15%; text-align: center;">Qty</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modalPartsBody">
+                            @foreach($spareParts as $p)
+                            <tr class="modal-part-row" data-id="{{ $p->id }}" data-name="{{ strtolower($p->name) }}" data-partno="{{ strtolower($p->part_no) }}">
+                                <td class="text-center">
+                                    <input type="checkbox" class="form-check-input modal-part-checkbox" 
+                                           data-id="{{ $p->id }}"
+                                           data-name="{{ $p->part_no ? $p->part_no . ' - ' : '' }}{{ $p->name }}"
+                                           data-price="{{ number_format($p->selling_price, 2, '.', '') }}"
+                                           data-stock="{{ $p->qty_available }}">
+                                </td>
+                                <td>
+                                    <div class="fw-bold text-dark fs-6">{{ $p->name }}</div>
+                                    <small class="text-muted"><i class="bx bx-purchase-tag me-1"></i>Part No: <strong>{{ $p->part_no ?: 'N/A' }}</strong></small>
+                                </td>
+                                <td class="text-center">
+                                    @if($p->qty_available > 0)
+                                        <span class="badge bg-label-success fs-6">{{ $p->qty_available }}</span>
+                                    @else
+                                        <span class="badge bg-label-danger fs-6">Out of Stock (0)</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <input type="number" step="0.01" class="form-control form-control-sm modal-part-rate" value="{{ number_format($p->selling_price, 2, '.', '') }}" min="0">
+                                </td>
+                                <td class="text-center">
+                                    <input type="number" class="form-control form-control-sm text-center modal-part-qty" value="1" min="1">
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <span class="text-muted fw-bold" id="selectedPartsCount">0 parts selected</span>
+                <div>
+                    <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-success" id="btnAddSelectedModalParts"><i class="bx bx-plus me-1"></i> Add Selected Items to Quotation</button>
+                    <button type="button" class="btn btn-primary d-none" id="btnUpdateModalItem"><i class="bx bx-check me-1"></i> Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+
+@section('script')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var customerSelect = document.getElementById('customer_select');
+    var customerNameInput = document.getElementById('customer_name');
+    var customerMobileInput = document.getElementById('customer_mobile');
+    var customerAddressInput = document.getElementById('customer_address');
+    var customerGstInput = document.getElementById('customer_gstin');
+    var customerPanInput = document.getElementById('customer_pan');
+    
+    $(customerSelect).on('change', function() {
+        var opt = this.options[this.selectedIndex];
+        if (opt && opt.value) {
+            customerNameInput.value = opt.getAttribute('data-name') || '';
+            customerMobileInput.value = opt.getAttribute('data-mobile') || '';
+            customerAddressInput.value = opt.getAttribute('data-address') || '';
+            customerGstInput.value = opt.getAttribute('data-gstin') || '';
+            customerPanInput.value = opt.getAttribute('data-pan') || '';
+        } else {
+            customerNameInput.value = '';
+            customerMobileInput.value = '';
+            customerAddressInput.value = '';
+            customerGstInput.value = '';
+            customerPanInput.value = '';
+        }
+    });
+
+    var itemsContainer = document.getElementById('itemsContainer');
+    var btnOpenSearchModal = document.getElementById('btnOpenSearchModal');
+    var itemIndex = 1;
+    var editingTargetRow = null;
+
+    var itemModalEl = document.getElementById('addItemModal');
+    var itemModal = new bootstrap.Modal(itemModalEl);
+    var itemModalTitle = document.getElementById('itemModalTitle');
+    var modalSearchContainer = document.getElementById('modalSearchContainer');
+    var modalTableWrapper = document.getElementById('modalTableWrapper');
+    var modalEditPanel = document.getElementById('modalEditPanel');
+    var btnUpdateModalItem = document.getElementById('btnUpdateModalItem');
+    var btnAddSelectedModalParts = document.getElementById('btnAddSelectedModalParts');
+    var selectAllModalParts = document.getElementById('selectAllModalParts');
+    var selectedPartsCount = document.getElementById('selectedPartsCount');
+    var modalPartSearch = document.getElementById('modalPartSearch');
+    var modalPartsCount = document.getElementById('modalPartsCount');
+
+    function checkNoItemsNotice() {
+        var noNotice = document.getElementById('noItemsNotice');
+        var rows = itemsContainer.querySelectorAll('.item-row');
+        if (noNotice) {
+            if (rows.length > 0) {
+                noNotice.classList.add('d-none');
+            } else {
+                noNotice.classList.remove('d-none');
+            }
+        }
+    }
+
+    // Create New Row HTML Helper
+    function createRow(partId = '', partName = '', qty = 1, rate = 0.00, gstType = 'exclusive', taxPct = '18.00', notes = '', stock = 0) {
+        var row = document.createElement('tr');
+        row.className = 'item-row';
+        row.innerHTML = `
+            <td>
+                <input type="hidden" name="items[${itemIndex}][spare_part_id]" class="part-id-input" value="${partId}" required>
+                <input type="text" class="form-control bg-white fw-bold part-name-input" readonly value="${partName}" placeholder="Click 'Search & Add Item' to select part" required>
+                <div class="mt-2">
+                    <input type="text" name="items[${itemIndex}][serial_no_warranty_notes]" class="form-control form-control-sm notes-input" placeholder="Serial No. / Warranty Notes (Optional)" value="${notes}">
+                </div>
+            </td>
+            <td class="text-center bg-light">
+                <span class="stock-badge fw-bold ${stock > 0 ? 'text-success' : 'text-secondary'}">${stock}</span>
+            </td>
+            <td>
+                <input type="number" name="items[${itemIndex}][quantity]" class="form-control qty-input text-center" min="1" value="${qty}" required>
+            </td>
+            <td>
+                <input type="number" step="0.01" name="items[${itemIndex}][rate]" class="form-control rate-input" min="0" value="${parseFloat(rate).toFixed(2)}" data-entered-rate="${parseFloat(rate).toFixed(2)}" required>
+            </td>
+            <td>
+                <select name="items[${itemIndex}][gst_type]" class="form-select gst-type-select no-select2" required>
+                    <option value="exclusive" ${gstType === 'exclusive' ? 'selected' : ''}>Exclusive</option>
+                    <option value="inclusive" ${gstType === 'inclusive' ? 'selected' : ''}>Inclusive</option>
+                </select>
+            </td>
+            <td>
+                <select name="items[${itemIndex}][tax_percentage]" class="form-select tax-select no-select2" required>
+                    <option value="0.00" ${taxPct == '0.00' ? 'selected' : ''}>0%</option>
+                    <option value="5.00" ${taxPct == '5.00' ? 'selected' : ''}>5%</option>
+                    <option value="12.00" ${taxPct == '12.00' ? 'selected' : ''}>12%</option>
+                    <option value="18.00" ${taxPct == '18.00' ? 'selected' : ''}>18%</option>
+                    <option value="28.00" ${taxPct == '28.00' ? 'selected' : ''}>28%</option>
+                </select>
+            </td>
+            <td class="bg-light">
+                <input type="text" class="form-control line-total bg-transparent border-0 fw-bold" readonly value="0.00">
+            </td>
+            <td class="text-center">
+                <button type="button" class="btn btn-sm btn-outline-danger btn-remove-row" title="Remove"><i class="bx bx-trash"></i></button>
+            </td>
+        `;
+        itemIndex++;
+        itemsContainer.appendChild(row);
+        bindRowEvents(row);
+        checkNoItemsNotice();
+        return row;
+    }
+
+    // Open Search Modal in Add Mode
+    btnOpenSearchModal.addEventListener('click', function() {
+        editingTargetRow = null;
+        itemModalTitle.innerHTML = '<i class="bx bx-package me-2"></i>Select Spare Parts';
+        modalSearchContainer.classList.remove('d-none');
+        modalTableWrapper.classList.remove('d-none');
+        modalEditPanel.classList.add('d-none');
+        btnUpdateModalItem.classList.add('d-none');
+        if (btnAddSelectedModalParts) btnAddSelectedModalParts.classList.remove('d-none');
+        if (selectedPartsCount) selectedPartsCount.classList.remove('d-none');
+        
+        // Reset checkboxes
+        document.querySelectorAll('.modal-part-checkbox').forEach(function(cb) { cb.checked = false; });
+        if (selectAllModalParts) selectAllModalParts.checked = false;
+        updateSelectedPartsCount();
+
+        modalPartSearch.value = '';
+        filterModalParts();
+        itemModal.show();
+        setTimeout(function() { modalPartSearch.focus(); }, 400);
+    });
+
+    // Modal Live Search Filter
+    function filterModalParts() {
+        var query = modalPartSearch.value.trim().toLowerCase();
+        var rows = document.querySelectorAll('.modal-part-row');
+        var visibleCount = 0;
+
+        rows.forEach(function(row) {
+            var name = row.getAttribute('data-name') || '';
+            var partNo = row.getAttribute('data-partno') || '';
+            if (!query || name.includes(query) || partNo.includes(query)) {
+                row.classList.remove('d-none');
+                visibleCount++;
+            } else {
+                row.classList.add('d-none');
+            }
+        });
+
+        modalPartsCount.textContent = 'Showing ' + visibleCount + ' parts';
+    }
+
+    modalPartSearch.addEventListener('input', filterModalParts);
+
+    // Checkbox selection handlers
+    if (selectAllModalParts) {
+        selectAllModalParts.addEventListener('change', function() {
+            var isChecked = this.checked;
+            var visibleCheckboxes = document.querySelectorAll('.modal-part-row:not(.d-none) .modal-part-checkbox');
+            visibleCheckboxes.forEach(function(cb) {
+                cb.checked = isChecked;
+            });
+            updateSelectedPartsCount();
+        });
+    }
+
+    document.getElementById('modalPartsBody').addEventListener('change', function(e) {
+        if (e.target.classList.contains('modal-part-checkbox')) {
+            updateSelectedPartsCount();
+        }
+    });
+
+    function updateSelectedPartsCount() {
+        var checked = document.querySelectorAll('.modal-part-checkbox:checked');
+        if (selectedPartsCount) {
+            selectedPartsCount.textContent = checked.length + ' part(s) selected';
+        }
+    }
+
+    // Add Selected Parts from Modal to Main Table
+    if (btnAddSelectedModalParts) {
+        btnAddSelectedModalParts.addEventListener('click', function() {
+            var checkedBoxes = document.querySelectorAll('.modal-part-checkbox:checked');
+            if (checkedBoxes.length === 0) {
+                alert('Please select at least one part using the checkboxes.');
+                return;
+            }
+
+            checkedBoxes.forEach(function(cb) {
+                var row = cb.closest('.modal-part-row');
+                var partId = cb.getAttribute('data-id');
+                var partName = cb.getAttribute('data-name');
+                var stock = parseInt(cb.getAttribute('data-stock')) || 0;
+                var qtyInput = row.querySelector('.modal-part-qty');
+                var rateInput = row.querySelector('.modal-part-rate');
+                var qty = parseInt(qtyInput.value) || 1;
+                var rate = parseFloat(rateInput.value) || parseFloat(cb.getAttribute('data-price')) || 0;
+
+                // Check if there is an unselected first row in the table
+                var existingRows = itemsContainer.querySelectorAll('.item-row');
+                var targetRow = null;
+
+                if (existingRows.length === 1) {
+                    var firstPartId = existingRows[0].querySelector('.part-id-input');
+                    if (!firstPartId.value) {
+                        targetRow = existingRows[0];
+                    }
+                }
+
+                if (targetRow) {
+                    targetRow.querySelector('.part-id-input').value = partId;
+                    targetRow.querySelector('.part-name-input').value = partName;
+                    var stockBadge = targetRow.querySelector('.stock-badge');
+                    stockBadge.textContent = stock;
+                    stockBadge.className = 'stock-badge fw-bold ' + (stock > 0 ? 'text-success' : 'text-secondary');
+
+                    var qtyIn = targetRow.querySelector('.qty-input');
+                    var rateIn = targetRow.querySelector('.rate-input');
+                    qtyIn.value = qty;
+                    rateIn.value = rate.toFixed(2);
+                    rateIn.dataset.enteredRate = rate.toFixed(2);
+
+                    calculateRow(targetRow);
+                } else {
+                    var newRow = createRow(partId, partName, qty, rate, 'exclusive', '18.00', '', stock);
+                    calculateRow(newRow);
+                }
+
+                cb.checked = false;
+            });
+
+            if (selectAllModalParts) selectAllModalParts.checked = false;
+            updateSelectedPartsCount();
+            checkNoItemsNotice();
+            calculateSummary();
+            itemModal.hide();
+        });
+    }
+
+    // Remove Row Event Delegation
+    itemsContainer.addEventListener('click', function(e) {
+        var removeBtn = e.target.closest('.btn-remove-row');
+        if (removeBtn) {
+            var row = removeBtn.closest('.item-row');
+            row.remove();
+            checkNoItemsNotice();
+            calculateSummary();
+            return;
+        }
+
+        var editBtn = e.target.closest('.btn-edit-row');
+        if (editBtn) {
+            editingTargetRow = editBtn.closest('.item-row');
+            openModalForEdit(editingTargetRow);
+        }
+    });
+
+    // Open Modal in Edit Mode
+    function openModalForEdit(row) {
+        var partId = row.querySelector('.part-id-input').value;
+        var partName = row.querySelector('.part-name-input').value;
+        
+        if (!partId) {
+            alert('Please select a spare part first before editing.');
+            return;
+        }
+
+        var stock = row.querySelector('.stock-badge').textContent || '0';
+        var qty = row.querySelector('.qty-input').value || 1;
+        var rateInput = row.querySelector('.rate-input');
+        var enteredRate = rateInput.dataset.enteredRate || rateInput.value || 0;
+        var gstType = row.querySelector('.gst-type-select').value;
+        var taxPct = row.querySelector('.tax-select').value;
+        var notesInput = row.querySelector('.notes-input');
+        var notes = notesInput ? notesInput.value : '';
+
+        document.getElementById('editPartName').value = partName;
+        document.getElementById('editPartStock').value = stock;
+        document.getElementById('editQty').value = qty;
+        document.getElementById('editRate').value = parseFloat(enteredRate).toFixed(2);
+        document.getElementById('editGstType').value = gstType;
+        document.getElementById('editTaxPct').value = taxPct;
+        document.getElementById('editNotes').value = notes;
+
+        itemModalTitle.innerHTML = '<i class="bx bx-edit me-2"></i>Edit Quotation Item';
+        modalSearchContainer.classList.add('d-none');
+        modalTableWrapper.classList.add('d-none');
+        modalEditPanel.classList.remove('d-none');
+        btnUpdateModalItem.classList.remove('d-none');
+        if (btnAddSelectedModalParts) btnAddSelectedModalParts.classList.add('d-none');
+        if (selectedPartsCount) selectedPartsCount.classList.add('d-none');
+
+        itemModal.show();
+    }
+
+    // Save Changes from Edit Modal
+    btnUpdateModalItem.addEventListener('click', function() {
+        if (!editingTargetRow) return;
+
+        var newQty = parseInt(document.getElementById('editQty').value) || 1;
+        var newRate = parseFloat(document.getElementById('editRate').value) || 0;
+        var newGstType = document.getElementById('editGstType').value;
+        var newTaxPct = document.getElementById('editTaxPct').value;
+        var newNotes = document.getElementById('editNotes').value;
+
+        var qtyInput = editingTargetRow.querySelector('.qty-input');
+        var rateInput = editingTargetRow.querySelector('.rate-input');
+        var gstTypeSelect = editingTargetRow.querySelector('.gst-type-select');
+        var taxSelect = editingTargetRow.querySelector('.tax-select');
+        var notesInput = editingTargetRow.querySelector('.notes-input');
+
+        qtyInput.value = newQty;
+        rateInput.dataset.enteredRate = newRate.toFixed(2);
+        rateInput.value = newRate.toFixed(2);
+        gstTypeSelect.value = newGstType;
+        taxSelect.value = newTaxPct;
+
+        if (notesInput) {
+            notesInput.value = newNotes;
+        }
+
+        convertRowInclusiveToExclusive(editingTargetRow);
+        calculateRow(editingTargetRow);
+        calculateSummary();
+
+        itemModal.hide();
+    });
+
+    function convertRowInclusiveToExclusive(row) {
+        var rateInput = row.querySelector('.rate-input');
+        var gstTypeSelect = row.querySelector('.gst-type-select');
+        var taxSelect = row.querySelector('.tax-select');
+
+        var gstType = gstTypeSelect.value;
+        var enteredRate = parseFloat(rateInput.dataset.enteredRate) || parseFloat(rateInput.value) || 0;
+
+        if (gstType === 'inclusive') {
+            var taxPct = parseFloat(taxSelect.value) || 0;
+            var baseRate = enteredRate / (1 + (taxPct / 100));
+            rateInput.value = baseRate.toFixed(2);
+        } else {
+            rateInput.value = enteredRate.toFixed(2);
+        }
+        calculateRow(row);
+    }
+
+    function bindRowEvents(row) {
+        var qtyInput = row.querySelector('.qty-input');
+        var rateInput = row.querySelector('.rate-input');
+        var gstTypeSelect = row.querySelector('.gst-type-select');
+        var taxSelect = row.querySelector('.tax-select');
+
+        qtyInput.addEventListener('input', function() {
+            calculateRow(row);
+        });
+
+        rateInput.addEventListener('input', function() {
+            rateInput.dataset.enteredRate = rateInput.value;
+            calculateRow(row);
+        });
+
+        rateInput.addEventListener('focus', function() {
+            if (gstTypeSelect.value === 'inclusive') {
+                var enteredRate = parseFloat(rateInput.dataset.enteredRate) || parseFloat(rateInput.value) || 0;
+                rateInput.value = enteredRate.toFixed(2);
+            }
+        });
+
+        rateInput.addEventListener('blur', function() {
+            convertRowInclusiveToExclusive(row);
+        });
+
+        gstTypeSelect.addEventListener('change', function() {
+            convertRowInclusiveToExclusive(row);
+        });
+
+        taxSelect.addEventListener('change', function() {
+            convertRowInclusiveToExclusive(row);
+        });
+    }
+
+    function calculateRow(row) {
+        var qtyInput = row.querySelector('.qty-input');
+        var rateInput = row.querySelector('.rate-input');
+        var gstTypeSelect = row.querySelector('.gst-type-select');
+        var taxSelect = row.querySelector('.tax-select');
+        var lineTotal = row.querySelector('.line-total');
+
+        var qty = parseInt(qtyInput.value) || 0;
+        var gstType = gstTypeSelect.value;
+        var taxPct = parseFloat(taxSelect.value) || 0;
+
+        var enteredRate = parseFloat(rateInput.dataset.enteredRate) || parseFloat(rateInput.value) || 0;
+
+        var taxable = 0;
+        var tax = 0;
+        var net = 0;
+
+        if (gstType === 'inclusive') {
+            var rateExclTax = enteredRate / (1 + (taxPct / 100));
+            taxable = qty * rateExclTax;
+            tax = (taxable * taxPct) / 100;
+            net = qty * enteredRate;
+        } else {
+            taxable = qty * enteredRate;
+            tax = (taxable * taxPct) / 100;
+            net = taxable + tax;
+        }
+
+        if (lineTotal) {
+            lineTotal.value = '₹' + net.toFixed(2);
+        }
+        calculateSummary();
+    }
+
+    // Summary calculations
+    var summaryTaxable = document.getElementById('summary_taxable');
+    var summaryCgst = document.getElementById('summary_cgst');
+    var summarySgst = document.getElementById('summary_sgst');
+    var summaryIgst = document.getElementById('summary_igst');
+    var taxRegimeSelect = document.getElementById('tax_regime');
+    var summaryRoundOff = document.getElementById('summary_round_off');
+    var summaryGrandTotal = document.getElementById('summary_grand_total');
+
+    function toggleRegimeFields() {
+        var isIgst = taxRegimeSelect.value === 'igst';
+        document.querySelectorAll('.cgst-summary, .sgst-summary').forEach(function(el) {
+            el.classList.toggle('d-none', isIgst);
+        });
+        var igstEl = document.querySelector('.igst-summary');
+        if (igstEl) igstEl.classList.toggle('d-none', !isIgst);
+    }
+
+    taxRegimeSelect.addEventListener('change', function() {
+        toggleRegimeFields();
+        calculateSummary();
+    });
+
+    function calculateSummary() {
+        var taxableTotal = 0;
+        var cgstTotal = 0;
+        var sgstTotal = 0;
+        var igstTotal = 0;
+        var taxRegime = taxRegimeSelect.value;
+
+        var rows = itemsContainer.querySelectorAll('.item-row');
+        rows.forEach(function(row) {
+            var qtyInput = row.querySelector('.qty-input');
+            var rateInput = row.querySelector('.rate-input');
+            var gstTypeSelect = row.querySelector('.gst-type-select');
+            var taxSelect = row.querySelector('.tax-select');
+
+            if (!qtyInput || !rateInput) return;
+
+            var qty = parseInt(qtyInput.value) || 0;
+            var gstType = gstTypeSelect.value;
+            var taxPct = parseFloat(taxSelect.value) || 0;
+            
+            var enteredRate = parseFloat(rateInput.dataset.enteredRate) || parseFloat(rateInput.value) || 0;
+
+            var taxable = 0;
+            var tax = 0;
+
+            if (gstType === 'inclusive') {
+                var rateExclTax = enteredRate / (1 + (taxPct / 100));
+                taxable = qty * rateExclTax;
+                tax = (taxable * taxPct) / 100;
+            } else {
+                taxable = qty * enteredRate;
+                tax = (taxable * taxPct) / 100;
+            }
+
+            taxableTotal += taxable;
+            if (taxRegime === 'igst') {
+                igstTotal += tax;
+            } else {
+                cgstTotal += tax / 2;
+                sgstTotal += tax / 2;
+            }
+        });
+
+        var netTotalBeforeRound = taxableTotal + cgstTotal + sgstTotal + igstTotal;
+        var netTotalRounded = Math.round(netTotalBeforeRound);
+        var roundOff = netTotalRounded - netTotalBeforeRound;
+
+        if (summaryTaxable) summaryTaxable.textContent = taxableTotal.toFixed(2);
+        if (summaryCgst) summaryCgst.textContent = cgstTotal.toFixed(2);
+        if (summarySgst) summarySgst.textContent = sgstTotal.toFixed(2);
+        if (summaryIgst) summaryIgst.textContent = igstTotal.toFixed(2);
+        if (summaryRoundOff) summaryRoundOff.textContent = roundOff.toFixed(2);
+        if (summaryGrandTotal) summaryGrandTotal.textContent = netTotalRounded.toFixed(2);
+    }
+
+    document.getElementById('quotationForm').addEventListener('submit', function(e) {
+        if (document.activeElement) {
+            document.activeElement.blur();
+        }
+        var gstSelects = document.querySelectorAll('.gst-type-select');
+        gstSelects.forEach(function(select) {
+            select.value = 'exclusive';
+        });
+    });
+
+    // AJAX Quick Add Customer Form Handler
+    var quickAddForm = document.getElementById('quickAddCustomerForm');
+    var modalErrorAlert = document.getElementById('modalErrorAlert');
+    var saveCustomerBtn = document.getElementById('btnSaveCustomer');
+    
+    if (quickAddForm) {
+        quickAddForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            saveCustomerBtn.disabled = true;
+            saveCustomerBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...';
+            modalErrorAlert.classList.add('d-none');
+            
+            var formData = new FormData(this);
+            
+            fetch('{{ route("admin.customers.store") }}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json().then(data => ({ status: response.status, body: data })))
+            .then(res => {
+                saveCustomerBtn.disabled = false;
+                saveCustomerBtn.innerHTML = 'Save Customer';
+                
+                if (res.status === 200 || res.status === 201) {
+                    var customer = res.body.customer;
+                    var fullName = customer.name;
+                    
+                    var option = document.createElement('option');
+                    option.value = customer.id;
+                    option.text = fullName + ' (' + customer.phone + ')';
+                    option.setAttribute('data-name', fullName);
+                    option.setAttribute('data-mobile', customer.phone);
+                    option.setAttribute('data-address', customer.address || '');
+                    option.setAttribute('data-gstin', customer.gstin || '');
+                    option.setAttribute('data-pan', customer.pan_no || '');
+                    
+                    customerSelect.appendChild(option);
+                    customerSelect.value = customer.id;
+                    $(customerSelect).trigger('change.select2');
+                    $(customerSelect).trigger('change');
+                    
+                    var modalEl = document.getElementById('quickAddCustomerModal');
+                    var modalInstance = bootstrap.Modal.getInstance(modalEl);
+                    if (!modalInstance) {
+                        modalInstance = new bootstrap.Modal(modalEl);
+                    }
+                    modalInstance.hide();
+                    
+                    quickAddForm.reset();
+                } else {
+                    var errorMsg = 'Error saving customer.';
+                    if (res.body.errors) {
+                        errorMsg = Object.values(res.body.errors).flat().join('<br>');
+                    } else if (res.body.message) {
+                        errorMsg = res.body.message;
+                    }
+                    modalErrorAlert.innerHTML = errorMsg;
+                    modalErrorAlert.classList.remove('d-none');
+                }
+            })
+            .catch(err => {
+                saveCustomerBtn.disabled = false;
+                saveCustomerBtn.innerHTML = 'Save Customer';
+                modalErrorAlert.textContent = 'Server connection error.';
+                modalErrorAlert.classList.remove('d-none');
+                console.error(err);
+            });
+        });
+    }
+});
+</script>
 @endsection
