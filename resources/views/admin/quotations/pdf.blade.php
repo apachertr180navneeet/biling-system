@@ -160,10 +160,10 @@
                 <div class="info-card">
                     <div class="info-title">Company details</div>
                     <strong>SHREE KRISHNA AUTO GREEN</strong><br>
-                    Plot No. 12, Auto Green Zone,<br>
-                    Jaipur Road, Rajasthan<br>
-                    Mobile: +91 9999999999<br>
-                    Email: info@shreekrishnaautogreen.com
+                    Near Mahamandir Circle, Main Mandore Road,<br>
+                    Jodhpur (Raj.)<br>
+                    Mobile: 7568899148<br>
+                    Email: vijay.deora429@gmail.com
                 </div>
             </td>
             <td class="info-col">

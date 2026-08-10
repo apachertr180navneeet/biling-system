@@ -5,13 +5,13 @@
     <title>Vehicle Sales Invoice - {{ $vehicleSalesInvoice->invoice_number }}</title>
     <style>
         @page {
-            margin: 25px 30px;
+            margin: 20px 25px;
         }
         body {
             font-family: 'DejaVu Sans', sans-serif;
             color: #1e293b;
-            font-size: 10px;
-            line-height: 1.3;
+            font-size: 11px;
+            line-height: 1.35;
         }
         #watermark {
             position: fixed;
@@ -33,30 +33,30 @@
         .header-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             border-bottom: 2px solid #059669;
-            padding-bottom: 5px;
+            padding-bottom: 6px;
         }
         .company-name {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
             color: #14532d;
             margin: 0;
             text-transform: uppercase;
         }
         .company-sub {
-            font-size: 9px;
+            font-size: 10.5px;
             color: #475569;
             margin-top: 2px;
         }
         .gst-badge {
-            font-size: 9px;
+            font-size: 10.5px;
             font-weight: bold;
             color: #047857;
             margin-top: 3px;
         }
         .invoice-title {
-            font-size: 24px;
+            font-size: 26px;
             font-weight: bold;
             color: #059669;
             text-align: right;
@@ -64,7 +64,7 @@
             text-transform: uppercase;
         }
         .invoice-subtitle {
-            font-size: 10px;
+            font-size: 11px;
             color: #047857;
             text-align: right;
             font-weight: bold;
@@ -73,11 +73,11 @@
         .box {
             border: 1px solid #cbd5e1;
             border-radius: 4px;
-            padding: 6px 8px;
+            padding: 8px 10px;
             background-color: #f8fafc;
         }
         .box-title {
-            font-size: 8px;
+            font-size: 9.5px;
             font-weight: bold;
             color: #64748b;
             text-transform: uppercase;
@@ -87,8 +87,8 @@
             padding-bottom: 2px;
         }
         .meta-table td {
-            padding: 2px 0;
-            font-size: 9px;
+            padding: 3px 0;
+            font-size: 10.5px;
         }
         .text-right {
             text-align: right;
@@ -102,23 +102,23 @@
         .items-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 8px;
-            margin-bottom: 8px;
+            margin-top: 10px;
+            margin-bottom: 10px;
             border: 1px solid #cbd5e1;
         }
         .items-table th {
             background-color: #0f172a;
             color: #ffffff;
-            font-size: 9px;
+            font-size: 10.5px;
             font-weight: bold;
             text-transform: uppercase;
-            padding: 5px 6px;
+            padding: 6px 8px;
             border: 1px solid #0f172a;
         }
         .items-table td {
-            padding: 6px;
+            padding: 7px 8px;
             border: 1px solid #e2e8f0;
-            font-size: 9px;
+            font-size: 10.5px;
             vertical-align: top;
         }
         .summary-table {
@@ -129,28 +129,28 @@
             border-radius: 4px;
         }
         .summary-table td {
-            padding: 3px 6px;
-            font-size: 9px;
+            padding: 4px 6px;
+            font-size: 10.5px;
             color: #065f46;
         }
         .summary-total {
             border-top: 2px solid #059669;
-            font-size: 11px;
+            font-size: 13px;
             font-weight: bold;
             color: #047857;
         }
         .terms-list {
             margin: 0;
-            padding-left: 12px;
-            font-size: 8px;
+            padding-left: 14px;
+            font-size: 9.5px;
             color: #475569;
         }
         .terms-list li {
-            margin-bottom: 2px;
+            margin-bottom: 3px;
         }
         .signature-table {
             width: 100%;
-            margin-top: 20px;
+            margin-top: 22px;
         }
         .sig-line {
             border-top: 1px dashed #94a3b8;
@@ -161,12 +161,12 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 4px;
-            font-size: 8.5px;
+            font-size: 10px;
             background-color: #ffffff;
             border: 1px solid #e2e8f0;
         }
         .specs-table td {
-            padding: 2px 4px;
+            padding: 3px 5px;
             border: 1px solid #f1f5f9;
         }
     </style>
@@ -184,7 +184,7 @@
         <tr>
             <td style="width: 60%; vertical-align: top;">
                 <h1 class="company-name">SHREE KRISHNA AUTO GREEN</h1>
-                <div class="company-sub">NEAR MAHAMANDIR CIRCLE, MANDORE ROAD, JODHPUR (RAJASTHAN)</div>
+                <div class="company-sub">NEAR MAHAMANDIR CIRCLE, MAIN MANDORE ROAD, JODHPUR (RAJASTHAN)</div>
                 <div class="gst-badge">GSTIN : 08ANQPD4555N1ZE | PAN : ANGPD4555N</div>
                 <div class="company-sub">Email: vijay.deora429@gmail.com | Mobile: 7568899148</div>
             </td>

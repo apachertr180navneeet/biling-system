@@ -417,7 +417,7 @@
     }
     @page {
         size: A4 portrait;
-        margin: 3mm 4mm;
+        margin: 6mm 8mm;
     }
     html, body {
         height: auto !important;
@@ -444,7 +444,7 @@
     }
     .invoice-card {
         box-shadow: none !important;
-        border: 1px solid #e2e8f0 !important;
+        border: 1px solid #cbd5e1 !important;
         border-radius: 10px !important;
         width: 100% !important;
         max-width: 100% !important;
@@ -462,33 +462,33 @@
         top: 0 !important;
         left: 0 !important;
         width: 100% !important;
-        height: 5px !important;
+        height: 6px !important;
         background: linear-gradient(90deg, #10b981, #059669, #15803d) !important;
     }
     .invoice-padding {
-        padding: 10px 14px !important;
+        padding: 16px 20px !important;
     }
     .company-section {
         display: flex !important;
         flex-direction: row !important;
         justify-content: space-between !important;
         align-items: flex-start !important;
-        margin-bottom: 5px !important;
-        padding-bottom: 5px !important;
+        margin-bottom: 10px !important;
+        padding-bottom: 8px !important;
         border-bottom: 2px solid #f1f5f9 !important;
     }
     .company-details {
         width: 68% !important;
     }
     .company-details h2 {
-        font-size: 19px !important;
+        font-size: 24px !important;
         font-weight: 800 !important;
         color: #14532d !important;
-        margin: 0 0 2px 0 !important;
+        margin: 0 0 3px 0 !important;
     }
     .company-details p {
-        font-size: 10.5px !important;
-        line-height: 1.25 !important;
+        font-size: 12px !important;
+        line-height: 1.35 !important;
         color: #475569 !important;
         margin: 0 !important;
     }
@@ -497,43 +497,44 @@
         text-align: right !important;
     }
     .logo-block img {
-        max-height: 65px !important;
+        max-height: 75px !important;
         width: auto !important;
     }
     .invoice-meta-grid {
         display: flex !important;
         flex-direction: row !important;
         justify-content: space-between !important;
-        margin-bottom: 5px !important;
-        gap: 6px !important;
+        margin-bottom: 10px !important;
+        gap: 10px !important;
     }
     .meta-box {
         width: 49% !important;
-        padding: 4px 8px !important;
+        padding: 6px 12px !important;
         border-radius: 6px !important;
         background-color: #f8fafc !important;
         border: 1px solid #e2e8f0 !important;
     }
     .meta-table td {
-        padding: 1px 0 !important;
-        font-size: 10.5px !important;
+        padding: 2.5px 0 !important;
+        font-size: 12px !important;
     }
     .meta-label {
         color: #64748b !important;
     }
     .meta-value {
         color: #0f172a !important;
+        font-weight: 600 !important;
     }
     .billing-section {
         display: flex !important;
         flex-direction: row !important;
         justify-content: space-between !important;
-        margin-bottom: 5px !important;
-        gap: 6px !important;
+        margin-bottom: 10px !important;
+        gap: 10px !important;
     }
     .billing-card {
         width: 59% !important;
-        padding: 4px 8px !important;
+        padding: 8px 12px !important;
         border-radius: 6px !important;
         background: #fff !important;
         border: 1px solid #e2e8f0 !important;
@@ -541,29 +542,32 @@
     }
     .info-card {
         width: 39% !important;
-        padding: 4px 8px !important;
+        padding: 8px 12px !important;
         border-radius: 6px !important;
         background: #f8fafc !important;
         border: 1px solid #e2e8f0 !important;
     }
     .billing-card h3, .info-card h3 {
-        font-size: 8.5px !important;
-        margin-bottom: 2px !important;
+        font-size: 10px !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.5px !important;
+        margin-bottom: 3px !important;
         color: #64748b !important;
     }
     .billing-card h4 {
-        font-size: 11.5px !important;
-        margin-bottom: 2px !important;
+        font-size: 13.5px !important;
+        font-weight: 700 !important;
+        margin-bottom: 3px !important;
         color: #0f172a !important;
     }
     .billing-card p, .info-table td {
-        font-size: 10px !important;
-        line-height: 1.2 !important;
-        padding: 0.5px 0 !important;
+        font-size: 11.5px !important;
+        line-height: 1.35 !important;
+        padding: 1.5px 0 !important;
         color: #475569 !important;
     }
     .items-table {
-        margin-bottom: 5px !important;
+        margin-bottom: 10px !important;
         border: 1px solid #e2e8f0 !important;
         border-radius: 6px !important;
         overflow: hidden !important;
@@ -571,16 +575,16 @@
     .items-table th {
         background-color: #0f172a !important;
         color: #ffffff !important;
-        padding: 4px 8px !important;
-        font-size: 10px !important;
+        padding: 7px 10px !important;
+        font-size: 11.5px !important;
     }
     .items-table td {
-        padding: 5px 8px !important;
-        font-size: 10.5px !important;
+        padding: 8px 10px !important;
+        font-size: 12px !important;
         border-bottom: 1px solid #e2e8f0 !important;
     }
     .item-name {
-        font-size: 12.5px !important;
+        font-size: 15px !important;
         font-weight: 700 !important;
         color: #0f172a !important;
     }
@@ -588,22 +592,22 @@
         background-color: #d1fae5 !important;
         color: #065f46 !important;
         border: 1px solid #a7f3d0 !important;
-        font-size: 9px !important;
-        padding: 1px 5px !important;
+        font-size: 10.5px !important;
+        padding: 2px 6px !important;
         border-radius: 4px !important;
     }
     .warranty-box {
         background-color: #f0fdf4 !important;
         border-left: 3px solid #10b981 !important;
-        margin-top: 3px !important;
-        padding: 3px 6px !important;
-        font-size: 9px !important;
-        line-height: 1.2 !important;
+        margin-top: 5px !important;
+        padding: 5px 8px !important;
+        font-size: 11px !important;
+        line-height: 1.35 !important;
         border-radius: 4px !important;
     }
     .warranty-box strong {
         color: #14532d !important;
-        margin-bottom: 1px !important;
+        margin-bottom: 2px !important;
     }
     .warranty-box div {
         color: #15803d !important;
@@ -613,13 +617,13 @@
         grid-template-columns: repeat(3, 1fr) !important;
         background-color: #f8fafc !important;
         border: 1px solid #e2e8f0 !important;
-        margin-top: 4px !important;
-        padding: 4px 8px !important;
-        gap: 2px 6px !important;
-        border-radius: 4px !important;
+        margin-top: 6px !important;
+        padding: 6px 10px !important;
+        gap: 3px 8px !important;
+        border-radius: 6px !important;
     }
     .specs-cell {
-        font-size: 9.5px !important;
+        font-size: 11.5px !important;
         color: #475569 !important;
     }
     .bottom-section {
@@ -627,8 +631,8 @@
         flex-direction: row !important;
         justify-content: space-between !important;
         align-items: flex-start !important;
-        margin-top: 5px !important;
-        gap: 6px !important;
+        margin-top: 10px !important;
+        gap: 10px !important;
         page-break-inside: avoid !important;
         break-inside: avoid !important;
     }
@@ -636,50 +640,52 @@
         width: 56% !important;
     }
     .terms-box h4 {
-        font-size: 10px !important;
-        margin-bottom: 2px !important;
+        font-size: 11.5px !important;
+        font-weight: 700 !important;
+        margin-bottom: 4px !important;
         color: #0f172a !important;
     }
     .terms-box ol {
-        font-size: 9px !important;
-        line-height: 1.2 !important;
-        padding-left: 12px !important;
+        font-size: 11px !important;
+        line-height: 1.35 !important;
+        padding-left: 14px !important;
         color: #64748b !important;
         margin: 0 !important;
     }
     .terms-box ol li {
-        margin-bottom: 1px !important;
+        margin-bottom: 2px !important;
     }
     .terms-box p {
-        font-size: 9.5px !important;
-        margin-top: 4px !important;
+        font-size: 11.5px !important;
+        margin-top: 8px !important;
     }
     .summary-card {
         width: 41% !important;
         background-color: #ecfdf5 !important;
         border: 1px solid #a7f3d0 !important;
-        padding: 4px 8px !important;
+        padding: 6px 12px !important;
         border-radius: 6px !important;
         page-break-inside: avoid !important;
         break-inside: avoid !important;
     }
     .summary-table td {
-        padding: 1px 0 !important;
-        font-size: 10px !important;
+        padding: 2.5px 0 !important;
+        font-size: 12px !important;
     }
     .summary-label {
         color: #065f46 !important;
     }
     .summary-value {
         color: #065f46 !important;
+        font-weight: 600 !important;
     }
     .summary-total-row td {
-        border-top: 1.5px solid #059669 !important;
-        padding-top: 2px !important;
-        margin-top: 1px !important;
+        border-top: 2px solid #059669 !important;
+        padding-top: 4px !important;
+        margin-top: 2px !important;
     }
     .summary-total-label, .summary-total-value {
-        font-size: 12.5px !important;
+        font-size: 15px !important;
         color: #047857 !important;
         font-weight: 800 !important;
     }
@@ -687,8 +693,8 @@
         display: flex !important;
         flex-direction: row !important;
         justify-content: space-between !important;
-        margin-top: 8px !important;
-        padding-top: 4px !important;
+        margin-top: 20px !important;
+        padding-top: 8px !important;
         border-top: 1px solid #e2e8f0 !important;
         page-break-inside: avoid !important;
         break-inside: avoid !important;
@@ -698,7 +704,8 @@
         text-align: center !important;
     }
     .sig-text {
-        font-size: 9.5px !important;
+        font-size: 11.5px !important;
+        font-weight: 600 !important;
         color: #64748b !important;
     }
     .watermark {
@@ -741,10 +748,10 @@
                 <div class="company-section">
                     <div class="company-details">
                         <h2>SHREE KRISHNA AUTO GREEN</h2>
-                        <p>NEAR MAHAMANDIR CIRCLE, MANDORE ROAD</p>
+                        <p>NEAR MAHAMANDIR CIRCLE, MAIN MANDORE ROAD</p>
                         <p>JODHPUR (RAJASTHAN)</p>
                         <p style="margin-top: 4px; font-weight: 600; color: #047857;">GSTIN : 08ANQPD4555N1ZE</p>
-                        <p>Contact : 7586899148, 9829028792</p>
+                        <p>Contact : 7568899148, 9829028792</p>
                     </div>
                     <div class="logo-block">
                         <img src="{{ asset('assets/admin/img/logo.jpg') }}" alt="Shree Krishna Auto Green" style="max-height: 120px; width: auto;">
