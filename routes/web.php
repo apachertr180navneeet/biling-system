@@ -80,15 +80,20 @@ Route::name('admin.')->prefix('admin')->group(function () {
             Route::resource('spare-parts', SparePartController::class)->except(['show']);
             Route::post('spare-parts/{spare_part}/toggle-status', [SparePartController::class, 'toggleStatus'])->name('spare-parts.toggle-status');
 
+            Route::get('suppliers/ledger-summary', [SupplierController::class, 'ledgerSummary'])->name('suppliers.ledger-summary');
             Route::get('suppliers/import-template', [SupplierController::class, 'downloadTemplate'])->name('suppliers.import-template');
             Route::post('suppliers/import', [SupplierController::class, 'import'])->name('suppliers.import');
             Route::get('suppliers/export', [SupplierController::class, 'export'])->name('suppliers.export');
             Route::resource('suppliers', SupplierController::class)->except(['show']);
             Route::post('suppliers/{supplier}/toggle-status', [SupplierController::class, 'toggleStatus'])->name('suppliers.toggle-status');
 
+            Route::get('customers/ledger-summary', [CustomerController::class, 'ledgerSummary'])->name('customers.ledger-summary');
+            Route::get('customers/ledger-search', [CustomerController::class, 'ledgerSearch'])->name('customers.ledger-search');
             Route::get('customers/import-template', [CustomerController::class, 'downloadTemplate'])->name('customers.import-template');
             Route::post('customers/import', [CustomerController::class, 'import'])->name('customers.import');
             Route::get('customers/export', [CustomerController::class, 'export'])->name('customers.export');
+            Route::get('customers/{customer}/ledger', [CustomerController::class, 'ledger'])->name('customers.ledger');
+            Route::get('customers/{customer}/ledger/export', [CustomerController::class, 'exportLedger'])->name('customers.ledger.export');
             Route::resource('customers', CustomerController::class);
             Route::post('customers/{customer}/toggle-status', [CustomerController::class, 'toggleStatus'])->name('customers.toggle-status');
 

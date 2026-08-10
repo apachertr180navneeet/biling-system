@@ -125,6 +125,40 @@
                     </div>
                 </div>
 
+                <!-- Auto-Appearing Customer Ledger Card -->
+                <div id="customer_ledger_card" class="card mb-4 border border-primary-subtle shadow-sm d-none" style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0 text-primary fw-bold">
+                                <i class="bx bx-book-content me-1"></i> Customer Ledger Summary (<span id="ledger_customer_name">Customer</span>)
+                            </h6>
+                            <a id="view_full_ledger_btn" href="#" target="_blank" class="btn btn-sm btn-primary">
+                                <i class="bx bx-show me-1"></i> View Complete Ledger / History
+                            </a>
+                        </div>
+                        <div class="row g-2 text-center">
+                            <div class="col-md-4">
+                                <div class="p-2 bg-white rounded shadow-xs border">
+                                    <small class="text-muted d-block text-uppercase fw-semibold">Total Amount Invoiced</small>
+                                    <span id="lbl_ledger_total" class="h6 mb-0 text-dark fw-bold">₹0.00</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-2 bg-white rounded shadow-xs border">
+                                    <small class="text-muted d-block text-uppercase fw-semibold">Total Amount Paid/Deposited</small>
+                                    <span id="lbl_ledger_paid" class="h6 mb-0 text-success fw-bold">₹0.00</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-2 bg-white rounded shadow-xs border">
+                                    <small class="text-muted d-block text-uppercase fw-semibold">Current Outstanding Balance</small>
+                                    <span id="lbl_ledger_outstanding" class="h6 mb-0 text-danger fw-bold">₹0.00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <h5 class="card-title text-primary mb-3">Quotation Details</h5>
                 <div class="row g-3 mb-4">
                     <div class="col-md-4">
@@ -426,6 +460,62 @@ document.addEventListener('DOMContentLoaded', function() {
             customerGstInput.value = '';
             customerPanInput.value = '';
         }
+        fetchCustomerLedgerSummary();
+    });
+
+    function fetchCustomerLedgerSummary() {
+        var customerId = $('#customer_select').val();
+        var cName = $.trim($('#customer_name').val());
+        var cMobile = $.trim($('#customer_mobile').val());
+
+        if (!customerId && cName.length < 2 && cMobile.length < 3) {
+            $('#customer_ledger_card').addClass('d-none');
+            return;
+        }
+
+        $.ajax({
+            url: "{{ route('admin.customers.ledger-summary') }}",
+            type: 'GET',
+            data: {
+                customer_id: customerId,
+                customer_name: cName,
+                customer_mobile: cMobile
+            },
+            success: function(resp) {
+                if (resp.success) {
+                    $('#ledger_customer_name').text(resp.customer_name);
+                    $('#lbl_ledger_total').text('₹' + parseFloat(resp.total_amount).toLocaleString('en-IN', {minimumFractionDigits: 2}));
+                    $('#lbl_ledger_paid').text('₹' + parseFloat(resp.paid_amount).toLocaleString('en-IN', {minimumFractionDigits: 2}));
+                    
+                    var bal = parseFloat(resp.outstanding_balance);
+                    $('#lbl_ledger_outstanding').text('₹' + bal.toLocaleString('en-IN', {minimumFractionDigits: 2}));
+                    if (bal > 0) {
+                        $('#lbl_ledger_outstanding').removeClass('text-success text-muted').addClass('text-danger');
+                    } else {
+                        $('#lbl_ledger_outstanding').removeClass('text-danger').addClass('text-success');
+                    }
+
+                    if (resp.ledger_url) {
+                        $('#view_full_ledger_btn').attr('href', resp.ledger_url).removeClass('d-none');
+                    } else {
+                        $('#view_full_ledger_btn').addClass('d-none');
+                    }
+
+                    $('#customer_ledger_card').removeClass('d-none');
+                } else {
+                    $('#customer_ledger_card').addClass('d-none');
+                }
+            },
+            error: function() {
+                $('#customer_ledger_card').addClass('d-none');
+            }
+        });
+    }
+
+    var ledgerTimer = null;
+    $(document).on('input keyup blur', '#customer_name, #customer_mobile', function(){
+        clearTimeout(ledgerTimer);
+        ledgerTimer = setTimeout(fetchCustomerLedgerSummary, 300);
     });
 
     var itemsContainer = document.getElementById('itemsContainer');

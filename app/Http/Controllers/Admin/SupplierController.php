@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Supplier;
+use App\Models\PurchaseOrder;
+use App\Models\VehiclePurchaseOrder;
 use Illuminate\Http\Request;
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -293,5 +295,46 @@ class SupplierController extends Controller
         }
 
         return redirect()->route('admin.suppliers.index')->withSuccess($msg);
+    }
+
+    public function ledgerSummary(Request $request)
+    {
+        $supplierId = $request->input('supplier_id');
+        if (!$supplierId) {
+            return response()->json(['success' => false, 'message' => 'No supplier ID provided']);
+        }
+
+        $supplier = Supplier::find($supplierId);
+        if (!$supplier) {
+            return response()->json(['success' => false, 'message' => 'Supplier not found']);
+        }
+
+        $poQuery = PurchaseOrder::where('supplier_id', $supplierId);
+        $vpoQuery = VehiclePurchaseOrder::where('supplier_id', $supplierId);
+
+        $partBilled = (float)$poQuery->sum('total_amount');
+        $partPaid = (float)$poQuery->sum('received_amount');
+        $partBal = (float)$poQuery->sum('balance');
+        $partCount = $poQuery->count();
+
+        $vehicleBilled = (float)$vpoQuery->sum('total_amount');
+        $vehiclePaid = (float)$vpoQuery->sum('received_amount');
+        $vehicleBal = (float)$vpoQuery->sum('balance');
+        $vehicleCount = $vpoQuery->count();
+
+        $totalAmount = $partBilled + $vehicleBilled;
+        $paidAmount = $partPaid + $vehiclePaid;
+        $outstanding = $partBal + $vehicleBal;
+        $totalOrders = $partCount + $vehicleCount;
+
+        return response()->json([
+            'success' => true,
+            'supplier_id' => $supplier->id,
+            'supplier_name' => $supplier->name,
+            'total_amount' => number_format($totalAmount, 2, '.', ''),
+            'paid_amount' => number_format($paidAmount, 2, '.', ''),
+            'outstanding_balance' => number_format($outstanding, 2, '.', ''),
+            'total_orders' => $totalOrders,
+        ]);
     }
 }

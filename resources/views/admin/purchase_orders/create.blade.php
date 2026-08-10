@@ -93,6 +93,37 @@
                     </div>
                 </div>
 
+                <!-- Auto-Appearing Supplier Ledger Card -->
+                <div id="supplier_ledger_card" class="card mb-4 border border-info-subtle shadow-sm d-none" style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0 text-info fw-bold">
+                                <i class="bx bx-book-content me-1"></i> Supplier Ledger Summary (<span id="ledger_supplier_name">Supplier</span>)
+                            </h6>
+                        </div>
+                        <div class="row g-2 text-center">
+                            <div class="col-md-4">
+                                <div class="p-2 bg-white rounded shadow-xs border">
+                                    <small class="text-muted d-block text-uppercase fw-semibold">Total Orders Amount</small>
+                                    <span id="lbl_supplier_total" class="h6 mb-0 text-dark fw-bold">₹0.00</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-2 bg-white rounded shadow-xs border">
+                                    <small class="text-muted d-block text-uppercase fw-semibold">Total Amount Paid/Deposited</small>
+                                    <span id="lbl_supplier_paid" class="h6 mb-0 text-success fw-bold">₹0.00</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-2 bg-white rounded shadow-xs border">
+                                    <small class="text-muted d-block text-uppercase fw-semibold">Current Outstanding Balance</small>
+                                    <span id="lbl_supplier_outstanding" class="h6 mb-0 text-danger fw-bold">₹0.00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <hr class="my-4">
                 <h5 class="card-title text-primary mb-3">Order Items (Parts)</h5>
                 @error('items') <div class="alert alert-danger py-2 mb-3">{{ $message }}</div> @enderror
@@ -433,6 +464,47 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     checkNoItemsNotice();
+
+    function fetchSupplierLedgerSummary() {
+        var supplierId = $('select[name="supplier_id"]').val();
+        if (!supplierId) {
+            $('#supplier_ledger_card').addClass('d-none');
+            return;
+        }
+
+        $.ajax({
+            url: "{{ route('admin.suppliers.ledger-summary') }}",
+            type: 'GET',
+            data: { supplier_id: supplierId },
+            success: function(resp) {
+                if (resp.success) {
+                    $('#ledger_supplier_name').text(resp.supplier_name);
+                    $('#lbl_supplier_total').text('₹' + parseFloat(resp.total_amount).toLocaleString('en-IN', {minimumFractionDigits: 2}));
+                    $('#lbl_supplier_paid').text('₹' + parseFloat(resp.paid_amount).toLocaleString('en-IN', {minimumFractionDigits: 2}));
+                    
+                    var bal = parseFloat(resp.outstanding_balance);
+                    $('#lbl_supplier_outstanding').text('₹' + bal.toLocaleString('en-IN', {minimumFractionDigits: 2}));
+                    if (bal > 0) {
+                        $('#lbl_supplier_outstanding').removeClass('text-success text-muted').addClass('text-danger');
+                    } else {
+                        $('#lbl_supplier_outstanding').removeClass('text-danger').addClass('text-success');
+                    }
+
+                    $('#supplier_ledger_card').removeClass('d-none');
+                } else {
+                    $('#supplier_ledger_card').addClass('d-none');
+                }
+            },
+            error: function() {
+                $('#supplier_ledger_card').addClass('d-none');
+            }
+        });
+    }
+
+    $(document).on('change', 'select[name="supplier_id"]', function(){
+        fetchSupplierLedgerSummary();
+    });
+    fetchSupplierLedgerSummary();
 });
 
 document.getElementById('poForm').addEventListener('submit', function(e) {

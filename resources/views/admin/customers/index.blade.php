@@ -66,7 +66,11 @@
                     @forelse($customers as $customer)
                     <tr>
                         <td>{{ $loop->iteration }}</td>
-                        <td>{{ $customer->name }}</td>
+                        <td>
+                            <a href="{{ route('admin.customers.ledger', $customer) }}" class="fw-bold text-primary" title="Click to view complete ledger history">
+                                {{ $customer->name }}
+                            </a>
+                        </td>
                         <td>{{ ucfirst($customer->type) }}</td>
                         <td>{{ $customer->phone }}</td>
                         <td>{{ $customer->email ?? '-' }}</td>
@@ -78,7 +82,8 @@
                             </label>
                         </td>
                         <td>
-                            <a href="{{ route('admin.customers.show', $customer) }}" class="btn btn-sm btn-info">View</a>
+                            <a href="{{ route('admin.customers.ledger', $customer) }}" class="btn btn-sm btn-dark me-1" title="View Customer Ledger / History"><i class="bx bx-book-content me-1"></i>Ledger</a>
+                            <a href="{{ route('admin.customers.show', $customer) }}" class="btn btn-sm btn-info">View Profile</a>
                             <a href="{{ route('admin.customers.edit', $customer) }}" class="btn btn-sm btn-primary">Edit</a>
                             <button class="btn btn-sm btn-danger btn-delete" data-url="{{ route('admin.customers.destroy', $customer) }}">Delete</button>
                         </td>

@@ -175,6 +175,13 @@
 			</a>
 		</li>
 
+		<li class="menu-item {{ request()->routeIs('admin.customers.ledger*') ? 'active' : ''}}">
+			<a href="{{route('admin.customers.index')}}" class="menu-link">
+				<i class="menu-icon tf-icons bx bx-book-content"></i>
+				<div data-i18n="Customer Ledger">Customer Ledger</div>
+			</a>
+		</li>
+
 		<li class="menu-item {{ request()->routeIs('admin.reports.party-report-by-item') ? 'active' : ''}}">
 			<a href="{{route('admin.reports.party-report-by-item')}}" class="menu-link">
 				<i class="menu-icon tf-icons bx bx-group"></i>
