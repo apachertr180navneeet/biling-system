@@ -163,6 +163,17 @@ Route::name('admin.')->prefix('admin')->group(function () {
             Route::post('reports/party-report-by-item/email-excel', [ReportController::class, 'emailPartyReportExcel'])->name('reports.party-report-by-item.email-excel');
             Route::get('reports/party-report-by-item/print-pdf', [ReportController::class, 'printPartyReportPdf'])->name('reports.party-report-by-item.print-pdf');
 
+            Route::get('reports/item-report-by-party', [ReportController::class, 'itemReportByParty'])->name('reports.item-report-by-party');
+            Route::get('reports/item-sales-purchase-summary', [ReportController::class, 'itemSalesPurchaseSummary'])->name('reports.item-sales-purchase-summary');
+            Route::get('reports/low-stock-summary', [ReportController::class, 'lowStockSummary'])->name('reports.low-stock-summary');
+            Route::get('reports/rate-list', [ReportController::class, 'rateList'])->name('reports.rate-list');
+            Route::get('reports/stock-detail-report', [ReportController::class, 'stockDetailReport'])->name('reports.stock-detail-report');
+            Route::get('reports/stock-summary', [ReportController::class, 'stockSummary'])->name('reports.stock-summary');
+            Route::get('reports/receivable-ageing', [ReportController::class, 'receivableAgeing'])->name('reports.receivable-ageing');
+            Route::get('reports/party-statement', [ReportController::class, 'partyStatement'])->name('reports.party-statement');
+            Route::get('reports/party-wise-outstanding', [ReportController::class, 'partyWiseOutstanding'])->name('reports.party-wise-outstanding');
+            Route::get('reports/sales-summary-category', [ReportController::class, 'salesSummaryCategory'])->name('reports.sales-summary-category');
+
             // Payment Rollback & Audit Log Routes
             Route::post('payment-transactions/{type}/{id}/receive', [PaymentTransactionController::class, 'receivePayment'])->name('payment-transactions.receive');
             Route::post('payment-transactions/{type}/{id}/rollback', [PaymentTransactionController::class, 'rollbackPayment'])->name('payment-transactions.rollback');
