@@ -221,20 +221,26 @@
                             <span class="badge {{ $statusClass }} px-2 py-1">{{ $statusText }}</span>
                         </td>
                         <td class="text-center">
-                            <div class="btn-group">
-                                <a href="{{ $t['pdf_url'] }}" class="btn btn-sm btn-outline-primary" target="_blank" title="View PDF">
-                                    <i class="bx bx-file"></i> PDF
-                                </a>
-                                @if($t['balance'] > 0)
-                                <button type="button" 
-                                        class="btn btn-sm btn-success btn-receive-payment" 
-                                        data-url="{{ $t['payment_url'] }}" 
-                                        data-doc="{{ $t['doc_number'] }}" 
-                                        data-balance="{{ number_format($t['balance'], 2, '.', '') }}">
-                                    <i class="bx bx-dollar"></i> Pay
-                                </button>
-                                @endif
-                            </div>
+                             <div class="btn-group">
+                                 <a href="{{ $t['pdf_url'] }}" class="btn btn-sm btn-outline-primary" target="_blank" title="View PDF">
+                                     <i class="bx bx-file"></i> PDF
+                                 </a>
+                                 <button type="button" 
+                                         class="btn btn-sm btn-outline-info" 
+                                         onclick="openPaymentHistoryModal('{{ $t['doc_type'] === 'vehicle' ? 'vehicle-sales-invoice' : 'part-sales-invoice' }}', {{ $t['id'] }})"
+                                         title="Payment History & Audit Rollback">
+                                     <i class="bx bx-history"></i> History
+                                 </button>
+                                 @if($t['balance'] > 0)
+                                 <button type="button" 
+                                         class="btn btn-sm btn-success btn-receive-payment" 
+                                         data-url="{{ $t['payment_url'] }}" 
+                                         data-doc="{{ $t['doc_number'] }}" 
+                                         data-balance="{{ number_format($t['balance'], 2, '.', '') }}">
+                                     <i class="bx bx-dollar"></i> Pay
+                                 </button>
+                                 @endif
+                             </div>
                         </td>
                     </tr>
                     @empty
@@ -284,6 +290,24 @@
                         <label class="form-label fw-semibold">Payment Amount to Receive (₹) <span class="text-danger">*</span></label>
                         <input type="number" step="0.01" name="amount" id="modal_amount_input" class="form-control form-control-lg fw-bold" required>
                     </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Payment Mode</label>
+                        <select name="payment_mode" class="form-select">
+                            <option value="Cash">Cash</option>
+                            <option value="UPI">UPI / GPay / PhonePe</option>
+                            <option value="Bank Transfer">Bank Transfer (NEFT/RTGS)</option>
+                            <option value="Cheque">Cheque</option>
+                            <option value="Card">Credit / Debit Card</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Reference No / Txn ID</label>
+                        <input type="text" name="reference_no" class="form-control" placeholder="Optional Cheque/UTR/Txn No">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Notes / Description</label>
+                        <input type="text" name="note" class="form-control" placeholder="Optional payment remarks">
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -293,6 +317,8 @@
         </form>
     </div>
 </div>
+
+@include('admin.payment_transactions.history_modal')
 
 @endsection
 

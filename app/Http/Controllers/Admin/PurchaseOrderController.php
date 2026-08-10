@@ -9,6 +9,7 @@ use App\Models\Supplier;
 use App\Models\SparePart;
 use App\Models\SparePartStock;
 use App\Models\SparePartStockTransaction;
+use App\Models\PaymentTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -467,6 +468,9 @@ class PurchaseOrderController extends Controller
     {
         $request->validate([
             'amount' => 'required|numeric|min:0.01',
+            'payment_mode' => 'nullable|string|max:255',
+            'reference_no' => 'nullable|string|max:255',
+            'note' => 'nullable|string|max:1000',
         ]);
 
         $amount = floatval($request->input('amount'));
@@ -475,10 +479,21 @@ class PurchaseOrderController extends Controller
             return response()->json(['success' => false, 'message' => 'Amount cannot exceed the balance (' . number_format($purchaseOrder->balance, 2) . ')']);
         }
 
-        DB::transaction(function () use ($purchaseOrder, $amount) {
+        DB::transaction(function () use ($purchaseOrder, $amount, $request) {
             $purchaseOrder->received_amount += $amount;
             $purchaseOrder->balance -= $amount;
             $purchaseOrder->save();
+
+            PaymentTransaction::create([
+                'payable_type' => get_class($purchaseOrder),
+                'payable_id' => $purchaseOrder->id,
+                'transaction_type' => 'payment',
+                'amount' => $amount,
+                'payment_mode' => $request->input('payment_mode', 'Cash'),
+                'reference_no' => $request->input('reference_no'),
+                'note' => $request->input('note', 'Payment Made'),
+                'created_by' => Auth::id(),
+            ]);
         });
 
         return response()->json(['success' => true, 'message' => 'Payment received successfully.']);

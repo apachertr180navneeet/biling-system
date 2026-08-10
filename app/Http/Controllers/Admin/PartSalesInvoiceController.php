@@ -9,7 +9,9 @@ use App\Models\Customer;
 use App\Models\SparePart;
 use App\Models\SparePartStock;
 use App\Models\SparePartStockTransaction;
+use App\Models\PaymentTransaction;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xls;
@@ -340,6 +342,18 @@ class PartSalesInvoiceController extends Controller
                 'is_active' => true,
             ]);
 
+            if ($received > 0) {
+                PaymentTransaction::create([
+                    'payable_type' => get_class($inv),
+                    'payable_id' => $inv->id,
+                    'transaction_type' => 'payment',
+                    'amount' => $received,
+                    'payment_mode' => $request->payment_mode ?? 'Cash',
+                    'note' => 'Initial Payment on Creation',
+                    'created_by' => Auth::id(),
+                ]);
+            }
+
             foreach ($request->items as $itemData) {
                 $qty = intval($itemData['quantity']);
                 $rate = floatval($itemData['rate']);
@@ -426,6 +440,9 @@ class PartSalesInvoiceController extends Controller
     {
         $request->validate([
             'amount' => 'required|numeric|min:0.01',
+            'payment_mode' => 'nullable|string|max:255',
+            'reference_no' => 'nullable|string|max:255',
+            'note' => 'nullable|string|max:1000',
         ]);
 
         $amount = floatval($request->input('amount'));
@@ -434,11 +451,25 @@ class PartSalesInvoiceController extends Controller
             return response()->json(['success' => false, 'message' => 'Amount cannot exceed the balance (' . number_format($partSalesInvoice->balance, 2) . ')']);
         }
 
-        DB::transaction(function () use ($partSalesInvoice, $amount) {
+        DB::transaction(function () use ($partSalesInvoice, $amount, $request) {
             $partSalesInvoice->received_amount += $amount;
             $partSalesInvoice->balance -= $amount;
             $partSalesInvoice->current_balance -= $amount;
+            if ($request->filled('payment_mode')) {
+                $partSalesInvoice->payment_mode = $request->input('payment_mode');
+            }
             $partSalesInvoice->save();
+
+            PaymentTransaction::create([
+                'payable_type' => get_class($partSalesInvoice),
+                'payable_id' => $partSalesInvoice->id,
+                'transaction_type' => 'payment',
+                'amount' => $amount,
+                'payment_mode' => $request->input('payment_mode', $partSalesInvoice->payment_mode ?? 'Cash'),
+                'reference_no' => $request->input('reference_no'),
+                'note' => $request->input('note', 'Payment Received'),
+                'created_by' => Auth::id(),
+            ]);
         });
 
         return response()->json(['success' => true, 'message' => 'Payment received successfully.']);

@@ -8,7 +8,9 @@ use App\Models\VehicleInventory;
 use App\Models\Customer;
 use App\Models\VehicleMaster;
 use App\Models\FinanceMaster;
+use App\Models\PaymentTransaction;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xls;
@@ -327,7 +329,7 @@ class VehicleSalesInvoiceController extends Controller
             // Mark vehicle as sold
             $vehicle->update(['status' => 'sold']);
 
-            return VehicleSalesInvoice::create([
+            $inv = VehicleSalesInvoice::create([
                 'invoice_number' => $invoiceNumber,
                 'invoice_date' => $request->invoice_date,
                 'customer_id' => $request->customer_id,
@@ -358,6 +360,20 @@ class VehicleSalesInvoiceController extends Controller
                 'current_balance' => $curr_bal,
                 'warranty_notes' => $request->input('warranty_notes', "MOTOR, CONTROLLER WARRANTY - 1 YEAR\nBATTERY WARRANTY - 3 YEAR\nCHARGER WARRANTY - 2 YEAR"),
             ]);
+
+            if ($received > 0) {
+                PaymentTransaction::create([
+                    'payable_type' => get_class($inv),
+                    'payable_id' => $inv->id,
+                    'transaction_type' => 'payment',
+                    'amount' => $received,
+                    'payment_mode' => $request->payment_mode ?? 'Cash',
+                    'note' => 'Initial Payment on Creation',
+                    'created_by' => Auth::id(),
+                ]);
+            }
+
+            return $inv;
         });
 
         return redirect()->route('admin.vehicle-sales-invoices.show', $invoice)->withSuccess('Vehicle Sales Invoice created successfully.');
@@ -576,6 +592,9 @@ class VehicleSalesInvoiceController extends Controller
     {
         $request->validate([
             'amount' => 'required|numeric|min:0.01',
+            'payment_mode' => 'nullable|string|max:255',
+            'reference_no' => 'nullable|string|max:255',
+            'note' => 'nullable|string|max:1000',
         ]);
 
         $amount = floatval($request->input('amount'));
@@ -584,11 +603,25 @@ class VehicleSalesInvoiceController extends Controller
             return response()->json(['success' => false, 'message' => 'Amount cannot exceed the balance (' . number_format($vehicleSalesInvoice->balance, 2) . ')']);
         }
 
-        DB::transaction(function () use ($vehicleSalesInvoice, $amount) {
+        DB::transaction(function () use ($vehicleSalesInvoice, $amount, $request) {
             $vehicleSalesInvoice->received_amount += $amount;
             $vehicleSalesInvoice->balance -= $amount;
             $vehicleSalesInvoice->current_balance -= $amount;
+            if ($request->filled('payment_mode')) {
+                $vehicleSalesInvoice->payment_mode = $request->input('payment_mode');
+            }
             $vehicleSalesInvoice->save();
+
+            PaymentTransaction::create([
+                'payable_type' => get_class($vehicleSalesInvoice),
+                'payable_id' => $vehicleSalesInvoice->id,
+                'transaction_type' => 'payment',
+                'amount' => $amount,
+                'payment_mode' => $request->input('payment_mode', $vehicleSalesInvoice->payment_mode ?? 'Cash'),
+                'reference_no' => $request->input('reference_no'),
+                'note' => $request->input('note', 'Payment Received'),
+                'created_by' => Auth::id(),
+            ]);
         });
 
         return response()->json(['success' => true, 'message' => 'Payment received successfully.']);

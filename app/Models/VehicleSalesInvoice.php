@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class VehicleSalesInvoice extends Model
@@ -60,5 +61,10 @@ class VehicleSalesInvoice extends Model
     public function vehicleInventory(): BelongsTo
     {
         return $this->belongsTo(VehicleInventory::class, 'vehicle_inventory_id');
+    }
+
+    public function paymentTransactions(): MorphMany
+    {
+        return $this->morphMany(PaymentTransaction::class, 'payable')->orderBy('created_at', 'desc');
     }
 }

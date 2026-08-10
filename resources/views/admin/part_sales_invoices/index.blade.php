@@ -62,6 +62,7 @@
                         <td><strong>{{ number_format($inv->total_amount, 2) }}</strong></td>
                         <td>{{ $inv->payment_mode }}</td>
                         <td>
+                            <button class="btn btn-sm btn-outline-info me-1" onclick="openPaymentHistoryModal('part-sales-invoice', {{ $inv->id }})" title="Payment History & Rollback"><i class="bx bx-history"></i></button>
                             <a href="{{ route('admin.part-sales-invoices.show', $inv) }}" class="btn btn-sm btn-info me-1" title="View / Print"><i class="bx bx-printer"></i></a>
                             <a href="{{ route('admin.part-sales-invoices.pdf', [$inv, 'download' => 1]) }}" class="btn btn-sm btn-danger me-1" title="Download PDF"><i class="bx bxs-file-pdf"></i></a>
                             <button class="btn btn-sm btn-warning quick-date-btn me-1" data-id="{{ $inv->id }}" data-url="{{ route('admin.part-sales-invoices.quick-update-date', $inv) }}" data-number="{{ $inv->invoice_number }}" data-date="{{ $inv->invoice_date->format('Y-m-d') }}" title="Edit Date & Invoice No"><i class="bx bx-calendar-edit"></i></button>
@@ -109,6 +110,7 @@
 </div>
 
 <form id="deleteForm" method="POST">@csrf</form>
+@include('admin.payment_transactions.history_modal')
 @endsection
 
 @section('script')

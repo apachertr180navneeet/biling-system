@@ -151,49 +151,54 @@
                                 ₹{{ number_format($item->balance, 2) }}
                             </td>
                             <td class="text-center">
-                                <div class="d-flex justify-content-center gap-1">
-                                    @if($tab === 'sales')
-                                        @if($item->sub_type === 'vehicle')
-                                            <a href="{{ route('admin.vehicle-sales-invoices.show', $item->id) }}" class="btn btn-sm btn-outline-primary" title="View">
-                                                <i class="bx bx-show"></i>
-                                            </a>
-                                            @if($item->balance > 0)
-                                                <button class="btn btn-sm btn-success receive-payment-btn" data-url="{{ route('admin.vehicle-sales-invoices.receive-payment', $item->id) }}" data-balance="{{ $item->balance }}" data-title="Receive Payment" title="Receive Payment">
-                                                    <i class="bx bx-wallet"></i>
-                                                </button>
-                                            @endif
-                                        @else
-                                            <a href="{{ route('admin.part-sales-invoices.show', $item->id) }}" class="btn btn-sm btn-outline-primary" title="View">
-                                                <i class="bx bx-show"></i>
-                                            </a>
-                                            @if($item->balance > 0)
-                                                <button class="btn btn-sm btn-success receive-payment-btn" data-url="{{ route('admin.part-sales-invoices.receive-payment', $item->id) }}" data-balance="{{ $item->balance }}" data-title="Receive Payment" title="Receive Payment">
-                                                    <i class="bx bx-wallet"></i>
-                                                </button>
-                                            @endif
-                                        @endif
-                                    @else
-                                        @if($item->sub_type === 'vehicle')
-                                            <a href="{{ route('admin.vehicle-purchase-orders.show', $item->id) }}" class="btn btn-sm btn-outline-danger" title="View">
-                                                <i class="bx bx-show"></i>
-                                            </a>
-                                            @if($item->balance > 0)
-                                                <button class="btn btn-sm btn-danger receive-payment-btn" data-url="{{ route('admin.vehicle-purchase-orders.receive-payment', $item->id) }}" data-balance="{{ $item->balance }}" data-title="Pay Amount" title="Pay Amount">
-                                                    <i class="bx bx-wallet"></i>
-                                                </button>
-                                            @endif
-                                        @else
-                                            <a href="{{ route('admin.purchase-orders.show', $item->id) }}" class="btn btn-sm btn-outline-danger" title="View">
-                                                <i class="bx bx-show"></i>
-                                            </a>
-                                            @if($item->balance > 0)
-                                                <button class="btn btn-sm btn-danger receive-payment-btn" data-url="{{ route('admin.purchase-orders.receive-payment', $item->id) }}" data-balance="{{ $item->balance }}" data-title="Pay Amount" title="Pay Amount">
-                                                    <i class="bx bx-wallet"></i>
-                                                </button>
-                                            @endif
-                                        @endif
-                                    @endif
-                                </div>
+                                 <div class="d-flex justify-content-center gap-1">
+                                     <button class="btn btn-sm btn-outline-info" 
+                                             onclick="openPaymentHistoryModal('{{ $tab === 'sales' ? ($item->sub_type === 'vehicle' ? 'vehicle-sales-invoice' : 'part-sales-invoice') : ($item->sub_type === 'vehicle' ? 'vehicle-purchase-order' : 'purchase-order') }}', {{ $item->id }})" 
+                                             title="Payment History & Audit Rollback">
+                                         <i class="bx bx-history"></i>
+                                     </button>
+                                     @if($tab === 'sales')
+                                         @if($item->sub_type === 'vehicle')
+                                             <a href="{{ route('admin.vehicle-sales-invoices.show', $item->id) }}" class="btn btn-sm btn-outline-primary" title="View">
+                                                 <i class="bx bx-show"></i>
+                                             </a>
+                                             @if($item->balance > 0)
+                                                 <button class="btn btn-sm btn-success receive-payment-btn" data-url="{{ route('admin.vehicle-sales-invoices.receive-payment', $item->id) }}" data-balance="{{ $item->balance }}" data-title="Receive Payment" title="Receive Payment">
+                                                     <i class="bx bx-wallet"></i>
+                                                 </button>
+                                             @endif
+                                         @else
+                                             <a href="{{ route('admin.part-sales-invoices.show', $item->id) }}" class="btn btn-sm btn-outline-primary" title="View">
+                                                 <i class="bx bx-show"></i>
+                                             </a>
+                                             @if($item->balance > 0)
+                                                 <button class="btn btn-sm btn-success receive-payment-btn" data-url="{{ route('admin.part-sales-invoices.receive-payment', $item->id) }}" data-balance="{{ $item->balance }}" data-title="Receive Payment" title="Receive Payment">
+                                                     <i class="bx bx-wallet"></i>
+                                                 </button>
+                                             @endif
+                                         @endif
+                                     @else
+                                         @if($item->sub_type === 'vehicle')
+                                             <a href="{{ route('admin.vehicle-purchase-orders.show', $item->id) }}" class="btn btn-sm btn-outline-danger" title="View">
+                                                 <i class="bx bx-show"></i>
+                                             </a>
+                                             @if($item->balance > 0)
+                                                 <button class="btn btn-sm btn-danger receive-payment-btn" data-url="{{ route('admin.vehicle-purchase-orders.receive-payment', $item->id) }}" data-balance="{{ $item->balance }}" data-title="Pay Amount" title="Pay Amount">
+                                                     <i class="bx bx-wallet"></i>
+                                                 </button>
+                                             @endif
+                                         @else
+                                             <a href="{{ route('admin.purchase-orders.show', $item->id) }}" class="btn btn-sm btn-outline-danger" title="View">
+                                                 <i class="bx bx-show"></i>
+                                             </a>
+                                             @if($item->balance > 0)
+                                                 <button class="btn btn-sm btn-danger receive-payment-btn" data-url="{{ route('admin.purchase-orders.receive-payment', $item->id) }}" data-balance="{{ $item->balance }}" data-title="Pay Amount" title="Pay Amount">
+                                                     <i class="bx bx-wallet"></i>
+                                                 </button>
+                                             @endif
+                                         @endif
+                                     @endif
+                                 </div>
                             </td>
                         </tr>
                         @empty
@@ -217,6 +222,9 @@
         </div>
     </div>
 </div>
+
+@include('admin.payment_transactions.history_modal')
+
 @endsection
 
 @section('script')

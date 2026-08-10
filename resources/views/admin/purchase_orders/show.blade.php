@@ -10,6 +10,7 @@
         <div class="card-header d-flex align-items-center justify-content-between">
             <h5 class="mb-0">Purchase Order Details</h5>
             <div>
+                <button type="button" onclick="openPaymentHistoryModal('purchase-order', {{ $purchaseOrder->id }})" class="btn btn-sm btn-outline-info me-1"><i class="bx bx-history"></i> Payment History</button>
                 @if($purchaseOrder->status != 'received')
                 <a href="{{ route('admin.purchase-orders.receive', $purchaseOrder) }}" class="btn btn-sm btn-primary"><i class="bx bx-import"></i> Receive Items</a>
                 @endif
@@ -67,4 +68,5 @@
         </div>
     </div>
 </div>
+@include('admin.payment_transactions.history_modal')
 @endsection

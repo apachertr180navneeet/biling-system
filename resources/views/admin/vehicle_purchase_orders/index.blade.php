@@ -84,6 +84,7 @@
                             </label>
                         </td>
                         <td>
+                            <button type="button" class="btn btn-sm btn-outline-info me-1" onclick="openPaymentHistoryModal('vehicle-purchase-order', {{ $order->id }})" title="Payment History & Rollback"><i class="bx bx-history"></i></button>
                             <a href="{{ route('admin.vehicle-purchase-orders.show', $order) }}" class="btn btn-sm btn-info" title="View"><i class="bx bx-show"></i></a>
                             <a href="{{ route('admin.vehicle-purchase-orders.edit', $order) }}" class="btn btn-sm btn-primary" title="Edit"><i class="bx bx-edit"></i></a>
                             <a href="{{ route('admin.vehicle-purchase-orders.pdf', $order) }}" class="btn btn-sm btn-danger" target="_blank" title="Download PDF"><i class="bx bxs-file-pdf"></i></a>
@@ -101,6 +102,7 @@
         <div class="card-footer">{{ $orders->links() }}</div>
     </div>
 </div>
+@include('admin.payment_transactions.history_modal')
 @endsection
 @section('script')
 <script>

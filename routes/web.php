@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\VehicleMasterController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\FinanceMasterController;
 use App\Http\Controllers\Admin\QuotationController;
+use App\Http\Controllers\Admin\PaymentTransactionController;
 
 
 /*
@@ -161,6 +162,12 @@ Route::name('admin.')->prefix('admin')->group(function () {
             Route::get('reports/party-report-by-item/export-excel', [ReportController::class, 'exportPartyReportExcel'])->name('reports.party-report-by-item.export-excel');
             Route::post('reports/party-report-by-item/email-excel', [ReportController::class, 'emailPartyReportExcel'])->name('reports.party-report-by-item.email-excel');
             Route::get('reports/party-report-by-item/print-pdf', [ReportController::class, 'printPartyReportPdf'])->name('reports.party-report-by-item.print-pdf');
+
+            // Payment Rollback & Audit Log Routes
+            Route::post('payment-transactions/{type}/{id}/receive', [PaymentTransactionController::class, 'receivePayment'])->name('payment-transactions.receive');
+            Route::post('payment-transactions/{type}/{id}/rollback', [PaymentTransactionController::class, 'rollbackPayment'])->name('payment-transactions.rollback');
+            Route::get('payment-transactions/{type}/{id}/history', [PaymentTransactionController::class, 'history'])->name('payment-transactions.history');
+            Route::get('reports/payment-audit-log', [PaymentTransactionController::class, 'auditLog'])->name('reports.payment-audit-log');
     });
 
 

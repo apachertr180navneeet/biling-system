@@ -58,6 +58,7 @@
                         <td><strong>{{ number_format($inv->grand_total, 2) }}</strong></td>
                         <td>{{ $inv->payment_mode ?? '-' }}</td>
                         <td>
+                            <button class="btn btn-sm btn-outline-info me-1" onclick="openPaymentHistoryModal('vehicle-sales-invoice', {{ $inv->id }})" title="Payment History & Rollback"><i class="bx bx-history"></i></button>
                             <a href="{{ route('admin.vehicle-sales-invoices.show', $inv) }}" class="btn btn-sm btn-info me-1" title="View / Print"><i class="bx bx-printer"></i></a>
                             <a href="{{ route('admin.vehicle-sales-invoices.pdf', [$inv, 'download' => 1]) }}" class="btn btn-sm btn-danger me-1" title="Download PDF"><i class="bx bxs-file-pdf"></i></a>
                             <a href="{{ route('admin.vehicle-sales-invoices.edit', $inv) }}" class="btn btn-sm btn-primary me-1" title="Edit Full Invoice"><i class="bx bx-edit"></i></a>
@@ -106,6 +107,7 @@
 </div>
 
 <form id="deleteForm" method="POST">@csrf</form>
+@include('admin.payment_transactions.history_modal')
 @endsection
 
 @section('script')

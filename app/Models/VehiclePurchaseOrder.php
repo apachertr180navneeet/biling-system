@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class VehiclePurchaseOrder extends Model
@@ -26,5 +27,10 @@ class VehiclePurchaseOrder extends Model
     public function items(): HasMany
     {
         return $this->hasMany(VehiclePoItem::class, 'vehicle_po_id');
+    }
+
+    public function paymentTransactions(): MorphMany
+    {
+        return $this->morphMany(PaymentTransaction::class, 'payable')->orderBy('created_at', 'desc');
     }
 }

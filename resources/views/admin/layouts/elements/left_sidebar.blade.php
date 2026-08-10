@@ -188,5 +188,12 @@
 				<div data-i18n="Party Report By Item">Party Report By Item</div>
 			</a>
 		</li>
+
+		<li class="menu-item {{ request()->routeIs('admin.reports.payment-audit-log') ? 'active' : ''}}">
+			<a href="{{route('admin.reports.payment-audit-log')}}" class="menu-link">
+				<i class="menu-icon tf-icons bx bx-history"></i>
+				<div data-i18n="Payment Audit Log">Payment Audit Log</div>
+			</a>
+		</li>
 	</ul>
 </aside>

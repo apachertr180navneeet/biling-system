@@ -8,7 +8,9 @@ use App\Models\VehicleInventory;
 use App\Models\VehiclePoItem;
 use App\Models\Supplier;
 use App\Models\VehicleMaster;
+use App\Models\PaymentTransaction;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -712,6 +714,9 @@ class VehiclePurchaseOrderController extends Controller
     {
         $request->validate([
             'amount' => 'required|numeric|min:0.01',
+            'payment_mode' => 'nullable|string|max:255',
+            'reference_no' => 'nullable|string|max:255',
+            'note' => 'nullable|string|max:1000',
         ]);
 
         $amount = floatval($request->input('amount'));
@@ -720,10 +725,21 @@ class VehiclePurchaseOrderController extends Controller
             return response()->json(['success' => false, 'message' => 'Amount cannot exceed the balance (' . number_format($vehiclePurchaseOrder->balance, 2) . ')']);
         }
 
-        DB::transaction(function () use ($vehiclePurchaseOrder, $amount) {
+        DB::transaction(function () use ($vehiclePurchaseOrder, $amount, $request) {
             $vehiclePurchaseOrder->received_amount += $amount;
             $vehiclePurchaseOrder->balance -= $amount;
             $vehiclePurchaseOrder->save();
+
+            PaymentTransaction::create([
+                'payable_type' => get_class($vehiclePurchaseOrder),
+                'payable_id' => $vehiclePurchaseOrder->id,
+                'transaction_type' => 'payment',
+                'amount' => $amount,
+                'payment_mode' => $request->input('payment_mode', 'Cash'),
+                'reference_no' => $request->input('reference_no'),
+                'note' => $request->input('note', 'Payment Made'),
+                'created_by' => Auth::id(),
+            ]);
         });
 
         return response()->json(['success' => true, 'message' => 'Payment received successfully.']);
