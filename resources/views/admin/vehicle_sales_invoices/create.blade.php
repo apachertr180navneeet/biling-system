@@ -78,40 +78,6 @@
                     </div>
                 </div>
 
-                <!-- Auto-Appearing Customer Ledger Card -->
-                <div id="customer_ledger_card" class="card mb-4 border border-primary-subtle shadow-sm d-none" style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);">
-                    <div class="card-body p-3">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h6 class="mb-0 text-primary fw-bold">
-                                <i class="bx bx-book-content me-1"></i> Customer Ledger Summary (<span id="ledger_customer_name">Customer</span>)
-                            </h6>
-                            <a id="view_full_ledger_btn" href="#" target="_blank" class="btn btn-sm btn-primary">
-                                <i class="bx bx-show me-1"></i> View Complete Ledger / History
-                            </a>
-                        </div>
-                        <div class="row g-2 text-center">
-                            <div class="col-md-4">
-                                <div class="p-2 bg-white rounded shadow-xs border">
-                                    <small class="text-muted d-block text-uppercase fw-semibold">Total Amount Invoiced</small>
-                                    <span id="lbl_ledger_total" class="h6 mb-0 text-dark fw-bold">₹0.00</span>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="p-2 bg-white rounded shadow-xs border">
-                                    <small class="text-muted d-block text-uppercase fw-semibold">Total Amount Paid/Deposited</small>
-                                    <span id="lbl_ledger_paid" class="h6 mb-0 text-success fw-bold">₹0.00</span>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="p-2 bg-white rounded shadow-xs border">
-                                    <small class="text-muted d-block text-uppercase fw-semibold">Current Outstanding Balance</small>
-                                    <span id="lbl_ledger_outstanding" class="h6 mb-0 text-danger fw-bold">₹0.00</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <h5 class="card-title text-primary mb-3">Vehicle Selection</h5>
                 <div class="row g-3 mb-4">
                     <div class="col-md-12">
@@ -236,6 +202,40 @@
                     <div class="col-md-3">
                         <label class="form-label fw-bold text-danger">Current Balance (INR)</label>
                         <input type="text" id="current_balance" class="form-control bg-white fw-bold text-danger" readonly value="0.00">
+                    </div>
+                </div>
+
+                <!-- Auto-Appearing Customer Ledger Card -->
+                <div id="customer_ledger_card" class="card mb-4 border border-primary-subtle shadow-sm d-none" style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0 text-primary fw-bold">
+                                <i class="bx bx-book-content me-1"></i> Customer Ledger Summary (<span id="ledger_customer_name">Customer</span>)
+                            </h6>
+                            <a id="view_full_ledger_btn" href="#" target="_blank" class="btn btn-sm btn-primary">
+                                <i class="bx bx-show me-1"></i> View Complete Ledger / History
+                            </a>
+                        </div>
+                        <div class="row g-2 text-center">
+                            <div class="col-md-4">
+                                <div class="p-2 bg-white rounded shadow-xs border">
+                                    <small class="text-muted d-block text-uppercase fw-semibold">Total Bill</small>
+                                    <span id="lbl_ledger_total" class="h6 mb-0 text-dark fw-bold">₹0.00</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-2 bg-white rounded shadow-xs border">
+                                    <small class="text-muted d-block text-uppercase fw-semibold">Paid Bill</small>
+                                    <span id="lbl_ledger_paid" class="h6 mb-0 text-success fw-bold">₹0.00</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-2 bg-white rounded shadow-xs border">
+                                    <small class="text-muted d-block text-uppercase fw-semibold">Outstanding Amount</small>
+                                    <span id="lbl_ledger_outstanding" class="h6 mb-0 text-danger fw-bold">₹0.00</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -399,6 +399,7 @@ document.addEventListener('DOMContentLoaded', function() {
         clearTimeout(ledgerTimer);
         ledgerTimer = setTimeout(fetchCustomerLedgerSummary, 300);
     });
+    fetchCustomerLedgerSummary();
 
     var vehicleSelect = document.getElementById('vehicle_select');
     var detailsCard = document.getElementById('vehicle_details_card');

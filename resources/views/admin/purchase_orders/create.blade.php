@@ -199,25 +199,21 @@
                     <table class="table table-hover align-middle" id="modalPartsTable">
                         <thead class="table-dark sticky-top">
                             <tr>
-                                <th style="width: 5%; text-align: center;">
-                                    <input type="checkbox" id="selectAllModalParts" class="form-check-input" title="Select All">
-                                </th>
                                 <th style="width: 45%;">Part Number & Name</th>
-                                <th style="width: 18%; text-align: center;">Stock Available</th>
-                                <th style="width: 17%;">Purchase Price (INR)</th>
+                                <th style="width: 20%; text-align: center;">Stock Available</th>
+                                <th style="width: 20%;">Purchase Price (INR)</th>
                                 <th style="width: 15%; text-align: center;">Qty</th>
                             </tr>
                         </thead>
                         <tbody id="modalPartsBody">
                             @foreach($spareParts as $p)
-                            <tr class="modal-part-row" data-id="{{ $p->id }}" data-name="{{ strtolower($p->name) }}" data-partno="{{ strtolower($p->part_no) }}">
-                                <td class="text-center">
-                                    <input type="checkbox" class="form-check-input modal-part-checkbox" 
-                                           data-id="{{ $p->id }}"
-                                           data-name="{{ $p->part_no }} - {{ $p->name }}"
-                                           data-price="{{ number_format($p->purchase_price, 2, '.', '') }}"
-                                           data-stock="{{ $p->qty_available }}">
-                                </td>
+                            <tr class="modal-part-row" 
+                                data-id="{{ $p->id }}" 
+                                data-name="{{ strtolower($p->name) }}" 
+                                data-partno="{{ strtolower($p->part_no) }}"
+                                data-displayname="{{ $p->part_no }} - {{ $p->name }}"
+                                data-price="{{ number_format($p->purchase_price, 2, '.', '') }}"
+                                data-stock="{{ $p->qty_available }}">
                                 <td>
                                     <div class="fw-bold text-dark fs-6">{{ $p->name }}</div>
                                     <small class="text-muted"><i class="bx bx-purchase-tag me-1"></i>Part No: <strong>{{ $p->part_no }}</strong></small>
@@ -233,7 +229,7 @@
                                     <input type="number" step="0.01" class="form-control form-control-sm modal-part-rate" value="{{ number_format($p->purchase_price, 2, '.', '') }}" min="0">
                                 </td>
                                 <td class="text-center">
-                                    <input type="number" class="form-control form-control-sm text-center modal-part-qty" value="1" min="1">
+                                    <input type="number" class="form-control form-control-sm text-center modal-part-qty" value="0" min="0">
                                 </td>
                             </tr>
                             @endforeach
@@ -315,8 +311,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     btnOpenSearchModal.addEventListener('click', function() {
-        document.querySelectorAll('.modal-part-checkbox').forEach(function(cb) { cb.checked = false; });
-        if (selectAllModalParts) selectAllModalParts.checked = false;
+        document.querySelectorAll('.modal-part-qty').forEach(function(input) { input.value = 0; });
         updateSelectedPartsCount();
         modalPartSearch.value = '';
         filterModalParts();
@@ -345,47 +340,52 @@ document.addEventListener('DOMContentLoaded', function() {
 
     modalPartSearch.addEventListener('input', filterModalParts);
 
-    if (selectAllModalParts) {
-        selectAllModalParts.addEventListener('change', function() {
-            var isChecked = this.checked;
-            var visibleCheckboxes = document.querySelectorAll('.modal-part-row:not(.d-none) .modal-part-checkbox');
-            visibleCheckboxes.forEach(function(cb) {
-                cb.checked = isChecked;
-            });
+    document.getElementById('modalPartsBody').addEventListener('input', function(e) {
+        if (e.target.classList.contains('modal-part-qty')) {
             updateSelectedPartsCount();
-        });
-    }
-
+        }
+    });
     document.getElementById('modalPartsBody').addEventListener('change', function(e) {
-        if (e.target.classList.contains('modal-part-checkbox')) {
+        if (e.target.classList.contains('modal-part-qty')) {
             updateSelectedPartsCount();
         }
     });
 
     function updateSelectedPartsCount() {
-        var checked = document.querySelectorAll('.modal-part-checkbox:checked');
+        var count = 0;
+        document.querySelectorAll('.modal-part-qty').forEach(function(input) {
+            if (parseInt(input.value) > 0) {
+                count++;
+            }
+        });
         if (selectedPartsCount) {
-            selectedPartsCount.textContent = checked.length + ' part(s) selected';
+            selectedPartsCount.textContent = count + ' part(s) selected';
         }
     }
 
     if (btnAddSelectedModalParts) {
         btnAddSelectedModalParts.addEventListener('click', function() {
-            var checkedBoxes = document.querySelectorAll('.modal-part-checkbox:checked');
-            if (checkedBoxes.length === 0) {
-                alert('Please select at least one part using the checkboxes.');
+            var selectedRows = [];
+            document.querySelectorAll('.modal-part-row').forEach(function(row) {
+                var qtyInput = row.querySelector('.modal-part-qty');
+                if (qtyInput && parseInt(qtyInput.value) > 0) {
+                    selectedRows.push(row);
+                }
+            });
+
+            if (selectedRows.length === 0) {
+                alert('Please set quantity greater than 0 for at least one part.');
                 return;
             }
 
-            checkedBoxes.forEach(function(cb) {
-                var row = cb.closest('.modal-part-row');
-                var partId = cb.getAttribute('data-id');
-                var partName = cb.getAttribute('data-name');
-                var stock = parseInt(cb.getAttribute('data-stock')) || 0;
+            selectedRows.forEach(function(row) {
+                var partId = row.getAttribute('data-id');
+                var partName = row.getAttribute('data-displayname') || row.getAttribute('data-name');
+                var stock = parseInt(row.getAttribute('data-stock')) || 0;
                 var qtyInput = row.querySelector('.modal-part-qty');
                 var rateInput = row.querySelector('.modal-part-rate');
-                var qty = parseInt(qtyInput.value) || 1;
-                var rate = (rateInput && rateInput.value !== '' && !isNaN(parseFloat(rateInput.value))) ? parseFloat(rateInput.value) : (parseFloat(cb.getAttribute('data-price')) || 0);
+                var qty = parseInt(qtyInput.value) || 0;
+                var rate = (rateInput && rateInput.value !== '' && !isNaN(parseFloat(rateInput.value))) ? parseFloat(rateInput.value) : (parseFloat(row.getAttribute('data-price')) || 0);
 
                 var existingRows = itemsContainer.querySelectorAll('.item-row');
                 var targetRow = null;
@@ -412,10 +412,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     createRow(partId, partName, qty, rate, stock);
                 }
 
-                cb.checked = false;
+                qtyInput.value = 0;
             });
 
-            if (selectAllModalParts) selectAllModalParts.checked = false;
             updateSelectedPartsCount();
             itemModal.hide();
         });

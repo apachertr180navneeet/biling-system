@@ -128,40 +128,6 @@
                     </div>
                 </div>
 
-                <!-- Auto-Appearing Customer Ledger Card -->
-                <div id="customer_ledger_card" class="card mb-4 border border-primary-subtle shadow-sm d-none" style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);">
-                    <div class="card-body p-3">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h6 class="mb-0 text-primary fw-bold">
-                                <i class="bx bx-book-content me-1"></i> Customer Ledger Summary (<span id="ledger_customer_name">Customer</span>)
-                            </h6>
-                            <a id="view_full_ledger_btn" href="#" target="_blank" class="btn btn-sm btn-primary">
-                                <i class="bx bx-show me-1"></i> View Complete Ledger / History
-                            </a>
-                        </div>
-                        <div class="row g-2 text-center">
-                            <div class="col-md-4">
-                                <div class="p-2 bg-white rounded shadow-xs border">
-                                    <small class="text-muted d-block text-uppercase fw-semibold">Total Amount Invoiced</small>
-                                    <span id="lbl_ledger_total" class="h6 mb-0 text-dark fw-bold">₹0.00</span>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="p-2 bg-white rounded shadow-xs border">
-                                    <small class="text-muted d-block text-uppercase fw-semibold">Total Amount Paid/Deposited</small>
-                                    <span id="lbl_ledger_paid" class="h6 mb-0 text-success fw-bold">₹0.00</span>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="p-2 bg-white rounded shadow-xs border">
-                                    <small class="text-muted d-block text-uppercase fw-semibold">Current Outstanding Balance</small>
-                                    <span id="lbl_ledger_outstanding" class="h6 mb-0 text-danger fw-bold">₹0.00</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <h5 class="card-title text-primary mb-3">Invoice Details</h5>
                 <div class="row g-3 mb-4">
                     <div class="col-md-3">
@@ -261,6 +227,40 @@
                     <div class="col-md-3">
                         <label class="form-label fw-bold text-danger">Current Balance (INR)</label>
                         <input type="text" id="summary_current_balance" class="form-control bg-white fw-bold text-danger" readonly value="0.00">
+                    </div>
+                </div>
+
+                <!-- Auto-Appearing Customer Ledger Card -->
+                <div id="customer_ledger_card" class="card mb-4 border border-primary-subtle shadow-sm d-none" style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0 text-primary fw-bold">
+                                <i class="bx bx-book-content me-1"></i> Customer Ledger Summary (<span id="ledger_customer_name">Customer</span>)
+                            </h6>
+                            <a id="view_full_ledger_btn" href="#" target="_blank" class="btn btn-sm btn-primary">
+                                <i class="bx bx-show me-1"></i> View Complete Ledger / History
+                            </a>
+                        </div>
+                        <div class="row g-2 text-center">
+                            <div class="col-md-4">
+                                <div class="p-2 bg-white rounded shadow-xs border">
+                                    <small class="text-muted d-block text-uppercase fw-semibold">Total Bill</small>
+                                    <span id="lbl_ledger_total" class="h6 mb-0 text-dark fw-bold">₹0.00</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-2 bg-white rounded shadow-xs border">
+                                    <small class="text-muted d-block text-uppercase fw-semibold">Paid Bill</small>
+                                    <span id="lbl_ledger_paid" class="h6 mb-0 text-success fw-bold">₹0.00</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-2 bg-white rounded shadow-xs border">
+                                    <small class="text-muted d-block text-uppercase fw-semibold">Outstanding Amount</small>
+                                    <span id="lbl_ledger_outstanding" class="h6 mb-0 text-danger fw-bold">₹0.00</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -395,25 +395,21 @@
                     <table class="table table-hover align-middle" id="modalPartsTable">
                         <thead class="table-dark sticky-top">
                             <tr>
-                                <th style="width: 5%; text-align: center;">
-                                    <input type="checkbox" id="selectAllModalParts" class="form-check-input" title="Select All">
-                                </th>
-                                <th style="width: 40%;">Part Number & Name</th>
-                                <th style="width: 18%; text-align: center;">Stock Available</th>
-                                <th style="width: 22%;">Rate / Selling Price (INR)</th>
+                                <th style="width: 45%;">Part Number & Name</th>
+                                <th style="width: 20%; text-align: center;">Stock Available</th>
+                                <th style="width: 20%;">Rate / Selling Price (INR)</th>
                                 <th style="width: 15%; text-align: center;">Qty</th>
                             </tr>
                         </thead>
                         <tbody id="modalPartsBody">
                             @foreach($spareParts as $p)
-                            <tr class="modal-part-row" data-id="{{ $p->id }}" data-name="{{ strtolower($p->name) }}" data-partno="{{ strtolower($p->part_no) }}">
-                                <td class="text-center">
-                                    <input type="checkbox" class="form-check-input modal-part-checkbox" 
-                                           data-id="{{ $p->id }}"
-                                           data-name="{{ $p->part_no }} - {{ $p->name }}"
-                                           data-price="{{ number_format($p->selling_price, 2, '.', '') }}"
-                                           data-stock="{{ $p->qty_available }}">
-                                </td>
+                            <tr class="modal-part-row" 
+                                data-id="{{ $p->id }}" 
+                                data-name="{{ strtolower($p->name) }}" 
+                                data-partno="{{ strtolower($p->part_no) }}"
+                                data-displayname="{{ $p->part_no }} - {{ $p->name }}"
+                                data-price="{{ number_format($p->selling_price, 2, '.', '') }}"
+                                data-stock="{{ $p->qty_available }}">
                                 <td>
                                     <div class="fw-bold text-dark fs-6">{{ $p->name }}</div>
                                     <small class="text-muted"><i class="bx bx-purchase-tag me-1"></i>Part No: <strong>{{ $p->part_no }}</strong></small>
@@ -429,7 +425,7 @@
                                     <input type="number" step="0.01" class="form-control form-control-sm modal-part-rate" value="{{ number_format($p->selling_price, 2, '.', '') }}" min="0">
                                 </td>
                                 <td class="text-center">
-                                    <input type="number" class="form-control form-control-sm text-center modal-part-qty" value="1" min="1">
+                                    <input type="number" class="form-control form-control-sm text-center modal-part-qty" value="0" min="0">
                                 </td>
                             </tr>
                             @endforeach
@@ -532,6 +528,7 @@ document.addEventListener('DOMContentLoaded', function() {
         clearTimeout(ledgerTimer);
         ledgerTimer = setTimeout(fetchCustomerLedgerSummary, 300);
     });
+    fetchCustomerLedgerSummary();
 
     var itemsContainer = document.getElementById('itemsContainer');
     var btnAddRow = document.getElementById('btnAddRow');
@@ -625,9 +622,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (btnAddSelectedModalParts) btnAddSelectedModalParts.classList.remove('d-none');
         if (selectedPartsCount) selectedPartsCount.classList.remove('d-none');
         
-        // Reset checkboxes
-        document.querySelectorAll('.modal-part-checkbox').forEach(function(cb) { cb.checked = false; });
-        if (selectAllModalParts) selectAllModalParts.checked = false;
+        // Reset modal quantities to 0
+        document.querySelectorAll('.modal-part-qty').forEach(function(input) { input.value = 0; });
         updateSelectedPartsCount();
 
         modalPartSearch.value = '';
@@ -658,49 +654,54 @@ document.addEventListener('DOMContentLoaded', function() {
 
     modalPartSearch.addEventListener('input', filterModalParts);
 
-    // Checkbox selection handlers
-    if (selectAllModalParts) {
-        selectAllModalParts.addEventListener('change', function() {
-            var isChecked = this.checked;
-            var visibleCheckboxes = document.querySelectorAll('.modal-part-row:not(.d-none) .modal-part-checkbox');
-            visibleCheckboxes.forEach(function(cb) {
-                cb.checked = isChecked;
-            });
+    // Quantity change listeners for updating selected count
+    document.getElementById('modalPartsBody').addEventListener('input', function(e) {
+        if (e.target.classList.contains('modal-part-qty')) {
             updateSelectedPartsCount();
-        });
-    }
-
+        }
+    });
     document.getElementById('modalPartsBody').addEventListener('change', function(e) {
-        if (e.target.classList.contains('modal-part-checkbox')) {
+        if (e.target.classList.contains('modal-part-qty')) {
             updateSelectedPartsCount();
         }
     });
 
     function updateSelectedPartsCount() {
-        var checked = document.querySelectorAll('.modal-part-checkbox:checked');
+        var count = 0;
+        document.querySelectorAll('.modal-part-qty').forEach(function(input) {
+            if (parseInt(input.value) > 0) {
+                count++;
+            }
+        });
         if (selectedPartsCount) {
-            selectedPartsCount.textContent = checked.length + ' part(s) selected';
+            selectedPartsCount.textContent = count + ' part(s) selected';
         }
     }
 
     // Add Selected Parts from Modal to Main Invoice Table
     if (btnAddSelectedModalParts) {
         btnAddSelectedModalParts.addEventListener('click', function() {
-            var checkedBoxes = document.querySelectorAll('.modal-part-checkbox:checked');
-            if (checkedBoxes.length === 0) {
-                alert('Please select at least one part using the checkboxes.');
+            var selectedRows = [];
+            document.querySelectorAll('.modal-part-row').forEach(function(row) {
+                var qtyInput = row.querySelector('.modal-part-qty');
+                if (qtyInput && parseInt(qtyInput.value) > 0) {
+                    selectedRows.push(row);
+                }
+            });
+
+            if (selectedRows.length === 0) {
+                alert('Please set quantity greater than 0 for at least one part.');
                 return;
             }
 
-            checkedBoxes.forEach(function(cb) {
-                var row = cb.closest('.modal-part-row');
-                var partId = cb.getAttribute('data-id');
-                var partName = cb.getAttribute('data-name');
-                var stock = parseInt(cb.getAttribute('data-stock')) || 0;
+            selectedRows.forEach(function(row) {
+                var partId = row.getAttribute('data-id');
+                var partName = row.getAttribute('data-displayname') || row.getAttribute('data-name');
+                var stock = parseInt(row.getAttribute('data-stock')) || 0;
                 var qtyInput = row.querySelector('.modal-part-qty');
                 var rateInput = row.querySelector('.modal-part-rate');
-                var qty = parseInt(qtyInput.value) || 1;
-                var rate = parseFloat(rateInput.value) || parseFloat(cb.getAttribute('data-price')) || 0;
+                var qty = parseInt(qtyInput.value) || 0;
+                var rate = parseFloat(rateInput.value) || parseFloat(row.getAttribute('data-price')) || 0;
 
                 // Check if there is an unselected first row in the table
                 var existingRows = itemsContainer.querySelectorAll('.item-row');
@@ -732,10 +733,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     calculateRow(newRow);
                 }
 
-                cb.checked = false;
+                qtyInput.value = 0;
             });
 
-            if (selectAllModalParts) selectAllModalParts.checked = false;
             updateSelectedPartsCount();
             checkNoItemsNotice();
             calculateSummary();

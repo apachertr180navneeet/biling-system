@@ -1256,29 +1256,78 @@ class ReportController extends Controller
 
         $customerOutstanding = Customer::where('is_active', true)
             ->get()->map(function($c) {
-                $vBal = VehicleSalesInvoice::where('customer_id', $c->id)->sum('balance');
-                $pBal = PartSalesInvoice::where('customer_id', $c->id)->sum('balance');
-                $tot = $vBal + $pBal;
+                // Query vehicle sales invoices for this customer by ID, name, or mobile
+                $vQuery = VehicleSalesInvoice::where(function($q) use ($c) {
+                    $q->where('customer_id', $c->id);
+                    if ($c->name) {
+                        $q->orWhere(DB::raw('LOWER(customer_name)'), strtolower($c->name));
+                    }
+                    if (!empty($c->phone)) {
+                        $q->orWhere('customer_mobile', $c->phone);
+                    }
+                });
+
+                // Query part sales invoices for this customer by ID, name, or mobile
+                $pQuery = PartSalesInvoice::where(function($q) use ($c) {
+                    $q->where('customer_id', $c->id);
+                    if ($c->name) {
+                        $q->orWhere(DB::raw('LOWER(customer_name)'), strtolower($c->name));
+                    }
+                    if (!empty($c->phone)) {
+                        $q->orWhere('customer_mobile', $c->phone);
+                    }
+                });
+
+                $vCount = (clone $vQuery)->count();
+                $pCount = (clone $pQuery)->count();
+
+                // Exclude customer if they have no bills in both vehicle and part sales
+                if ($vCount === 0 && $pCount === 0) {
+                    return null;
+                }
+
+                $vBal = (clone $vQuery)->sum('balance');
+                $pBal = (clone $pQuery)->sum('balance');
+                $tot = (float)$vBal + (float)$pBal;
+
                 return [
                     'type' => 'Customer (Receivable)',
                     'name' => $c->name,
-                    'phone' => $c->mobile ?? '-',
+                    'phone' => $c->phone ?? ($c->mobile ?? '-'),
                     'total_outstanding' => $tot
                 ];
-            })->filter(fn($i) => $i['total_outstanding'] > 0);
+            })
+            ->filter(function($i) {
+                return $i !== null && $i['total_outstanding'] > 0;
+            });
 
         $supplierOutstanding = Supplier::where('is_active', true)
             ->get()->map(function($s) {
-                $vBal = VehiclePurchaseOrder::where('supplier_id', $s->id)->sum('balance');
-                $pBal = PurchaseOrder::where('supplier_id', $s->id)->sum('balance');
-                $tot = $vBal + $pBal;
+                $vQuery = VehiclePurchaseOrder::where('supplier_id', $s->id);
+                $pQuery = PurchaseOrder::where('supplier_id', $s->id);
+
+                $vCount = (clone $vQuery)->count();
+                $pCount = (clone $pQuery)->count();
+
+                // Exclude supplier if they have no orders in both vehicle and part POs
+                if ($vCount === 0 && $pCount === 0) {
+                    return null;
+                }
+
+                $vBal = (clone $vQuery)->sum('balance');
+                $pBal = (clone $pQuery)->sum('balance');
+                $tot = (float)$vBal + (float)$pBal;
+
                 return [
                     'type' => 'Supplier (Payable)',
                     'name' => $s->name,
-                    'phone' => $s->mobile ?? '-',
+                    'phone' => $s->phone ?? ($s->mobile ?? '-'),
                     'total_outstanding' => $tot
                 ];
-            })->filter(fn($i) => $i['total_outstanding'] > 0);
+            })
+            ->filter(function($i) {
+                return $i !== null && $i['total_outstanding'] > 0;
+            });
 
         $partyList = $customerOutstanding->merge($supplierOutstanding);
 
