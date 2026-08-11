@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
+
 use App\Models\Customer;
 use App\Models\Supplier;
 use App\Models\VehicleMaster;
