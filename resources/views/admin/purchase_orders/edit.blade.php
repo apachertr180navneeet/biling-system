@@ -153,8 +153,12 @@
                             @endphp
                             <tr class="item-row">
                                 <td>
+                                    <input type="hidden" name="items[{{ $i }}][id]" value="{{ $item->id }}">
                                     <input type="hidden" name="items[{{ $i }}][spare_part_id]" class="part-id-input" value="{{ $item->spare_part_id }}" required>
                                     <input type="text" class="form-control bg-white fw-bold part-name-input" readonly value="{{ $item->sparePart ? $item->sparePart->part_no . ' - ' . $item->sparePart->name : '' }}" placeholder="Click 'Search & Add Item' to select part" required>
+                                    @if(($item->received_quantity ?? 0) > 0)
+                                    <small class="text-success fw-bold d-block mt-1"><i class="bx bx-check-circle me-1"></i>Received: {{ $item->received_quantity }}</small>
+                                    @endif
                                 </td>
                                 <td class="text-center bg-light">
                                     <span class="stock-badge fw-bold {{ $stockVal > 0 ? 'text-success' : 'text-secondary' }}">{{ $stockVal }}</span>

@@ -240,9 +240,6 @@ class PurchaseOrderController extends Controller
 
     public function edit(PurchaseOrder $purchaseOrder)
     {
-        if ($purchaseOrder->status !== 'pending') {
-            return redirect()->route('admin.purchase-orders.index')->with('error', 'Only pending orders can be edited.');
-        }
         $purchaseOrder->load('items.sparePart');
         $suppliers = Supplier::orderBy('name')->get();
         $spareParts = SparePart::orderBy('name')->get()->map(function ($part) {
@@ -266,39 +263,75 @@ class PurchaseOrderController extends Controller
 
     public function update(Request $request, PurchaseOrder $purchaseOrder)
     {
-        if ($purchaseOrder->status !== 'pending') {
-            return redirect()->route('admin.purchase-orders.index')->with('error', 'Only pending orders can be edited.');
-        }
-
         $data = $request->validate([
             'supplier_id' => 'required|exists:suppliers,id',
             'order_date' => 'required|date',
             'expected_date' => 'nullable|date|after_or_equal:order_date',
             'notes' => 'nullable|string',
             'items' => 'required|array|min:1',
+            'items.*.id' => 'nullable|integer',
             'items.*.spare_part_id' => 'required|exists:spare_parts,id',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.unit_price' => 'required|numeric|min:0',
         ]);
 
+        $existingItems = $purchaseOrder->items()->get()->keyBy('id');
+        $existingItemsByPart = $purchaseOrder->items()->get()->keyBy('spare_part_id');
+
         $total = 0;
         $newItems = [];
+        $totalReceived = 0;
+        $allFullyReceived = true;
+
         foreach ($data['items'] as $item) {
             $lineTotal = $item['quantity'] * $item['unit_price'];
             $total += $lineTotal;
+
+            $receivedQty = 0;
+            if (!empty($item['id']) && isset($existingItems[$item['id']])) {
+                $receivedQty = $existingItems[$item['id']]->received_quantity;
+            } elseif (isset($existingItemsByPart[$item['spare_part_id']])) {
+                $receivedQty = $existingItemsByPart[$item['spare_part_id']]->received_quantity;
+            }
+
             $newItems[] = new PurchaseOrderItem([
                 'spare_part_id' => $item['spare_part_id'],
                 'quantity' => $item['quantity'],
                 'unit_price' => $item['unit_price'],
                 'total_price' => $lineTotal,
+                'received_quantity' => $receivedQty,
             ]);
+
+            $totalReceived += $receivedQty;
+            if ($receivedQty < $item['quantity']) {
+                $allFullyReceived = false;
+            }
         }
         unset($data['items']);
         $data['total_amount'] = $total;
+        $data['balance'] = max(0, $total - floatval($purchaseOrder->received_amount ?? 0));
 
-        $purchaseOrder->update($data);
-        $purchaseOrder->items()->delete();
-        $purchaseOrder->items()->saveMany($newItems);
+        if ($purchaseOrder->status !== 'pending' || $totalReceived > 0) {
+            if ($totalReceived === 0) {
+                $data['status'] = 'pending';
+            } elseif ($allFullyReceived) {
+                $data['status'] = 'received';
+            } else {
+                $data['status'] = 'partial';
+            }
+        }
+
+        DB::transaction(function () use ($purchaseOrder, $data, $newItems) {
+            $purchaseOrder->update($data);
+            $purchaseOrder->items()->delete();
+            $purchaseOrder->items()->saveMany($newItems);
+
+            foreach ($newItems as $item) {
+                SparePartStock::where('purchase_order_id', $purchaseOrder->id)
+                    ->where('spare_part_id', $item->spare_part_id)
+                    ->update(['purchase_price' => $item->unit_price]);
+            }
+        });
 
         return redirect()->route('admin.purchase-orders.index')->withSuccess('Purchase order updated successfully.');
     }

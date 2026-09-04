@@ -77,7 +77,8 @@
                 @error('items') <div class="text-danger small mb-2">{{ $message }}</div> @enderror
                 <div id="itemsContainer">
                     @foreach($vehiclePurchaseOrder->items as $i => $item)
-                    <div class="item-row row">
+                    <div class="item-row row mb-2">
+                        <input type="hidden" name="items[{{ $i }}][id]" value="{{ $item->id }}">
                         <div class="col-md-4">
                             <select name="items[{{ $i }}][vehicle_description]" class="form-select vehicle-select">
                                 <option value="">Select Vehicle</option>
@@ -85,6 +86,9 @@
                                 <option value="{{ $opt }}" {{ $item->vehicle_description == $opt ? 'selected' : '' }}>{{ $opt }}</option>
                                 @endforeach
                             </select>
+                            @if(($item->received_quantity ?? 0) > 0)
+                            <small class="text-success fw-bold d-block mt-1"><i class="bx bx-check-circle me-1"></i>Received: {{ $item->received_quantity }}</small>
+                            @endif
                         </div>
                         <div class="col-md-2">
                             <input type="text" name="items[{{ $i }}][color_name]" class="form-control" placeholder="Color" value="{{ old("items.{$i}.color_name", $item->color_name) }}">

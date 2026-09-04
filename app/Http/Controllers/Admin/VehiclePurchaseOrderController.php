@@ -231,9 +231,6 @@ class VehiclePurchaseOrderController extends Controller
 
     public function edit(VehiclePurchaseOrder $vehiclePurchaseOrder)
     {
-        if ($vehiclePurchaseOrder->status !== 'pending') {
-            return redirect()->route('admin.vehicle-purchase-orders.index')->with('error', 'Only pending orders can be edited.');
-        }
         $vehiclePurchaseOrder->load('items');
         $suppliers = Supplier::where('is_active', true)->orderBy('name')->get();
         $vehicleData = $this->getVehicleOptions();
@@ -248,27 +245,47 @@ class VehiclePurchaseOrderController extends Controller
 
     public function update(Request $request, VehiclePurchaseOrder $vehiclePurchaseOrder)
     {
-        if ($vehiclePurchaseOrder->status !== 'pending') {
-            return redirect()->route('admin.vehicle-purchase-orders.index')->with('error', 'Only pending orders can be edited.');
-        }
-
         $data = $request->validate([
             'supplier_id' => 'nullable|exists:suppliers,id',
             'order_date' => 'required|date',
             'expected_date' => 'nullable|date|after_or_equal:order_date',
             'notes' => 'nullable|string',
             'items' => 'required|array|min:1',
+            'items.*.id' => 'nullable|integer',
             'items.*.vehicle_description' => 'required|string|max:255',
             'items.*.color_name' => 'nullable|string|max:255',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.unit_price' => 'required|numeric|min:0',
         ]);
 
+        $existingItems = $vehiclePurchaseOrder->items()->get()->keyBy('id');
+        $existingItemsByDesc = $vehiclePurchaseOrder->items()->get()->keyBy(function($item) {
+            return $item->vehicle_description . '|' . ($item->color_name ?? '');
+        });
+
         $total = 0;
         $newItems = [];
+        $totalReceived = 0;
+        $allFullyReceived = true;
+
         foreach ($data['items'] as $item) {
             $lineTotal = $item['quantity'] * $item['unit_price'];
             $total += $lineTotal;
+
+            $receivedQty = 0;
+            $key = $item['vehicle_description'] . '|' . ($item['color_name'] ?? '');
+            if (!empty($item['id']) && isset($existingItems[$item['id']])) {
+                $receivedQty = $existingItems[$item['id']]->received_quantity;
+            } elseif (isset($existingItemsByDesc[$key])) {
+                $receivedQty = $existingItemsByDesc[$key]->received_quantity;
+            } else {
+                $receivedQty = VehicleInventory::where('vehicle_po_id', $vehiclePurchaseOrder->id)
+                    ->where('vehicle_description', $item['vehicle_description'])
+                    ->when(!empty($item['color_name']), function($q) use ($item) {
+                        $q->where('color_name', $item['color_name']);
+                    })
+                    ->count();
+            }
 
             $newItems[] = new VehiclePoItem([
                 'vehicle_description' => $item['vehicle_description'],
@@ -276,15 +293,41 @@ class VehiclePurchaseOrderController extends Controller
                 'quantity' => $item['quantity'],
                 'unit_price' => $item['unit_price'],
                 'total_price' => $lineTotal,
+                'received_quantity' => $receivedQty,
             ]);
+
+            $totalReceived += $receivedQty;
+            if ($receivedQty < $item['quantity']) {
+                $allFullyReceived = false;
+            }
         }
         unset($data['items']);
         $data['total_amount'] = $total;
+        $data['balance'] = max(0, $total - floatval($vehiclePurchaseOrder->received_amount ?? 0));
+
+        if ($vehiclePurchaseOrder->status !== 'pending' || $totalReceived > 0) {
+            if ($totalReceived === 0) {
+                $data['status'] = 'pending';
+            } elseif ($allFullyReceived) {
+                $data['status'] = 'received';
+            } else {
+                $data['status'] = 'partial';
+            }
+        }
 
         DB::transaction(function () use ($vehiclePurchaseOrder, $data, $newItems) {
             $vehiclePurchaseOrder->update($data);
             $vehiclePurchaseOrder->items()->delete();
             $vehiclePurchaseOrder->items()->saveMany($newItems);
+
+            foreach ($newItems as $item) {
+                VehicleInventory::where('vehicle_po_id', $vehiclePurchaseOrder->id)
+                    ->where('vehicle_description', $item->vehicle_description)
+                    ->when(!empty($item->color_name), function($q) use ($item) {
+                        $q->where('color_name', $item->color_name);
+                    })
+                    ->update(['purchase_price' => $item->unit_price]);
+            }
         });
 
         return redirect()->route('admin.vehicle-purchase-orders.index')->withSuccess('Vehicle PO updated.');
