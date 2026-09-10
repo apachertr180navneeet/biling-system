@@ -780,7 +780,7 @@
                             </tr>
                             @if($vehicleSalesInvoice->payment_mode === 'Finance' && $vehicleSalesInvoice->finance_name)
                             <tr>
-                                <td class="meta-label">Finance Name</td>
+                                <td class="meta-label">HPN</td>
                                 <td class="meta-value">{{ $vehicleSalesInvoice->finance_name }}</td>
                             </tr>
                             @endif

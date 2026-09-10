@@ -63,9 +63,9 @@
                         </select>
                     </div>
                     <div class="col-md-3 d-none" id="finance_name_div">
-                        <label class="form-label">Finance Name <span class="text-danger">*</span></label>
+                        <label class="form-label">HPN <span class="text-danger">*</span></label>
                         <select name="finance_name" id="finance_name" class="form-select">
-                            <option value="">-- Select Finance --</option>
+                            <option value="">-- Select HPN --</option>
                             @foreach($financeMasters as $fm)
                             <option value="{{ $fm->name }}" {{ old('finance_name') === $fm->name ? 'selected' : '' }}>{{ $fm->name }}</option>
                             @endforeach

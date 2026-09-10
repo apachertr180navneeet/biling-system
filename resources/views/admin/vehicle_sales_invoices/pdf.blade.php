@@ -219,7 +219,7 @@
                         </tr>
                         @if($vehicleSalesInvoice->finance_name)
                         <tr>
-                            <td>Finance Name:</td>
+                            <td>HPN:</td>
                             <td class="text-right fw-bold" style="color: #2563eb;">{{ $vehicleSalesInvoice->finance_name }}</td>
                         </tr>
                         @endif
