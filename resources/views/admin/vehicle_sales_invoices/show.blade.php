@@ -805,6 +805,12 @@
                         <h3>Bill To</h3>
                         <h4>{{ $vehicleSalesInvoice->customer_name }}</h4>
                         <p>{{ $vehicleSalesInvoice->customer_address ?? '-' }}</p>
+                        @php
+                            $customerGstin = $vehicleSalesInvoice->customer_gstin ?: ($vehicleSalesInvoice->customer->gstin ?? null);
+                        @endphp
+                        @if(!empty($customerGstin))
+                            <p style="margin-top: 4px; font-weight: 600; color: #047857;"><b>GSTIN:</b> {{ $customerGstin }}</p>
+                        @endif
                         <p style="margin-top: 6px;"><b>Mobile:</b> {{ $vehicleSalesInvoice->customer_mobile ?? '-' }}</p>
                         <p><b>Residence Tel:</b> {{ $vehicleSalesInvoice->customer_residence_phone ?? '-' }}</p>
                     </div>

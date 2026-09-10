@@ -61,8 +61,8 @@
                     <strong>Name:</strong> {{ $quotation->customer_name }}<br>
                     <strong>Mobile:</strong> {{ $quotation->customer_mobile ?? '-' }}<br>
                     <strong>Address:</strong> {{ $quotation->customer_address ?? '-' }}<br>
-                    <strong>GSTIN:</strong> {{ $quotation->customer_gstin ?? '-' }}<br>
-                    <strong>PAN:</strong> {{ $quotation->customer_pan ?? '-' }}<br>
+                    <strong>GSTIN:</strong> {{ $quotation->customer_gstin ?: ($quotation->customer->gstin ?? '-') }}<br>
+                    <strong>PAN:</strong> {{ $quotation->customer_pan ?: ($quotation->customer->pan_no ?? '-') }}<br>
                     <strong>Place of Supply:</strong> {{ $quotation->place_of_supply }}
                 </div>
             </div>

@@ -18,7 +18,8 @@
                                 <option value="{{ $c->id }}" 
                                         data-name="{{ $c->name }}"
                                         data-mobile="{{ $c->phone }}"
-                                        data-address="{{ $c->address }}">
+                                        data-address="{{ $c->address }}"
+                                        data-gstin="{{ $c->gstin }}">
                                     {{ $c->name }} ({{ $c->phone }})
                                 </option>
                                 @endforeach
@@ -37,6 +38,11 @@
                         <label class="form-label">Mobile Number</label>
                         <input type="text" id="customer_mobile" name="customer_mobile" class="form-control @error('customer_mobile') is-invalid @enderror" value="{{ old('customer_mobile') }}">
                         @error('customer_mobile')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">GSTIN (Optional)</label>
+                        <input type="text" id="customer_gstin" name="customer_gstin" class="form-control @error('customer_gstin') is-invalid @enderror" value="{{ old('customer_gstin') }}" placeholder="15-digit GSTIN" maxlength="15">
+                        @error('customer_gstin')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Age</label>
@@ -285,7 +291,11 @@ CHARGER WARRANTY - 2 YEAR</textarea>
                                 <option value="corporate">Corporate</option>
                             </select>
                         </div>
-                        <div class="col-md-12">
+                        <div class="col-md-6">
+                            <label class="form-label">GSTIN (Optional)</label>
+                            <input type="text" name="gstin" id="modal_gstin" class="form-control" maxlength="15" placeholder="15-digit GSTIN">
+                        </div>
+                        <div class="col-md-6">
                             <label class="form-label">Email</label>
                             <input type="email" name="email" id="modal_email" class="form-control">
                         </div>
@@ -312,6 +322,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var customerNameInput = document.getElementById('customer_name');
     var customerMobileInput = document.getElementById('customer_mobile');
     var customerAddressInput = document.getElementById('customer_address');
+    var customerGstinInput = document.getElementById('customer_gstin');
 
     var paymentModeSelect = document.getElementById('payment_mode');
     var financeNameDiv = document.getElementById('finance_name_div');
@@ -339,10 +350,12 @@ document.addEventListener('DOMContentLoaded', function() {
             customerNameInput.value = opt.getAttribute('data-name') || '';
             customerMobileInput.value = opt.getAttribute('data-mobile') || '';
             customerAddressInput.value = opt.getAttribute('data-address') || '';
+            if (customerGstinInput) customerGstinInput.value = opt.getAttribute('data-gstin') || '';
         } else {
             customerNameInput.value = '';
             customerMobileInput.value = '';
             customerAddressInput.value = '';
+            if (customerGstinInput) customerGstinInput.value = '';
         }
         fetchCustomerLedgerSummary();
     });
@@ -585,6 +598,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 option.setAttribute('data-name', fullName);
                 option.setAttribute('data-mobile', customer.phone);
                 option.setAttribute('data-address', customer.address || '');
+                option.setAttribute('data-gstin', customer.gstin || '');
                 
                 customerSelect.appendChild(option);
                 customerSelect.value = customer.id;

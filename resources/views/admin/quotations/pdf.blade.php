@@ -220,8 +220,12 @@
                     <div style="font-size: 9px; color: #475569; line-height: 1.35; margin-top: 2px;">
                         @if($quotation->customer_mobile) <strong>Mobile:</strong> {{ $quotation->customer_mobile }} <br> @endif
                         @if($quotation->customer_address) <strong>Address:</strong> {{ $quotation->customer_address }} <br> @endif
-                        @if($quotation->customer_gstin) <strong>GSTIN:</strong> <span style="color: #047857; font-weight: bold;">{{ $quotation->customer_gstin }}</span> <br> @endif
-                        @if($quotation->customer_pan) <strong>PAN:</strong> {{ $quotation->customer_pan }} @endif
+                        @php
+                            $qGstin = $quotation->customer_gstin ?: ($quotation->customer->gstin ?? null);
+                            $qPan = $quotation->customer_pan ?: ($quotation->customer->pan_no ?? null);
+                        @endphp
+                        @if($qGstin) <strong>GSTIN:</strong> <span style="color: #047857; font-weight: bold;">{{ $qGstin }}</span> <br> @endif
+                        @if($qPan) <strong>PAN:</strong> {{ $qPan }} @endif
                     </div>
                 </div>
             </td>

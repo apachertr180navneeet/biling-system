@@ -265,8 +265,12 @@
                     <div style="font-size: 8.5px; color: #475569;">
                         @if($partSalesInvoice->customer_mobile) Mobile: {{ $partSalesInvoice->customer_mobile }} <br> @endif
                         @if($partSalesInvoice->customer_address) Address: {{ $partSalesInvoice->customer_address }} <br> @endif
-                        @if($partSalesInvoice->customer_gstin) GSTIN: {{ $partSalesInvoice->customer_gstin }} <br> @endif
-                        @if($partSalesInvoice->customer_pan) PAN: {{ $partSalesInvoice->customer_pan }} @endif
+                        @php
+                            $pGstin = $partSalesInvoice->customer_gstin ?: ($partSalesInvoice->customer->gstin ?? null);
+                            $pPan = $partSalesInvoice->customer_pan ?: ($partSalesInvoice->customer->pan_no ?? null);
+                        @endphp
+                        @if($pGstin) GSTIN: {{ $pGstin }} <br> @endif
+                        @if($pPan) PAN: {{ $pPan }} @endif
                     </div>
                 </div>
             </td>

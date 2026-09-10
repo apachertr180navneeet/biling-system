@@ -237,6 +237,12 @@
                     <div class="box-title">Bill To (Customer)</div>
                     <div style="font-size: 10px; font-weight: bold; color: #0f172a;">{{ $vehicleSalesInvoice->customer_name }}</div>
                     <div style="font-size: 8.5px; color: #475569;">
+                        @php
+                            $customerGstin = $vehicleSalesInvoice->customer_gstin ?: ($vehicleSalesInvoice->customer->gstin ?? null);
+                        @endphp
+                        @if(!empty($customerGstin))
+                            <span style="color: #047857; font-weight: bold;">GSTIN: {{ $customerGstin }}</span> <br>
+                        @endif
                         @if($vehicleSalesInvoice->customer_mobile) Mobile: {{ $vehicleSalesInvoice->customer_mobile }} <br> @endif
                         @if($vehicleSalesInvoice->customer_address) Address: {{ $vehicleSalesInvoice->customer_address }} <br> @endif
                         @if($vehicleSalesInvoice->customer_age) Age: {{ $vehicleSalesInvoice->customer_age }} Yrs | @endif

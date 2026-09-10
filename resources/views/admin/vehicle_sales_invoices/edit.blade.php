@@ -27,6 +27,7 @@
                                         data-name="{{ $c->name }}"
                                         data-mobile="{{ $c->phone }}"
                                         data-address="{{ $c->address }}"
+                                        data-gstin="{{ $c->gstin }}"
                                         {{ old('customer_id', $vehicleSalesInvoice->customer_id) == $c->id ? 'selected' : '' }}>
                                     {{ $c->name }} ({{ $c->phone }})
                                 </option>
@@ -46,6 +47,11 @@
                         <label class="form-label">Mobile Number</label>
                         <input type="text" id="customer_mobile" name="customer_mobile" class="form-control @error('customer_mobile') is-invalid @enderror" value="{{ old('customer_mobile', $vehicleSalesInvoice->customer_mobile) }}">
                         @error('customer_mobile')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">GSTIN (Optional)</label>
+                        <input type="text" id="customer_gstin" name="customer_gstin" class="form-control @error('customer_gstin') is-invalid @enderror" value="{{ old('customer_gstin', $vehicleSalesInvoice->customer_gstin ?? $vehicleSalesInvoice->customer?->gstin) }}" placeholder="15-digit GSTIN" maxlength="15">
+                        @error('customer_gstin')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Age</label>
@@ -308,9 +314,13 @@
                             <label class="form-label">Name</label>
                             <input type="text" name="name" class="form-control">
                         </div>
-                        <div class="col-md-12">
+                        <div class="col-md-6">
                             <label class="form-label">Mobile Number</label>
                             <input type="text" name="phone" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">GSTIN (Optional)</label>
+                            <input type="text" name="gstin" class="form-control" maxlength="15" placeholder="15-digit GSTIN">
                         </div>
                         <div class="col-md-12">
                             <label class="form-label">Address</label>
@@ -335,6 +345,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var customerName = document.getElementById('customer_name');
     var customerMobile = document.getElementById('customer_mobile');
     var customerAddress = document.getElementById('customer_address');
+    var customerGstin = document.getElementById('customer_gstin');
 
     $(customerSelect).on('change', function () {
         var selected = this.options[this.selectedIndex];
@@ -342,6 +353,12 @@ document.addEventListener('DOMContentLoaded', function () {
             customerName.value = selected.getAttribute('data-name') || '';
             customerMobile.value = selected.getAttribute('data-mobile') || '';
             customerAddress.value = selected.getAttribute('data-address') || '';
+            if (customerGstin) customerGstin.value = selected.getAttribute('data-gstin') || '';
+        } else {
+            customerName.value = '';
+            customerMobile.value = '';
+            customerAddress.value = '';
+            if (customerGstin) customerGstin.value = '';
         }
         fetchCustomerLedgerSummary();
     });
@@ -598,6 +615,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 option.setAttribute('data-name', fullName);
                 option.setAttribute('data-mobile', customer.phone);
                 option.setAttribute('data-address', customer.address || '');
+                option.setAttribute('data-gstin', customer.gstin || '');
                 
                 customerSelect.appendChild(option);
                 customerSelect.value = customer.id;

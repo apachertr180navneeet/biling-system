@@ -401,6 +401,10 @@
                             {{ $vehicleSalesInvoice->customer_name }}
                         </div>
                         <div style="font-size: 12px; color: #475569; line-height: 1.4;">
+                            @php
+                                $customerGstin = $vehicleSalesInvoice->customer_gstin ?: ($vehicleSalesInvoice->customer->gstin ?? null);
+                            @endphp
+                            @if(!empty($customerGstin)) <div style="color: #047857; font-weight: bold;"><b>GSTIN:</b> {{ $customerGstin }}</div> @endif
                             @if($vehicleSalesInvoice->customer_mobile) <div><b>Mobile:</b> {{ $vehicleSalesInvoice->customer_mobile }}</div> @endif
                             @if($vehicleSalesInvoice->customer_address) <div><b>Address:</b> {{ $vehicleSalesInvoice->customer_address }}</div> @endif
                             @if($vehicleSalesInvoice->customer_age) <span><b>Age:</b> {{ $vehicleSalesInvoice->customer_age }} Yrs</span> | @endif

@@ -732,8 +732,8 @@ if (!function_exists('getIndianRupeesInWords')) {
                         <h4>{{ $partSalesInvoice->customer_name }}</h4>
                         <p>{{ $partSalesInvoice->customer_address ?? '-' }}</p>
                         <p style="margin-top: 6px;"><b>Mobile:</b> {{ $partSalesInvoice->customer_mobile ?? '-' }}</p>
-                        <p><b>GSTIN:</b> {{ $partSalesInvoice->customer_gstin ?? '-' }}</p>
-                        <p><b>PAN Number:</b> {{ $partSalesInvoice->customer_pan ?? '-' }}</p>
+                        <p><b>GSTIN:</b> {{ $partSalesInvoice->customer_gstin ?: ($partSalesInvoice->customer->gstin ?? '-') }}</p>
+                        <p><b>PAN Number:</b> {{ $partSalesInvoice->customer_pan ?: ($partSalesInvoice->customer->pan_no ?? '-') }}</p>
                         <p><b>Place of Supply:</b> {{ $partSalesInvoice->place_of_supply }}</p>
                     </div>
                     <div class="billing-card" style="border-left-color: #059669;">
@@ -741,8 +741,8 @@ if (!function_exists('getIndianRupeesInWords')) {
                         <h4>{{ $partSalesInvoice->customer_name }}</h4>
                         <p>{{ $partSalesInvoice->customer_address ?? '-' }}</p>
                         <p style="margin-top: 6px;"><b>Mobile:</b> {{ $partSalesInvoice->customer_mobile ?? '-' }}</p>
-                        <p><b>GSTIN:</b> {{ $partSalesInvoice->customer_gstin ?? '-' }}</p>
-                        <p><b>PAN Number:</b> {{ $partSalesInvoice->customer_pan ?? '-' }}</p>
+                        <p><b>GSTIN:</b> {{ $partSalesInvoice->customer_gstin ?: ($partSalesInvoice->customer->gstin ?? '-') }}</p>
+                        <p><b>PAN Number:</b> {{ $partSalesInvoice->customer_pan ?: ($partSalesInvoice->customer->pan_no ?? '-') }}</p>
                         <p><b>Place of Supply:</b> {{ $partSalesInvoice->place_of_supply }}</p>
                     </div>
                 </div>

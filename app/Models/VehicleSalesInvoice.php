@@ -18,6 +18,7 @@ class VehicleSalesInvoice extends Model
         'invoice_date',
         'customer_id',
         'customer_name',
+        'customer_gstin',
         'customer_age',
         'customer_occupation',
         'customer_mobile',
