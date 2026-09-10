@@ -8,9 +8,10 @@
         <div class="card-header d-flex align-items-center justify-content-between">
             <h5 class="mb-0">PO Details</h5>
             <div>
-                <button type="button" onclick="openPaymentHistoryModal('vehicle-purchase-order', {{ $vehiclePurchaseOrder->id }})" class="btn btn-sm btn-outline-info me-1"><i class="bx bx-history"></i> Payment History</button>
                 @if($vehiclePurchaseOrder->status != 'received')
-                <a href="{{ route('admin.vehicle-purchase-orders.receive', $vehiclePurchaseOrder) }}" class="btn btn-sm btn-primary"><i class="bx bx-import"></i> Receive Items</a>
+                <a href="{{ route('admin.vehicle-purchase-orders.receive', $vehiclePurchaseOrder) }}" class="btn btn-sm btn-primary me-1"><i class="bx bx-import"></i> Receive Items</a>
+                @else
+                <a href="{{ route('admin.vehicle-purchase-orders.receive', $vehiclePurchaseOrder) }}" class="btn btn-sm btn-success me-1"><i class="bx bx-upload"></i> Upload Item Data</a>
                 @endif
                 <button type="button" onclick="directPrintPdf('{{ route('admin.vehicle-purchase-orders.pdf', $vehiclePurchaseOrder) }}')" class="btn btn-sm btn-dark me-1"><i class="bx bx-printer"></i> Print PDF</button>
                 <a href="{{ route('admin.vehicle-purchase-orders.pdf', $vehiclePurchaseOrder) }}" class="btn btn-sm btn-danger me-1" target="_blank"><i class="bx bxs-file-pdf"></i> Download PDF</a>

@@ -21,7 +21,7 @@
 @endsection
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
-    <h4 class="fw-bold mb-4">Receive Vehicles - {{ $vehiclePurchaseOrder->po_number }}</h4>
+    <h4 class="fw-bold mb-4">{{ $vehiclePurchaseOrder->status === 'received' ? 'Update Received Vehicles' : 'Receive Vehicles' }} - {{ $vehiclePurchaseOrder->po_number }}</h4>
     <div class="card"><div class="card-body">
         <p><strong>Supplier:</strong> {{ $vehiclePurchaseOrder->supplier->name ?? '-' }}</p>
         <p><strong>Order Date:</strong> {{ $vehiclePurchaseOrder->order_date->format('d-m-Y') }}</p>
@@ -36,7 +36,6 @@
             @endif
             @foreach($vehiclePurchaseOrder->items as $i => $item)
                 @php $remaining = $item->quantity - $item->received_quantity; @endphp
-                @if($remaining > 0)
                 <div class="card mb-3" id="po-item-{{ $item->id }}">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <div>
@@ -47,7 +46,7 @@
                         <div>
                             <span class="text-muted">Ordered: {{ $item->quantity }}</span> |
                             <span class="text-muted">Received: {{ $item->received_quantity }}</span> |
-                            <span class="text-success fw-bold">Remaining: {{ $remaining }}</span>
+                            <span class="{{ $remaining > 0 ? 'text-success' : 'text-muted' }} fw-bold">Remaining: {{ $remaining }}</span>
                         </div>
                     </div>
                     <div class="card-body">
@@ -117,6 +116,7 @@
                             @endif
                         @endif
 
+                        @if($remaining > 0)
                         <div class="vehicle-rows" id="vehicles-{{ $item->id }}">
                             @php
                                 $oldVehicles = old("items.{$i}.vehicles");
@@ -174,12 +174,12 @@
                         <button type="button" class="btn btn-sm btn-outline-primary mt-2 add-vehicle-btn" data-item="{{ $item->id }}" data-remaining="{{ $remaining }}" data-max="{{ $remaining }}">
                             <i class="bx bx-plus"></i> Add Vehicle
                         </button>
+                        @endif
                     </div>
                 </div>
-                @endif
             @endforeach
             <div class="mt-3">
-                <button type="submit" class="btn btn-primary"><i class="bx bx-check"></i> Receive Vehicles</button>
+                <button type="submit" class="btn btn-primary"><i class="bx bx-check"></i> {{ $vehiclePurchaseOrder->status === 'received' ? 'Update Vehicles' : 'Receive Vehicles' }}</button>
                 <a href="{{ route('admin.vehicle-purchase-orders.show', $vehiclePurchaseOrder) }}" class="btn btn-secondary">Cancel</a>
             </div>
         </form>

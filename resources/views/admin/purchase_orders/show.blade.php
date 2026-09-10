@@ -12,7 +12,9 @@
             <div>
                 <button type="button" onclick="openPaymentHistoryModal('purchase-order', {{ $purchaseOrder->id }})" class="btn btn-sm btn-outline-info me-1"><i class="bx bx-history"></i> Payment History</button>
                 @if($purchaseOrder->status != 'received')
-                <a href="{{ route('admin.purchase-orders.receive', $purchaseOrder) }}" class="btn btn-sm btn-primary"><i class="bx bx-import"></i> Receive Items</a>
+                <a href="{{ route('admin.purchase-orders.receive', $purchaseOrder) }}" class="btn btn-sm btn-primary me-1"><i class="bx bx-import"></i> Receive Items</a>
+                @else
+                <a href="{{ route('admin.purchase-orders.receive', $purchaseOrder) }}" class="btn btn-sm btn-success me-1"><i class="bx bx-upload"></i> Upload Item Data</a>
                 @endif
                 <button type="button" onclick="directPrintPdf('{{ route('admin.purchase-orders.pdf', $purchaseOrder) }}')" class="btn btn-sm btn-dark me-1"><i class="bx bx-printer"></i> Print PDF</button>
                 <a href="{{ route('admin.purchase-orders.pdf', $purchaseOrder) }}" class="btn btn-sm btn-danger me-1" target="_blank"><i class="bx bxs-file-pdf"></i> Download PDF</a>

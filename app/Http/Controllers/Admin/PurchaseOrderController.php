@@ -371,9 +371,6 @@ class PurchaseOrderController extends Controller
     public function receive(PurchaseOrder $purchaseOrder)
     {
         $purchaseOrder->load('items.sparePart', 'supplier');
-        if ($purchaseOrder->status === 'received') {
-            return redirect()->route('admin.purchase-orders.show', $purchaseOrder)->with('error', 'Already fully received.');
-        }
         return view('admin.purchase_orders.receive', compact('purchaseOrder'));
     }
 

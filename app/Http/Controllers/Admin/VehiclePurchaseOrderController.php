@@ -354,9 +354,6 @@ class VehiclePurchaseOrderController extends Controller
 
     public function receive(VehiclePurchaseOrder $vehiclePurchaseOrder)
     {
-        if ($vehiclePurchaseOrder->status === 'received') {
-            return redirect()->route('admin.vehicle-purchase-orders.show', $vehiclePurchaseOrder)->with('error', 'Already fully received.');
-        }
         $vehiclePurchaseOrder->load('items');
         $receivedVehicles = VehicleInventory::where('vehicle_po_id', $vehiclePurchaseOrder->id)->get();
         $colorOptions = VehicleInventory::whereNotNull('color_name')->where('color_name', '!=', '')->distinct()->pluck('color_name')->toArray();
@@ -368,9 +365,6 @@ class VehiclePurchaseOrderController extends Controller
 
     public function receiveStore(Request $request, VehiclePurchaseOrder $vehiclePurchaseOrder)
     {
-        if ($vehiclePurchaseOrder->status === 'received') {
-            return back()->with('error', 'Already fully received.');
-        }
 
         $request->validate([
             'items' => 'nullable|array',
