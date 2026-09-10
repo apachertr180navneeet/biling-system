@@ -213,6 +213,12 @@
                             <td>Date:</td>
                             <td class="text-right">{{ $vehicleSalesInvoice->invoice_date ? $vehicleSalesInvoice->invoice_date->format('d/m/Y') : '-' }}</td>
                         </tr>
+                        @if($vehicleSalesInvoice->created_at)
+                        <tr>
+                            <td>Time:</td>
+                            <td class="text-right">{{ $vehicleSalesInvoice->created_at->format('h:i A') }}</td>
+                        </tr>
+                        @endif
                         <tr>
                             <td>Payment Mode:</td>
                             <td class="text-right fw-bold">{{ strtoupper($vehicleSalesInvoice->payment_mode ?? 'CASH') }}</td>
@@ -257,7 +263,7 @@
                         {{ $vehicleSalesInvoice->vehicleInventory->vehicle_description ?? 'EV Vehicle' }}
                     </div>
                     <div style="font-size: 8.5px; color: #047857; font-weight: bold; margin-top: 2px;">
-                        Color: {{ $color_name ?? '-' }}
+                        Color: {{ !empty($color_name) && $color_name !== '-' ? $color_name : ($vehicleSalesInvoice->vehicleInventory->color_name ?? '-') }}
                     </div>
 
                     <table class="specs-table">

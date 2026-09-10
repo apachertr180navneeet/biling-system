@@ -96,6 +96,7 @@
                             @foreach($vehicles as $v)
                             <option value="{{ $v->id }}"
                                     data-desc="{{ $v->vehicle_description }}"
+                                    data-color="{{ $v->color_name }}"
                                     data-chassis="{{ $v->chassis_number }}"
                                     data-motor="{{ $v->motor_number }}"
                                     data-battery-no="{{ $v->battery_number }}"
@@ -107,7 +108,7 @@
                                     data-battery-make="{{ $v->battery_make }}"
                                     data-rate="{{ $v->ex_showroom_price }}"
                                     {{ old('vehicle_inventory_id', $vehicleSalesInvoice->vehicle_inventory_id) == $v->id ? 'selected' : '' }}>
-                                {{ $v->vehicle_description }} - Chassis: {{ $v->chassis_number }} {{ $v->id == $vehicleSalesInvoice->vehicle_inventory_id ? '(Currently Selected)' : '' }}
+                                {{ $v->vehicle_description }} @if($v->color_name) ({{ $v->color_name }}) @endif - Chassis: {{ $v->chassis_number }} {{ $v->id == $vehicleSalesInvoice->vehicle_inventory_id ? '(Currently Selected)' : '' }}
                             </option>
                             @endforeach
                         </select>
@@ -121,6 +122,7 @@
                         <h6 class="fw-semibold text-secondary mb-3"><i class="bx bx-car me-1"></i> Selected Vehicle Specifications</h6>
                         <div class="row g-3">
                             <div class="col-md-4"><strong>Model/Description:</strong> <span id="lbl_desc">-</span></div>
+                            <div class="col-md-4"><strong>Color:</strong> <span id="lbl_color" class="fw-bold text-success">-</span></div>
                             <div class="col-md-4"><strong>Chassis No:</strong> <span id="lbl_chassis">-</span></div>
                             <div class="col-md-4"><strong>Motor No:</strong> <span id="lbl_motor">-</span></div>
                             <div class="col-md-4"><strong>Battery No:</strong> <span id="lbl_battery_no">-</span></div>
@@ -424,6 +426,8 @@ document.addEventListener('DOMContentLoaded', function () {
         var opt = vehicleSelect.options[vehicleSelect.selectedIndex];
         if (vehicleSelect.value) {
             document.getElementById('lbl_desc').textContent = opt.getAttribute('data-desc') || '-';
+            var colorEl = document.getElementById('lbl_color');
+            if (colorEl) colorEl.textContent = opt.getAttribute('data-color') || '-';
             document.getElementById('lbl_chassis').textContent = opt.getAttribute('data-chassis') || '-';
             document.getElementById('lbl_motor').textContent = opt.getAttribute('data-motor') || '-';
             document.getElementById('lbl_battery_no').textContent = opt.getAttribute('data-battery-no') || '-';

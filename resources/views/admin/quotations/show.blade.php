@@ -48,9 +48,9 @@
                     <br>
                     <strong>Tax Regime:</strong> 
                     @if($quotation->tax_regime === 'cgst_sgst')
-                        CGST + SGST (9% + 9% typical)
+                        CGST ({{ $quotation->cgst_rate ?? 2.5 }}%) + SGST ({{ $quotation->sgst_rate ?? 2.5 }}%)
                     @else
-                        IGST (18% typical)
+                        IGST ({{ $quotation->igst_rate ?? 5 }}%)
                     @endif
                     <br>
                     <strong>Created By:</strong> {{ $quotation->creator->full_name ?? 'System' }}<br>

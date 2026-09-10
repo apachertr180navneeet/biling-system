@@ -141,7 +141,7 @@
 		<li class="menu-item {{ request()->routeIs('admin.quotations.*') ? 'active' : ''}}">
 			<a href="{{route('admin.quotations.index')}}" class="menu-link">
 				<i class="menu-icon tf-icons bx bx-file"></i>
-				<div data-i18n="Quotation Master">Quotation Master</div>
+				<div data-i18n="Quotation / Proforma">Quotation / Proforma</div>
 			</a>
 		</li>
 

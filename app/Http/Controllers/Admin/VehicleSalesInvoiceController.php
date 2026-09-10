@@ -229,6 +229,7 @@ class VehicleSalesInvoiceController extends Controller
                 $item->ex_showroom_price = $master ? $master->ex_showroom_price : $item->purchase_price;
                 $item->battery_type = $master ? $master->battery_type : 'LITHIUM';
                 $item->battery_make = $master ? $master->battery_make : 'LITHIUM';
+                $item->color_name = $item->color_name ?: ($master ? $master->color_name : '');
                 return $item;
             });
 
@@ -402,6 +403,7 @@ class VehicleSalesInvoiceController extends Controller
                 $item->ex_showroom_price = $master ? $master->ex_showroom_price : $item->purchase_price;
                 $item->battery_type = $master ? $master->battery_type : 'LITHIUM';
                 $item->battery_make = $master ? $master->battery_make : 'LITHIUM';
+                $item->color_name = $item->color_name ?: ($master ? $master->color_name : '');
                 return $item;
             });
 
@@ -554,25 +556,82 @@ class VehicleSalesInvoiceController extends Controller
         return response()->json(['success' => true, 'message' => 'Invoice Date & Number updated successfully.']);
     }
 
+    private function getVehicleSpecs($vehicle)
+    {
+        $master = null;
+        if ($vehicle) {
+            $master = VehicleMaster::where('is_active', true)
+                ->get()
+                ->first(function ($m) use ($vehicle) {
+                    $desc = trim($m->variant_name . ' ' . $m->color_name);
+                    return strtolower($desc) === strtolower($vehicle->vehicle_description)
+                        || strtolower($m->variant_name) === strtolower($vehicle->vehicle_description);
+                });
+        }
+
+        $battery_type = $master ? $master->battery_type : 'LITHIUM';
+        $battery_make = $master ? $master->battery_make : 'LITHIUM';
+        $color_name = ($vehicle && !empty($vehicle->color_name)) ? $vehicle->color_name : ($master ? $master->color_name : '-');
+
+        return [
+            'master' => $master,
+            'battery_type' => $battery_type,
+            'battery_make' => $battery_make,
+            'color_name' => $color_name,
+        ];
+    }
+
     public function show(VehicleSalesInvoice $vehicleSalesInvoice)
     {
         $vehicleSalesInvoice->load('customer', 'vehicleInventory.purchaseOrder');
         
-        // Find matching vehicle master for battery info
-        $vehicle = $vehicleSalesInvoice->vehicleInventory;
-        $master = VehicleMaster::where('is_active', true)
-            ->get()
-            ->first(function ($m) use ($vehicle) {
-                $desc = trim($m->variant_name . ' ' . $m->color_name);
-                return strtolower($desc) === strtolower($vehicle->vehicle_description)
-                    || strtolower($m->variant_name) === strtolower($vehicle->vehicle_description);
-            });
-            
-        $battery_type = $master ? $master->battery_type : 'LITHIUM';
-        $battery_make = $master ? $master->battery_make : 'LITHIUM';
-        $color_name = $master ? $master->color_name : '-';
+        $specs = $this->getVehicleSpecs($vehicleSalesInvoice->vehicleInventory);
+        $battery_type = $specs['battery_type'];
+        $battery_make = $specs['battery_make'];
+        $color_name = $specs['color_name'];
 
         return view('admin.vehicle_sales_invoices.show', compact('vehicleSalesInvoice', 'battery_type', 'battery_make', 'color_name'));
+    }
+
+    public function deliveryChallan(VehicleSalesInvoice $vehicleSalesInvoice)
+    {
+        $vehicleSalesInvoice->load('customer', 'vehicleInventory.purchaseOrder');
+
+        $specs = $this->getVehicleSpecs($vehicleSalesInvoice->vehicleInventory);
+        $battery_type = $specs['battery_type'];
+        $battery_make = $specs['battery_make'];
+        $color_name = $specs['color_name'];
+
+        return view('admin.vehicle_sales_invoices.delivery_challan', compact('vehicleSalesInvoice', 'battery_type', 'battery_make', 'color_name'));
+    }
+
+    public function deliveryChallanPdf(Request $request, VehicleSalesInvoice $vehicleSalesInvoice)
+    {
+        $vehicleSalesInvoice->load('customer', 'vehicleInventory.purchaseOrder');
+
+        $specs = $this->getVehicleSpecs($vehicleSalesInvoice->vehicleInventory);
+        $battery_type = $specs['battery_type'];
+        $battery_make = $specs['battery_make'];
+        $color_name = $specs['color_name'];
+
+        $pdf = Pdf::loadView('admin.vehicle_sales_invoices.delivery_challan_pdf', compact('vehicleSalesInvoice', 'battery_type', 'battery_make', 'color_name'));
+        $pdf->setPaper('a4');
+        $pdf->setOption('isRemoteEnabled', true);
+
+        $filename = 'Delivery_Challan_' . $vehicleSalesInvoice->invoice_number . '.pdf';
+
+        if ($request->has('print')) {
+            $pdf->render();
+            $canvas = $pdf->getCanvas();
+            $canvas->javascript("this.print();");
+            return $pdf->stream($filename);
+        }
+
+        if ($request->has('download') || $request->input('download') == 1) {
+            return $pdf->download($filename);
+        }
+
+        return $pdf->stream($filename);
     }
 
     public function destroy(VehicleSalesInvoice $vehicleSalesInvoice)
@@ -631,21 +690,10 @@ class VehicleSalesInvoiceController extends Controller
     {
         $vehicleSalesInvoice->load('customer', 'vehicleInventory.purchaseOrder');
         
-        $vehicle = $vehicleSalesInvoice->vehicleInventory;
-        $master = null;
-        if ($vehicle) {
-            $master = VehicleMaster::where('is_active', true)
-                ->get()
-                ->first(function ($m) use ($vehicle) {
-                    $desc = trim($m->variant_name . ' ' . $m->color_name);
-                    return strtolower($desc) === strtolower($vehicle->vehicle_description)
-                        || strtolower($m->variant_name) === strtolower($vehicle->vehicle_description);
-                });
-        }
-            
-        $battery_type = $master ? $master->battery_type : 'LITHIUM';
-        $battery_make = $master ? $master->battery_make : 'LITHIUM';
-        $color_name = $master ? $master->color_name : '-';
+        $specs = $this->getVehicleSpecs($vehicleSalesInvoice->vehicleInventory);
+        $battery_type = $specs['battery_type'];
+        $battery_make = $specs['battery_make'];
+        $color_name = $specs['color_name'];
 
         $pdf = Pdf::loadView('admin.vehicle_sales_invoices.pdf', compact('vehicleSalesInvoice', 'battery_type', 'battery_make', 'color_name'));
         $pdf->setPaper('a4');

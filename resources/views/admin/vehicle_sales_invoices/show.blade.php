@@ -728,6 +728,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4 btn-print-group">
         <h4 class="fw-bold mb-0">Invoice Detail</h4>
         <div>
+            <a href="{{ route('admin.vehicle-sales-invoices.delivery-challan', $vehicleSalesInvoice) }}" class="btn btn-success me-1"><i class="bx bx-package"></i> Delivery Challan</a>
             <a href="{{ route('admin.vehicle-sales-invoices.edit', $vehicleSalesInvoice) }}" class="btn btn-warning me-1"><i class="bx bx-edit"></i> Edit Invoice</a>
             <button onclick="window.print();" class="btn btn-primary me-1"><i class="bx bx-printer"></i> Print Invoice</button>
             <a href="{{ route('admin.vehicle-sales-invoices.pdf', [$vehicleSalesInvoice, 'download' => 1]) }}" class="btn btn-danger me-1"><i class="bx bxs-file-pdf"></i> Download PDF</a>
@@ -770,6 +771,12 @@
                                 <td class="meta-label">Invoice Date</td>
                                 <td class="meta-value">{{ $vehicleSalesInvoice->invoice_date->format('d M Y') }}</td>
                             </tr>
+                            @if($vehicleSalesInvoice->created_at)
+                            <tr>
+                                <td class="meta-label">Invoice Time</td>
+                                <td class="meta-value">{{ $vehicleSalesInvoice->created_at->format('h:i A') }}</td>
+                            </tr>
+                            @endif
                         </table>
                     </div>
                     <div class="meta-box">
@@ -842,7 +849,7 @@
                                 <!-- Restructured Borderless Specifications Grid -->
                                 <div class="specs-grid">
                                     <div class="specs-cell"><b>Model:</b> {{ $vehicleSalesInvoice->vehicleInventory->vehicle_description }}</div>
-                                    <div class="specs-cell"><b>Colour:</b> {{ $color_name }}</div>
+                                    <div class="specs-cell"><b>Colour:</b> {{ !empty($color_name) && $color_name !== '-' ? $color_name : ($vehicleSalesInvoice->vehicleInventory->color_name ?? '-') }}</div>
                                     <div class="specs-cell"><b>Chassis No:</b> <strong style="color: #059669;">{{ $vehicleSalesInvoice->vehicleInventory->chassis_number }}</strong></div>
                                     
                                     <div class="specs-cell"><b>Battery No:</b> {{ $vehicleSalesInvoice->vehicleInventory->battery_number ?? '-' }}</div>

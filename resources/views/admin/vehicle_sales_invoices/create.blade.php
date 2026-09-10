@@ -87,6 +87,7 @@
                             @foreach($vehicles as $v)
                             <option value="{{ $v->id }}"
                                     data-desc="{{ $v->vehicle_description }}"
+                                    data-color="{{ $v->color_name }}"
                                     data-chassis="{{ $v->chassis_number }}"
                                     data-motor="{{ $v->motor_number }}"
                                     data-battery-no="{{ $v->battery_number }}"
@@ -97,7 +98,7 @@
                                     data-battery-type="{{ $v->battery_type }}"
                                     data-battery-make="{{ $v->battery_make }}"
                                     data-rate="{{ $v->ex_showroom_price }}">
-                                {{ $v->vehicle_description }} - Chassis: {{ $v->chassis_number }}
+                                {{ $v->vehicle_description }} @if($v->color_name) ({{ $v->color_name }}) @endif - Chassis: {{ $v->chassis_number }}
                             </option>
                             @endforeach
                         </select>
@@ -111,6 +112,7 @@
                         <h6 class="fw-semibold text-secondary mb-3"><i class="bx bx-car me-1"></i> Selected Vehicle Specifications</h6>
                         <div class="row g-3">
                             <div class="col-md-4"><strong>Model/Description:</strong> <span id="lbl_desc">-</span></div>
+                            <div class="col-md-4"><strong>Color:</strong> <span id="lbl_color" class="fw-bold text-success">-</span></div>
                             <div class="col-md-4"><strong>Chassis No:</strong> <span id="lbl_chassis">-</span></div>
                             <div class="col-md-4"><strong>Motor No:</strong> <span id="lbl_motor">-</span></div>
                             <div class="col-md-4"><strong>Battery No:</strong> <span id="lbl_battery_no">-</span></div>
@@ -405,6 +407,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var detailsCard = document.getElementById('vehicle_details_card');
     
     var lblDesc = document.getElementById('lbl_desc');
+    var lblColor = document.getElementById('lbl_color');
     var lblChassis = document.getElementById('lbl_chassis');
     var lblMotor = document.getElementById('lbl_motor');
     var lblBatteryNo = document.getElementById('lbl_battery_no');
@@ -420,6 +423,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var opt = this.options[this.selectedIndex];
         if (opt && opt.value) {
             lblDesc.textContent = opt.getAttribute('data-desc') || '-';
+            if (lblColor) lblColor.textContent = opt.getAttribute('data-color') || '-';
             lblChassis.textContent = opt.getAttribute('data-chassis') || '-';
             lblMotor.textContent = opt.getAttribute('data-motor') || '-';
             lblBatteryNo.textContent = opt.getAttribute('data-battery-no') || '-';

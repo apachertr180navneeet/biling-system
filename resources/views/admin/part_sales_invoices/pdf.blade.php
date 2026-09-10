@@ -241,6 +241,12 @@
                             <td>Date:</td>
                             <td class="text-right">{{ $partSalesInvoice->invoice_date ? $partSalesInvoice->invoice_date->format('d/m/Y') : '-' }}</td>
                         </tr>
+                        @if($partSalesInvoice->created_at)
+                        <tr>
+                            <td>Time:</td>
+                            <td class="text-right">{{ $partSalesInvoice->created_at->format('h:i A') }}</td>
+                        </tr>
+                        @endif
                         <tr>
                             <td>Place of Supply:</td>
                             <td class="text-right">{{ $partSalesInvoice->place_of_supply ?? 'Rajasthan' }}</td>

@@ -60,6 +60,7 @@
                         <td>
                             <button class="btn btn-sm btn-outline-info me-1" onclick="openPaymentHistoryModal('vehicle-sales-invoice', {{ $inv->id }})" title="Payment History & Rollback"><i class="bx bx-history"></i></button>
                             <a href="{{ route('admin.vehicle-sales-invoices.show', $inv) }}" class="btn btn-sm btn-info me-1" title="View / Print"><i class="bx bx-printer"></i></a>
+                            <a href="{{ route('admin.vehicle-sales-invoices.delivery-challan', $inv) }}" class="btn btn-sm btn-success me-1" title="Delivery Challan"><i class="bx bx-package"></i></a>
                             <a href="{{ route('admin.vehicle-sales-invoices.pdf', [$inv, 'download' => 1]) }}" class="btn btn-sm btn-danger me-1" title="Download PDF"><i class="bx bxs-file-pdf"></i></a>
                             <a href="{{ route('admin.vehicle-sales-invoices.edit', $inv) }}" class="btn btn-sm btn-primary me-1" title="Edit Full Invoice"><i class="bx bx-edit"></i></a>
                             <button class="btn btn-sm btn-warning quick-date-btn me-1" data-id="{{ $inv->id }}" data-url="{{ route('admin.vehicle-sales-invoices.quick-update-date', $inv) }}" data-number="{{ $inv->invoice_number }}" data-date="{{ $inv->invoice_date->format('Y-m-d') }}" title="Edit Date & Invoice No"><i class="bx bx-calendar-edit"></i></button>

@@ -714,7 +714,12 @@ if (!function_exists('getIndianRupeesInWords')) {
                         <table class="meta-table">
                             <tr>
                                 <td class="meta-label" style="width: 40%;">Invoice Date:</td>
-                                <td class="meta-value" style="text-align: left; padding-left: 10px;">{{ $partSalesInvoice->invoice_date->format('d/m/Y g:i A') }}</td>
+                                <td class="meta-value" style="text-align: left; padding-left: 10px;">
+                                    {{ $partSalesInvoice->invoice_date->format('d/m/Y') }}
+                                    @if($partSalesInvoice->created_at)
+                                        <span style="font-size: 11px; color: #64748b; font-weight: normal; margin-left: 5px;">{{ $partSalesInvoice->created_at->format('h:i A') }}</span>
+                                    @endif
+                                </td>
                             </tr>
                         </table>
                     </div>
