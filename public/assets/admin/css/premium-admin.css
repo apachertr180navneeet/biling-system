@@ -492,3 +492,170 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
     min-height: 250px;
 }
 
+/* ==========================================================
+   Select Spare Parts Modal Styling
+   ========================================================== */
+.spare-parts-modal .modal-content {
+    border-radius: 14px !important;
+    border: none !important;
+    overflow: hidden !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25) !important;
+}
+
+.spare-parts-modal .modal-header {
+    background-color: #1e293b !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    padding: 1rem 1.5rem !important;
+}
+
+.spare-parts-modal .modal-header .modal-title {
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    font-size: 1.15rem !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+.spare-parts-modal .modal-search-box {
+    border: 1.5px solid #10b981 !important;
+    border-radius: 8px !important;
+    background-color: #ffffff !important;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.spare-parts-modal .modal-search-box:focus-within {
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2) !important;
+    border-color: #059669 !important;
+}
+
+.spare-parts-modal .modal-info-pill {
+    background-color: #ede9fe !important;
+    color: #6366f1 !important;
+    font-size: 0.78rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.3px !important;
+    padding: 0.55rem 0.9rem !important;
+    border-radius: 8px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+}
+
+.spare-parts-modal .parts-table-wrap {
+    max-height: 440px !important;
+    overflow-y: auto !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 8px !important;
+}
+
+.spare-parts-modal .parts-table-wrap table thead th {
+    background-color: #e6f4ea !important;
+    color: #334155 !important;
+    font-size: 0.76rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.5px !important;
+    text-transform: uppercase !important;
+    padding: 0.75rem 1rem !important;
+    border-bottom: 2px solid #d1fae5 !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 10 !important;
+}
+
+.spare-parts-modal .parts-table-wrap table tbody td {
+    padding: 0.65rem 1rem !important;
+    vertical-align: middle !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+}
+
+.spare-parts-modal .parts-table-wrap table tbody tr.row-selected {
+    background-color: #f0fdf4 !important;
+}
+
+.spare-parts-modal .badge-stock-available {
+    background-color: #dcfce7 !important;
+    color: #16a34a !important;
+    font-weight: 700 !important;
+    font-size: 0.7rem !important;
+    padding: 0.35rem 0.7rem !important;
+    border-radius: 4px !important;
+    letter-spacing: 0.3px !important;
+    text-transform: uppercase !important;
+    display: inline-block !important;
+}
+
+.spare-parts-modal .badge-stock-out {
+    background-color: #fee2e2 !important;
+    color: #dc2626 !important;
+    font-weight: 700 !important;
+    font-size: 0.7rem !important;
+    padding: 0.35rem 0.7rem !important;
+    border-radius: 4px !important;
+    letter-spacing: 0.3px !important;
+    text-transform: uppercase !important;
+    display: inline-block !important;
+}
+
+.spare-parts-modal .part-no-text {
+    color: #6366f1 !important;
+    font-weight: 700 !important;
+    font-family: monospace, sans-serif !important;
+    font-size: 0.88rem !important;
+}
+
+.spare-parts-modal .part-name-text {
+    color: #1e293b !important;
+    font-weight: 700 !important;
+    font-size: 0.88rem !important;
+    text-transform: uppercase !important;
+}
+
+.spare-parts-modal .modal-footer {
+    border-top: 2px solid #d1fae5 !important;
+    padding: 0.85rem 1.5rem !important;
+}
+
+.spare-parts-modal .btn-modal-add {
+    background-color: #1b7a5a !important;
+    border-color: #1b7a5a !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    padding: 0.45rem 1.25rem !important;
+    border-radius: 6px !important;
+    transition: all 0.15s ease-in-out !important;
+}
+
+.spare-parts-modal .btn-modal-add:hover {
+    background-color: #145f46 !important;
+    border-color: #145f46 !important;
+    box-shadow: 0 4px 12px rgba(27, 122, 90, 0.35) !important;
+}
+
+[data-theme="dark"] .spare-parts-modal .modal-search-box {
+    background-color: #0f172a !important;
+}
+[data-theme="dark"] .spare-parts-modal .modal-search-box input {
+    background-color: transparent !important;
+    color: #f8fafc !important;
+}
+[data-theme="dark"] .spare-parts-modal .parts-table-wrap {
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+[data-theme="dark"] .spare-parts-modal .parts-table-wrap table thead th {
+    background-color: #064e3b !important;
+    color: #f8fafc !important;
+    border-bottom-color: #047857 !important;
+}
+[data-theme="dark"] .spare-parts-modal .parts-table-wrap table tbody td {
+    border-bottom-color: rgba(255, 255, 255, 0.05) !important;
+}
+[data-theme="dark"] .spare-parts-modal .parts-table-wrap table tbody tr.row-selected {
+    background-color: rgba(5, 150, 105, 0.15) !important;
+}
+[data-theme="dark"] .spare-parts-modal .part-name-text {
+    color: #f1f5f9 !important;
+}
+[data-theme="dark"] .spare-parts-modal .modal-footer {
+    border-top-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+

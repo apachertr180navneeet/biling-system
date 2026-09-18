@@ -325,24 +325,28 @@
 </div>
 
 <!-- Item Search & Add/Edit Modal -->
-<div class="modal fade" id="addItemModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+<div class="modal fade spare-parts-modal" id="addItemModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" style="max-width: 1050px;">
         <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title text-white" id="itemModalTitle"><i class="bx bx-package me-2"></i>Select Spare Parts</h5>
+            <div class="modal-header">
+                <h5 class="modal-title" id="itemModalTitle">
+                    <i class="bx bx-package me-2" style="color: #a5b4fc; font-size: 1.4rem;"></i>Select Spare Parts
+                </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body p-3">
-                <!-- Search Box -->
+            <div class="modal-body p-4">
+                <!-- Search Box & Notice -->
                 <div class="row g-3 mb-3 align-items-center" id="modalSearchContainer">
-                    <div class="col-md-8">
-                        <div class="input-group">
-                            <span class="input-group-text bg-light"><i class="bx bx-search fs-5"></i></span>
-                            <input type="text" id="modalPartSearch" class="form-control form-control-lg" placeholder="Search by Part Name or Part Number...">
+                    <div class="col-md-6">
+                        <div class="input-group modal-search-box">
+                            <span class="input-group-text bg-transparent border-0 text-muted ps-3"><i class="bx bx-search fs-5"></i></span>
+                            <input type="text" id="modalPartSearch" class="form-control border-0 py-2" placeholder="Type Part No, Name, or HSN Code to search...">
                         </div>
                     </div>
-                    <div class="col-md-4 text-end">
-                        <span class="badge bg-label-primary p-2 fs-6" id="modalPartsCount">Showing {{ count($spareParts) }} parts</span>
+                    <div class="col-md-6 text-md-end">
+                        <div class="modal-info-pill">
+                            <i class="bx bx-info-circle me-2 fs-5"></i> SELECT ITEMS USING CHECKBOX OR ENTER QTY (> 0), THEN CLICK ADD.
+                        </div>
                     </div>
                 </div>
 
@@ -391,14 +395,18 @@
                 </div>
 
                 <!-- Spare Parts Table (visible in Search/Add Mode) -->
-                <div class="table-responsive" id="modalTableWrapper" style="max-height: 420px; overflow-y: auto;">
-                    <table class="table table-hover align-middle" id="modalPartsTable">
-                        <thead class="table-dark sticky-top">
+                <div class="parts-table-wrap" id="modalTableWrapper">
+                    <table class="table table-hover align-middle mb-0" id="modalPartsTable">
+                        <thead>
                             <tr>
-                                <th style="width: 45%;">Part Number & Name</th>
-                                <th style="width: 20%; text-align: center;">Stock Available</th>
-                                <th style="width: 20%;">Rate / Selling Price (INR)</th>
-                                <th style="width: 15%; text-align: center;">Qty</th>
+                                <th style="width: 45px;" class="text-center">
+                                    <input type="checkbox" class="form-check-input" id="checkAllParts">
+                                </th>
+                                <th style="width: 140px;">PART NO.</th>
+                                <th>PART NAME</th>
+                                <th style="width: 150px; text-align: center;">STOCK STATUS</th>
+                                <th style="width: 120px; text-align: center;">RATE (₹)</th>
+                                <th style="width: 90px; text-align: center;">QTY</th>
                             </tr>
                         </thead>
                         <tbody id="modalPartsBody">
@@ -410,22 +418,27 @@
                                 data-displayname="{{ $p->part_no }} - {{ $p->name }}"
                                 data-price="{{ number_format($p->selling_price, 2, '.', '') }}"
                                 data-stock="{{ $p->qty_available }}">
+                                <td class="text-center">
+                                    <input type="checkbox" class="form-check-input modal-part-checkbox">
+                                </td>
                                 <td>
-                                    <div class="fw-bold text-dark fs-6">{{ $p->name }}</div>
-                                    <small class="text-muted"><i class="bx bx-purchase-tag me-1"></i>Part No: <strong>{{ $p->part_no }}</strong></small>
+                                    <span class="part-no-text">{{ $p->part_no }}</span>
+                                </td>
+                                <td>
+                                    <span class="part-name-text">{{ $p->name }}</span>
                                 </td>
                                 <td class="text-center">
                                     @if($p->qty_available > 0)
-                                        <span class="badge bg-label-success fs-6">{{ $p->qty_available }}</span>
+                                        <span class="badge-stock-available">{{ $p->qty_available }} AVAILABLE</span>
                                     @else
-                                        <span class="badge bg-label-danger fs-6">Out of Stock (0)</span>
+                                        <span class="badge-stock-out">OUT OF STOCK</span>
                                     @endif
                                 </td>
-                                <td>
-                                    <input type="number" step="0.01" class="form-control form-control-sm modal-part-rate" value="{{ number_format($p->selling_price, 2, '.', '') }}" min="0">
+                                <td class="text-center">
+                                    <input type="number" step="0.01" class="form-control form-control-sm text-center modal-part-rate fw-bold" value="{{ number_format($p->selling_price, 2, '.', '') }}" min="0" style="max-width: 100px; margin: 0 auto; border-radius: 6px;">
                                 </td>
                                 <td class="text-center">
-                                    <input type="number" class="form-control form-control-sm text-center modal-part-qty" value="0" min="0">
+                                    <input type="number" class="form-control form-control-sm text-center modal-part-qty fw-bold" value="1" min="0" style="max-width: 75px; margin: 0 auto; border-radius: 6px;">
                                 </td>
                             </tr>
                             @endforeach
@@ -434,10 +447,12 @@
                 </div>
             </div>
             <div class="modal-footer justify-content-between">
-                <span class="text-muted fw-bold" id="selectedPartsCount">0 parts selected</span>
-                <div>
-                    <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-success" id="btnAddSelectedModalParts"><i class="bx bx-plus me-1"></i> Add Selected Items to Invoice</button>
+                <span class="fw-semibold text-secondary" id="selectedPartsCount">0 item(s) selected</span>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-outline-secondary px-4 py-2" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-modal-add" id="btnAddSelectedModalParts">
+                        <i class="bx bx-plus me-1"></i> Add Selected Items to Invoice
+                    </button>
                     <button type="button" class="btn btn-primary d-none" id="btnUpdateModalItem"><i class="bx bx-check me-1"></i> Save Changes</button>
                 </div>
             </div>
@@ -614,7 +629,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Open Search Modal in Add Mode
     btnOpenSearchModal.addEventListener('click', function() {
         editingTargetRow = null;
-        itemModalTitle.innerHTML = '<i class="bx bx-package me-2"></i>Select Spare Parts';
+        itemModalTitle.innerHTML = '<i class="bx bx-package me-2" style="color: #a5b4fc; font-size: 1.4rem;"></i>Select Spare Parts';
         modalSearchContainer.classList.remove('d-none');
         modalTableWrapper.classList.remove('d-none');
         modalEditPanel.classList.add('d-none');
@@ -622,8 +637,15 @@ document.addEventListener('DOMContentLoaded', function() {
         if (btnAddSelectedModalParts) btnAddSelectedModalParts.classList.remove('d-none');
         if (selectedPartsCount) selectedPartsCount.classList.remove('d-none');
         
-        // Reset modal quantities to 0
-        document.querySelectorAll('.modal-part-qty').forEach(function(input) { input.value = 0; });
+        // Reset modal checkboxes and quantities
+        document.querySelectorAll('.modal-part-checkbox').forEach(function(cb) { cb.checked = false; });
+        document.querySelectorAll('.modal-part-row').forEach(function(row) { 
+            row.classList.remove('row-selected'); 
+            var qtyIn = row.querySelector('.modal-part-qty');
+            if (qtyIn) qtyIn.value = 1;
+        });
+        var checkAll = document.getElementById('checkAllParts');
+        if (checkAll) checkAll.checked = false;
         updateSelectedPartsCount();
 
         modalPartSearch.value = '';
@@ -636,45 +658,81 @@ document.addEventListener('DOMContentLoaded', function() {
     function filterModalParts() {
         var query = modalPartSearch.value.trim().toLowerCase();
         var rows = document.querySelectorAll('.modal-part-row');
-        var visibleCount = 0;
 
         rows.forEach(function(row) {
             var name = row.getAttribute('data-name') || '';
             var partNo = row.getAttribute('data-partno') || '';
             if (!query || name.includes(query) || partNo.includes(query)) {
                 row.classList.remove('d-none');
-                visibleCount++;
             } else {
                 row.classList.add('d-none');
             }
         });
-
-        modalPartsCount.textContent = 'Showing ' + visibleCount + ' parts';
     }
 
     modalPartSearch.addEventListener('input', filterModalParts);
 
-    // Quantity change listeners for updating selected count
-    document.getElementById('modalPartsBody').addEventListener('input', function(e) {
-        if (e.target.classList.contains('modal-part-qty')) {
+    // Checkbox and Quantity listeners
+    var checkAllParts = document.getElementById('checkAllParts');
+    if (checkAllParts) {
+        checkAllParts.addEventListener('change', function() {
+            var isChecked = this.checked;
+            document.querySelectorAll('.modal-part-row:not(.d-none)').forEach(function(row) {
+                var cb = row.querySelector('.modal-part-checkbox');
+                var qtyInput = row.querySelector('.modal-part-qty');
+                if (cb) cb.checked = isChecked;
+                if (isChecked) {
+                    row.classList.add('row-selected');
+                    if (qtyInput && parseInt(qtyInput.value) < 1) qtyInput.value = 1;
+                } else {
+                    row.classList.remove('row-selected');
+                }
+            });
+            updateSelectedPartsCount();
+        });
+    }
+
+    document.getElementById('modalPartsBody').addEventListener('change', function(e) {
+        if (e.target.classList.contains('modal-part-checkbox')) {
+            var row = e.target.closest('.modal-part-row');
+            var qtyInput = row.querySelector('.modal-part-qty');
+            if (e.target.checked) {
+                row.classList.add('row-selected');
+                if (qtyInput && parseInt(qtyInput.value) < 1) qtyInput.value = 1;
+            } else {
+                row.classList.remove('row-selected');
+            }
             updateSelectedPartsCount();
         }
     });
-    document.getElementById('modalPartsBody').addEventListener('change', function(e) {
+
+    document.getElementById('modalPartsBody').addEventListener('input', function(e) {
         if (e.target.classList.contains('modal-part-qty')) {
+            var row = e.target.closest('.modal-part-row');
+            var cb = row.querySelector('.modal-part-checkbox');
+            var val = parseInt(e.target.value) || 0;
+            if (val > 0) {
+                if (cb) cb.checked = true;
+                row.classList.add('row-selected');
+            } else {
+                if (cb) cb.checked = false;
+                row.classList.remove('row-selected');
+            }
             updateSelectedPartsCount();
         }
     });
 
     function updateSelectedPartsCount() {
         var count = 0;
-        document.querySelectorAll('.modal-part-qty').forEach(function(input) {
-            if (parseInt(input.value) > 0) {
+        document.querySelectorAll('.modal-part-row').forEach(function(row) {
+            var cb = row.querySelector('.modal-part-checkbox');
+            var qtyInput = row.querySelector('.modal-part-qty');
+            if (cb && cb.checked && qtyInput && parseInt(qtyInput.value) > 0) {
                 count++;
             }
         });
         if (selectedPartsCount) {
-            selectedPartsCount.textContent = count + ' part(s) selected';
+            selectedPartsCount.textContent = count + ' item(s) selected';
         }
     }
 
@@ -683,14 +741,15 @@ document.addEventListener('DOMContentLoaded', function() {
         btnAddSelectedModalParts.addEventListener('click', function() {
             var selectedRows = [];
             document.querySelectorAll('.modal-part-row').forEach(function(row) {
+                var cb = row.querySelector('.modal-part-checkbox');
                 var qtyInput = row.querySelector('.modal-part-qty');
-                if (qtyInput && parseInt(qtyInput.value) > 0) {
+                if (cb && cb.checked && qtyInput && parseInt(qtyInput.value) > 0) {
                     selectedRows.push(row);
                 }
             });
 
             if (selectedRows.length === 0) {
-                alert('Please set quantity greater than 0 for at least one part.');
+                alert('Please select at least one item using the checkbox or quantity.');
                 return;
             }
 
