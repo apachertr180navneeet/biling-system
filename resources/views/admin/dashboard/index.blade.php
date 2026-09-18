@@ -1,316 +1,354 @@
 @extends('admin.layouts.app')
 
-@section('style')
-<style>
-.dashboard-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.5rem;
-}
-@media (max-width: 768px) {
-    .dashboard-grid {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-    }
-}
-.dashboard-card {
-    background: #ffffff;
-    border-radius: 12px;
-    padding: 1.5rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    text-decoration: none !important;
-    transition: all 0.25s ease-in-out;
-    border: 1.5px solid #e2e8f0;
-}
-.dashboard-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
-}
-.dashboard-card-info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-}
-.dashboard-card-value {
-    font-size: 1.6rem;
-    font-weight: 700;
-    color: #1a2530;
-    margin: 0;
-    line-height: 1.25;
-}
-.dashboard-card-label {
-    font-size: 0.95rem;
-    font-weight: 600;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-}
-.dashboard-card-chevron {
-    font-size: 1.5rem;
-    color: #94a3b8;
-    transition: transform 0.2s ease;
-}
-.dashboard-card:hover .dashboard-card-chevron {
-    transform: translateX(4px);
-}
-
-/* Card Themes matching the screenshot precisely */
-.card-collect {
-    background-color: #f4fbf7;
-    border-color: #def2e6;
-}
-.card-collect .dashboard-card-label {
-    color: #2e7d32;
-}
-.card-collect:hover {
-    border-color: #c8ebd7;
-}
-
-.card-pay {
-    background-color: #fff6f6;
-    border-color: #fcdcdc;
-}
-.card-pay .dashboard-card-label {
-    color: #c62828;
-}
-.card-pay:hover {
-    border-color: #fbc2c2;
-}
-
-.card-stock {
-    background-color: #f4f8fd;
-    border-color: #dce7f6;
-}
-.card-stock .dashboard-card-label {
-    color: #78909c;
-}
-.card-stock:hover {
-    border-color: #c5d9f1;
-}
-
-.card-sale {
-    background-color: #f4f8fd;
-    border-color: #dce7f6;
-}
-.card-sale .dashboard-card-label {
-    color: #78909c;
-}
-.card-sale:hover {
-    border-color: #c5d9f1;
-}
-</style>
-@endsection
-
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
-    <h4 class="fw-bold py-3 mb-4">
-        <span class="text-muted fw-light">Admin /</span> Dashboard
-    </h4>
-    <div class="row mb-4">
-        <div class="col-lg-12">
-            <div class="card">
-                <div class="card-body p-4 p-md-5 text-center">
-                    <h2 class="text-primary mb-2">Welcome, {{ Auth::user()->full_name }}</h2>
-                </div>
-            </div>
-        </div>
-    </div>
+	<!-- Welcome Section -->
+	<div class="row mb-4">
+		<div class="col-12">
+			<div class="card m-welcome-card">
+				<div class="card-body d-flex align-items-center justify-content-between flex-wrap gap-3">
+					<div class="d-flex align-items-center gap-3">
+						<div class="avatar avatar-online" style="width:56px; height:56px;">
+							@if(!empty($user->avatar) && file_exists(public_path($user->avatar)))
+							<img src="{{ asset($user->avatar) }}" alt="{{ $user->full_name }}" class="rounded-circle" style="width:56px; height:56px; object-fit:cover;">
+							@else
+							<img src="{{ asset('assets/admin/img/avatars/1.png') }}" alt="{{ $user->full_name }}" class="rounded-circle" style="width:56px; height:56px; object-fit:cover;">
+							@endif
+						</div>
+						<div>
+							<h4 class="m-welcome-greeting mb-0">
+								@php
+									$hour = date('H');
+									if ($hour < 12) $greeting = 'Good Morning';
+									elseif ($hour < 17) $greeting = 'Good Afternoon';
+									else $greeting = 'Good Evening';
+								@endphp
+								{{ $greeting }}, {{ $user->first_name }}! 👋
+							</h4>
+							<p class="m-welcome-subtitle mb-0 mt-1">
+								You are logged in as <span class="badge bg-label-primary">{{ ucfirst($user->roleDetail?->name ?? $user->role) }}</span>
+							</p>
+						</div>
+					</div>
+					<div class="d-none d-md-block">
+						<span class="m-date-badge" style="font-size: 0.875rem;">
+							<i class="bx bx-calendar"></i>
+							{{ date('l, d-m-Y') }}
+						</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 
-    <div class="dashboard-grid mb-4">
-        <!-- To Collect -->
-        <a href="{{ route('admin.reports.outstanding-ledger', ['tab' => 'sales']) }}" class="dashboard-card card-collect">
-            <div class="dashboard-card-info">
-                <h3 class="dashboard-card-value">₹ {{ number_format($toCollect, 2) }}</h3>
-                <span class="dashboard-card-label">
-                    To Collect 
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                        <polyline points="19 12 12 19 5 12"></polyline>
-                    </svg>
-                </span>
-            </div>
-            <i class="bx bx-chevron-right dashboard-card-chevron"></i>
-        </a>
+	<!-- Stats Cards -->
+	<div class="row mb-4">
+		<div class="col-lg-3 col-md-6 col-12 mb-4">
+			<div class="card m-stats-card m-stats-primary">
+				<div class="card-body">
+					<div class="d-flex align-items-center justify-content-between">
+						<div>
+							<p class="m-stats-label mb-1">Total Users</p>
+							<h3 class="m-stats-value mb-0">{{ $stats['total_users'] }}</h3>
+						</div>
+						<div class="m-stats-icon">
+							<i class="bx bx-group"></i>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-lg-3 col-md-6 col-12 mb-4">
+			<div class="card m-stats-card m-stats-success">
+				<div class="card-body">
+					<div class="d-flex align-items-center justify-content-between">
+						<div>
+							<p class="m-stats-label mb-1">Active Users</p>
+							<h3 class="m-stats-value mb-0">{{ $stats['active_users'] }}</h3>
+						</div>
+						<div class="m-stats-icon">
+							<i class="bx bx-check-circle"></i>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-lg-3 col-md-6 col-12 mb-4">
+			<div class="card m-stats-card m-stats-info">
+				<div class="card-body">
+					<div class="d-flex align-items-center justify-content-between">
+						<div>
+							<p class="m-stats-label mb-1">Companies</p>
+							<h3 class="m-stats-value mb-0">{{ $stats['total_companies'] }}</h3>
+						</div>
+						<div class="m-stats-icon">
+							<i class="bx bx-buildings"></i>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-lg-3 col-md-6 col-12 mb-4">
+			<div class="card m-stats-card m-stats-warning">
+				<div class="card-body">
+					<div class="d-flex align-items-center justify-content-between">
+						<div>
+							<p class="m-stats-label mb-1">Your Role</p>
+							<h3 class="m-stats-value mb-0" style="font-size: 1.25rem;">{{ ucfirst($user->roleDetail?->name ?? $user->role) }}</h3>
+						</div>
+						<div class="m-stats-icon">
+							<i class="bx bx-shield"></i>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 
-        <!-- To Pay -->
-        <a href="{{ route('admin.reports.outstanding-ledger', ['tab' => 'purchases']) }}" class="dashboard-card card-pay">
-            <div class="dashboard-card-info">
-                <h3 class="dashboard-card-value">₹ {{ number_format($toPay, 2) }}</h3>
-                <span class="dashboard-card-label">
-                    To Pay 
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="12" y1="19" x2="12" y2="5"></line>
-                        <polyline points="5 12 12 5 19 12"></polyline>
-                    </svg>
-                </span>
-            </div>
-            <i class="bx bx-chevron-right dashboard-card-chevron"></i>
-        </a>
+	<!-- Hotel Performance KPIs -->
+	<div class="row mb-4">
+		<div class="col-12">
+			<div class="d-flex justify-content-between align-items-center mb-3">
+				<h5 class="mb-0"><i class="bx bx-bar-chart-alt-2 me-2" style="color: var(--m-primary);"></i>Hotel Performance <small class="text-muted fw-normal">Month to Date</small></h5>
+				@if(auth()->user()->hasPermission('finance_reports.view'))
+				<a href="{{ route('admin.finance.reports.dashboard') }}" class="btn btn-sm btn-outline-primary">
+					<i class="bx bx-right-arrow-alt me-1"></i>Full Report
+				</a>
+				@endif
+			</div>
+		</div>
+		<div class="col-lg-3 col-md-6 col-12 mb-4">
+			<div class="card m-stats-card m-stats-primary">
+				<div class="card-body">
+					<div class="d-flex justify-content-between align-items-start">
+						<div>
+							<p class="m-stats-label mb-1">Occupancy Rate</p>
+							<h3 class="m-stats-value mb-1">{{ $hotelKpis['month']['occupancy'] }}%</h3>
+							@if($hotelKpis['changes']['occupancy'] !== null)
+							<span class="badge {{ $hotelKpis['changes']['occupancy'] >= 0 ? 'bg-success' : 'bg-danger' }} bg-opacity-10 text-{{ $hotelKpis['changes']['occupancy'] >= 0 ? 'success' : 'danger' }}">
+								<i class="bx bx-{{ $hotelKpis['changes']['occupancy'] >= 0 ? 'up' : 'down' }}-arrow-alt"></i> {{ abs($hotelKpis['changes']['occupancy']) }}%
+							</span>
+							@else
+							<span class="opacity-75" style="font-size:11px;">vs last month</span>
+							@endif
+						</div>
+						<div class="m-stats-icon">
+							<i class="bx bx-building-house"></i>
+						</div>
+					</div>
+					<small class="opacity-75">Today: {{ $hotelKpis['today']['occupancy'] }}%</small>
+				</div>
+			</div>
+		</div>
+		<div class="col-lg-3 col-md-6 col-12 mb-4">
+			<div class="card m-stats-card m-stats-success">
+				<div class="card-body">
+					<div class="d-flex justify-content-between align-items-start">
+						<div>
+							<p class="m-stats-label mb-1">ADR</p>
+							<h3 class="m-stats-value mb-1">{{ $currencySymbol }}{{ number_format($hotelKpis['month']['adr'], 2) }}</h3>
+							@if($hotelKpis['changes']['adr'] !== null)
+							<span class="badge {{ $hotelKpis['changes']['adr'] >= 0 ? 'bg-success' : 'bg-danger' }} bg-opacity-10 text-{{ $hotelKpis['changes']['adr'] >= 0 ? 'success' : 'danger' }}">
+								<i class="bx bx-{{ $hotelKpis['changes']['adr'] >= 0 ? 'up' : 'down' }}-arrow-alt"></i> {{ abs($hotelKpis['changes']['adr']) }}%
+							</span>
+							@else
+							<span class="opacity-75" style="font-size:11px;">vs last month</span>
+							@endif
+						</div>
+						<div class="m-stats-icon">
+							<i class="bx bx-dollar"></i>
+						</div>
+					</div>
+					<small class="opacity-75">Today: {{ $currencySymbol }}{{ number_format($hotelKpis['today']['adr'], 2) }}</small>
+				</div>
+			</div>
+		</div>
+		<div class="col-lg-3 col-md-6 col-12 mb-4">
+			<div class="card m-stats-card m-stats-warning">
+				<div class="card-body">
+					<div class="d-flex justify-content-between align-items-start">
+						<div>
+							<p class="m-stats-label mb-1">RevPAR</p>
+							<h3 class="m-stats-value mb-1">{{ $currencySymbol }}{{ number_format($hotelKpis['month']['revpar'], 2) }}</h3>
+							@if($hotelKpis['changes']['revpar'] !== null)
+							<span class="badge {{ $hotelKpis['changes']['revpar'] >= 0 ? 'bg-success' : 'bg-danger' }} bg-opacity-10 text-{{ $hotelKpis['changes']['revpar'] >= 0 ? 'success' : 'danger' }}">
+								<i class="bx bx-{{ $hotelKpis['changes']['revpar'] >= 0 ? 'up' : 'down' }}-arrow-alt"></i> {{ abs($hotelKpis['changes']['revpar']) }}%
+							</span>
+							@else
+							<span class="opacity-75" style="font-size:11px;">vs last month</span>
+							@endif
+						</div>
+						<div class="m-stats-icon">
+							<i class="bx bx-trending-up"></i>
+						</div>
+					</div>
+					<small class="opacity-75">Today: {{ $currencySymbol }}{{ number_format($hotelKpis['today']['revpar'], 2) }}</small>
+				</div>
+			</div>
+		</div>
+		<div class="col-lg-3 col-md-6 col-12 mb-4">
+			<div class="card m-stats-card m-stats-info">
+				<div class="card-body">
+					<div class="d-flex justify-content-between align-items-start">
+						<div>
+							<p class="m-stats-label mb-1">Total Revenue (MTD)</p>
+							<h3 class="m-stats-value mb-1">{{ $currencySymbol }}{{ number_format($hotelKpis['month']['revenue'], 0) }}</h3>
+							<span class="opacity-75" style="font-size:11px;">{{ $hotelKpis['month']['rooms_sold'] }} rooms sold</span>
+						</div>
+						<div class="m-stats-icon">
+							<i class="bx bx-wallet"></i>
+						</div>
+					</div>
+					<small class="opacity-75">Today: {{ $currencySymbol }}{{ number_format($hotelKpis['today']['revenue'], 2) }}</small>
+				</div>
+			</div>
+		</div>
+	</div>
 
-        <!-- Parts Stock -->
-        <a href="{{ route('admin.reports.part-ledger') }}" class="dashboard-card card-stock">
-            <div class="dashboard-card-info">
-                <h3 class="dashboard-card-value">Parts Stock</h3>
-                <span class="dashboard-card-label">Value of items: {{ number_format($stockCountParts) }} items</span>
-                @if(($lowStockCount ?? 0) > 0)
-                <span class="badge bg-danger mt-1"><i class="bx bx-error me-1"></i>{{ $lowStockCount }} Part(s) Low Stock</span>
-                @endif
-            </div>
-            <i class="bx bx-chevron-right dashboard-card-chevron"></i>
-        </a>
+	<!-- Occupancy & Revenue Trend + Today's Activity -->
+	<div class="row mb-4">
+		<div class="col-lg-8 col-12 mb-4">
+			<div class="card h-100">
+				<div class="card-header d-flex justify-content-between align-items-center">
+					<h5 class="mb-0">7-Day Occupancy & Revenue Trend</h5>
+					<small class="text-muted">{{ $hotelKpis['recent_dates'] ? \Carbon\Carbon::parse(now()->subDays(6))->format('M d') : '' }} - {{ now()->format('M d, Y') }}</small>
+				</div>
+				<div class="card-body">
+					@if(!empty($hotelKpis['recent_dates']))
+					<div id="dashboardTrendChart"></div>
+					@else
+					<p class="text-muted text-center py-4">No data available</p>
+					@endif
+				</div>
+			</div>
+		</div>
+		<div class="col-lg-4 col-12 mb-4">
+			<div class="card h-100">
+				<div class="card-header">
+					<h5 class="mb-0">Today's Activity</h5>
+				</div>
+				<div class="card-body">
+					<div class="d-flex align-items-center mb-3 p-3 rounded" style="background: var(--m-success-light);">
+						<div class="avatar bg-label-success me-3">
+							<span class="avatar-initial rounded"><i class="bx bx-log-in"></i></span>
+						</div>
+						<div>
+							<p class="mb-0 fw-semibold">Check-ins Today</p>
+							<h4 class="mb-0">{{ $hotelKpis['today_checkins'] }}</h4>
+						</div>
+					</div>
+					<div class="d-flex align-items-center mb-3 p-3 rounded" style="background: var(--m-warning-light);">
+						<div class="avatar bg-label-warning me-3">
+							<span class="avatar-initial rounded"><i class="bx bx-log-out"></i></span>
+						</div>
+						<div>
+							<p class="mb-0 fw-semibold">Check-outs Today</p>
+							<h4 class="mb-0">{{ $hotelKpis['today_checkouts'] }}</h4>
+						</div>
+					</div>
+					<div class="d-flex align-items-center mb-3 p-3 rounded" style="background: var(--m-info-light);">
+						<div class="avatar bg-label-info me-3">
+							<span class="avatar-initial rounded"><i class="bx bx-calendar-check"></i></span>
+						</div>
+						<div>
+							<p class="mb-0 fw-semibold">Active Reservations</p>
+							<h4 class="mb-0">{{ $hotelKpis['active_reservations'] }}</h4>
+						</div>
+					</div>
+					<div class="d-flex align-items-center p-3 rounded" style="background: var(--m-primary-light);">
+						<div class="avatar bg-label-primary me-3">
+							<span class="avatar-initial rounded"><i class="bx bx-building-house"></i></span>
+						</div>
+						<div>
+							<p class="mb-0 fw-semibold">Total Rooms</p>
+							<h4 class="mb-0">{{ $hotelKpis['total_rooms'] }}</h4>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 
-        <!-- Vehicle Stock -->
-        <a href="{{ route('admin.reports.vehicle-ledger') }}" class="dashboard-card card-sale">
-            <div class="dashboard-card-info">
-                <h3 class="dashboard-card-value">Vehicle Stock</h3>
-                <span class="dashboard-card-label">Value of items: {{ number_format($stockCountVehicles) }} items</span>
-                @if(($lowStockVehicleCount ?? 0) > 0)
-                <span class="badge bg-danger mt-1"><i class="bx bx-error me-1"></i>{{ $lowStockVehicleCount }} Variant(s) Low Stock</span>
-                @endif
-            </div>
-            <i class="bx bx-chevron-right dashboard-card-chevron"></i>
-        </a>
-    </div>
-
-    <!-- Sales Report Graph & Latest Transactions -->
-    <div class="row mb-4">
-        <!-- Sales Report Graph -->
-        <div class="col-lg-7 mb-4 mb-lg-0">
-            <div class="card h-100 shadow-sm border">
-                <div class="card-header d-flex align-items-center justify-content-between pb-0">
-                    <div class="card-title mb-0">
-                        <h5 class="m-0 me-2 fw-semibold"><i class="bx bx-bar-chart-alt-2 text-primary me-2"></i>Sales Report Graph</h5>
-                        <small class="text-muted">Monthly sales revenue overview</small>
-                    </div>
-                </div>
-                <div class="card-body px-3 py-2">
-                    <div id="salesReportChart" style="min-height: 310px;"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Latest Transactions -->
-        <div class="col-lg-5">
-            <div class="card h-100 shadow-sm border">
-                <div class="card-header d-flex align-items-center justify-content-between pb-2 border-bottom">
-                    <h5 class="card-title m-0 fw-semibold">Latest Transactions</h5>
-                </div>
-                <div class="table-responsive text-nowrap">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th style="font-size: 0.75rem; letter-spacing: 0.5px;" class="text-uppercase text-muted">DATE</th>
-                                <th style="font-size: 0.75rem; letter-spacing: 0.5px;" class="text-uppercase text-muted">TYPE</th>
-                                <th style="font-size: 0.75rem; letter-spacing: 0.5px;" class="text-uppercase text-muted">TXN NO</th>
-                                <th style="font-size: 0.75rem; letter-spacing: 0.5px;" class="text-uppercase text-muted">PARTY NAME</th>
-                                <th style="font-size: 0.75rem; letter-spacing: 0.5px;" class="text-uppercase text-muted text-end">AMOUNT</th>
-                            </tr>
-                        </thead>
-                        <tbody class="table-border-bottom-0">
-                            @forelse($latestTransactions as $txn)
-                            <tr>
-                                <td class="text-body" style="font-size: 0.85rem;">{{ $txn['date'] }}</td>
-                                <td><span class="badge bg-label-primary px-2 py-1" style="font-size: 0.75rem;">{{ $txn['type'] }}</span></td>
-                                <td class="fw-semibold" style="font-size: 0.85rem;">
-                                    <a href="{{ $txn['url'] }}" class="text-body">{{ $txn['txn_no'] }}</a>
-                                </td>
-                                <td class="text-uppercase" style="font-size: 0.85rem;">{{ $txn['party_name'] }}</td>
-                                <td class="fw-bold text-end" style="font-size: 0.85rem;">₹ {{ number_format($txn['amount']) }}</td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="5" class="text-center py-4 text-muted">No transactions found</td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-                <div class="card-footer text-center border-top bg-light py-2 mt-auto">
-                    <a href="{{ route('admin.part-sales-invoices.index') }}" class="text-primary fw-semibold small text-decoration-none">
-                        See All Transactions <i class="bx bx-right-arrow-alt align-middle"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
+	<!-- Quick Actions -->
+	<div class="row">
+		<div class="col-12">
+			<div class="card">
+				<div class="card-header">
+					<h5 class="mb-0"><i class="bx bx-zap me-2" style="color: var(--m-warning);"></i>Quick Actions</h5>
+				</div>
+				<div class="card-body">
+					<div class="row g-3">
+						@if(auth()->user()->hasPermission('users.view'))
+						<div class="col-lg-3 col-md-6 col-12">
+							<a href="{{ route('admin.users.index') }}" class="m-quick-action">
+								<div class="m-qa-icon m-qa-primary"><i class="bx bx-group"></i></div>
+								<span>Manage Users</span>
+							</a>
+						</div>
+						@endif
+						@if(auth()->user()->hasPermission('branches.view'))
+						<div class="col-lg-3 col-md-6 col-12">
+							<a href="{{ route('admin.branches.index') }}" class="m-quick-action">
+								<div class="m-qa-icon m-qa-success"><i class="bx bx-map-pin"></i></div>
+								<span>Branches</span>
+							</a>
+						</div>
+						@endif
+						@if(auth()->user()->hasPermission('company.view'))
+						<div class="col-lg-3 col-md-6 col-12">
+							<a href="{{ route('admin.company.edit', \App\Models\Company::first()) }}" class="m-quick-action">
+								<div class="m-qa-icon m-qa-info"><i class="bx bx-buildings"></i></div>
+								<span>Company Profile</span>
+							</a>
+						</div>
+						@endif
+						@if(auth()->user()->hasPermission('roles.view'))
+						<div class="col-lg-3 col-md-6 col-12">
+							<a href="{{ route('admin.roles.index') }}" class="m-quick-action">
+								<div class="m-qa-icon m-qa-warning"><i class="bx bx-shield"></i></div>
+								<span>Roles & Permissions</span>
+							</a>
+						</div>
+						@endif
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
 @endsection
 
 @section('script')
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const salesChartEl = document.querySelector('#salesReportChart');
-    if (salesChartEl) {
-        const salesChartOptions = {
-            series: [
-                {
-                    name: 'Vehicle Sales',
-                    data: @json($salesChartData['vehicle_sales'])
-                },
-                {
-                    name: 'Part Sales',
-                    data: @json($salesChartData['part_sales'])
-                }
-            ],
-            chart: {
-                height: 310,
-                type: 'area',
-                toolbar: { show: false },
-                fontFamily: 'Public Sans, sans-serif'
-            },
-            dataLabels: { enabled: false },
-            stroke: { curve: 'smooth', width: 2 },
-            colors: ['#696cff', '#03c3ec'],
-            fill: {
-                type: 'gradient',
-                gradient: {
-                    shadeIntensity: 1,
-                    opacityFrom: 0.45,
-                    opacityTo: 0.05,
-                    stops: [0, 95, 100]
-                }
-            },
-            xaxis: {
-                categories: @json($salesChartData['categories']),
-                axisBorder: { show: false },
-                axisTicks: { show: false },
-                labels: {
-                    style: { colors: '#a1acb8', fontSize: '12px' }
-                }
-            },
-            yaxis: {
-                labels: {
-                    style: { colors: '#a1acb8', fontSize: '12px' },
-                    formatter: function (val) {
-                        return '₹' + Math.round(val).toLocaleString('en-IN');
-                    }
-                }
-            },
-            grid: {
-                borderColor: '#eceef1',
-                strokeDashArray: 4,
-                padding: { top: 0, right: 10, bottom: 0, left: 10 }
-            },
-            tooltip: {
-                y: {
-                    formatter: function (val) {
-                        return '₹ ' + Math.round(val).toLocaleString('en-IN');
-                    }
-                }
-            },
-            legend: {
-                position: 'top',
-                horizontalAlign: 'right'
-            }
-        };
+document.addEventListener('DOMContentLoaded', function() {
+    @if(!empty($hotelKpis['recent_dates']))
+    var trendDates = {!! json_encode($hotelKpis['recent_dates']) !!};
+    var trendOccupancy = {!! json_encode($hotelKpis['recent_occupancy']) !!};
+    var trendRevenue = {!! json_encode($hotelKpis['recent_revenues']) !!};
 
-        const chart = new ApexCharts(salesChartEl, salesChartOptions);
-        chart.render();
-    }
+    var trendOptions = {
+        series: [
+            { name: 'Occupancy %', type: 'column', data: trendOccupancy },
+            { name: 'Revenue ({{ $currencySymbol }})', type: 'line', data: trendRevenue }
+        ],
+        chart: { height: 280, type: 'line', stacked: false, toolbar: { show: false }, sparkline: { enabled: false } },
+        stroke: { width: [0, 2], curve: 'smooth' },
+        plotOptions: { bar: { columnWidth: '50%', borderRadius: 4 } },
+        colors: ['#14624f', '#bd8c3a'],
+        xaxis: { categories: trendDates, labels: { style: { fontSize: '11px' } } },
+        yaxis: [
+            { title: { text: 'Occupancy %', style: { fontSize: '11px' } }, seriesName: 'Occupancy %', max: 100 },
+            { title: { text: 'Revenue ({{ $currencySymbol }})', style: { fontSize: '11px' } }, seriesName: 'Revenue ({{ $currencySymbol }})', opposite: true }
+        ],
+        legend: { position: 'top', horizontalAlign: 'left', fontSize: '11px' },
+        tooltip: { shared: true, intersect: false },
+        dataLabels: { enabled: false },
+        grid: { borderColor: '#f1f1f1', strokeDashArray: 3 }
+    };
+
+    var trendChart = new ApexCharts(document.querySelector('#dashboardTrendChart'), trendOptions);
+    trendChart.render();
+    @endif
 });
 </script>
 @endsection
-
