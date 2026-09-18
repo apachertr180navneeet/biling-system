@@ -52,20 +52,40 @@
             <table class="table table-hover">
                 <thead>
                     <tr>
+                        <th>ACTIONS</th>
                         <th>#</th>
                         <th>Name</th>
                         <th>Contact Person</th>
                         <th>Phone</th>
                         <th>Email</th>
                         <th>Status</th>
-                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($suppliers as $supplier)
                     <tr>
+                        <td>
+                            <div class="dropdown">
+                                <button type="button" class="btn btn-sm btn-action-dropdown dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Action
+                                </button>
+                                <ul class="dropdown-menu action-dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('admin.suppliers.edit', $supplier) }}">
+                                            <i class="bx bx-edit text-primary"></i> Edit Supplier
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider my-1"></li>
+                                    <li>
+                                        <a class="dropdown-item text-danger btn-delete" href="javascript:void(0)" data-url="{{ route('admin.suppliers.destroy', $supplier) }}">
+                                            <i class="bx bx-trash text-danger"></i> Delete
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </td>
                         <td>{{ $loop->iteration }}</td>
-                        <td>{{ $supplier->name }}</td>
+                        <td><strong>{{ $supplier->name }}</strong></td>
                         <td>{{ $supplier->contact_person ?? '-' }}</td>
                         <td>{{ $supplier->phone ?? '-' }}</td>
                         <td>{{ $supplier->email ?? '-' }}</td>
@@ -74,10 +94,6 @@
                                 <input type="checkbox" class="toggle-status" data-url="{{ route('admin.suppliers.toggle-status', $supplier) }}" {{ $supplier->is_active ? 'checked' : '' }}>
                                 <span class="slider round"></span>
                             </label>
-                        </td>
-                        <td>
-                            <a href="{{ route('admin.suppliers.edit', $supplier) }}" class="btn btn-sm btn-primary">Edit</a>
-                            <button class="btn btn-sm btn-danger btn-delete" data-url="{{ route('admin.suppliers.destroy', $supplier) }}">Delete</button>
                         </td>
                     </tr>
                     @empty

@@ -34,6 +34,7 @@
             <table class="table table-hover">
                 <thead>
                     <tr>
+                        <th>ACTIONS</th>
                         <th>Invoice No</th>
                         <th>Date</th>
                         <th>Customer</th>
@@ -41,31 +42,71 @@
                         <th>Chassis No</th>
                         <th>Grand Total</th>
                         <th>Payment Mode</th>
-                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($invoices as $inv)
                     <tr>
+                        <td>
+                            <div class="dropdown">
+                                <button type="button" class="btn btn-sm btn-action-dropdown dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Action
+                                </button>
+                                <ul class="dropdown-menu action-dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('admin.vehicle-sales-invoices.show', $inv) }}">
+                                            <i class="bx bx-show text-info"></i> View Invoice
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('admin.vehicle-sales-invoices.pdf', [$inv, 'download' => 1]) }}" target="_blank">
+                                            <i class="bx bxs-file-pdf text-danger"></i> Download PDF
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="javascript:void(0)" onclick="directPrintPdf('{{ route('admin.vehicle-sales-invoices.pdf', $inv) }}')">
+                                            <i class="bx bx-printer text-secondary"></i> Print PDF
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('admin.vehicle-sales-invoices.delivery-challan', $inv) }}">
+                                            <i class="bx bx-package text-success"></i> Delivery Challan
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('admin.vehicle-sales-invoices.edit', $inv) }}">
+                                            <i class="bx bx-edit text-primary"></i> Edit Full Invoice
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item quick-date-btn" href="javascript:void(0)" data-id="{{ $inv->id }}" data-url="{{ route('admin.vehicle-sales-invoices.quick-update-date', $inv) }}" data-number="{{ $inv->invoice_number }}" data-date="{{ $inv->invoice_date->format('Y-m-d') }}">
+                                            <i class="bx bx-calendar-edit text-warning"></i> Quick Edit Date & No
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="javascript:void(0)" onclick="openPaymentHistoryModal('vehicle-sales-invoice', {{ $inv->id }})">
+                                            <i class="bx bx-history text-info"></i> Payment History
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider my-1"></li>
+                                    <li>
+                                        <a class="dropdown-item text-danger delete-btn" href="javascript:void(0)" data-id="{{ $inv->id }}" data-url="{{ route('admin.vehicle-sales-invoices.destroy', $inv) }}">
+                                            <i class="bx bx-trash text-danger"></i> Delete
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </td>
                         <td><a href="{{ route('admin.vehicle-sales-invoices.show', $inv) }}" class="fw-bold">{{ $inv->invoice_number }}</a></td>
                         <td>{{ $inv->invoice_date->format('d-m-Y') }}</td>
                         <td>
                             {{ $inv->customer_name }}
                             @if($inv->customer_mobile) <br><small class="text-muted">{{ $inv->customer_mobile }}</small> @endif
                         </td>
-                        <td>{{ $inv->vehicleInventory->vehicle_description }}</td>
+                        <td>{{ $inv->vehicleInventory->vehicle_description ?? '-' }}</td>
                         <td>{{ $inv->vehicleInventory->chassis_number ?? '-' }}</td>
                         <td><strong>{{ number_format($inv->grand_total, 2) }}</strong></td>
                         <td>{{ $inv->payment_mode ?? '-' }}</td>
-                        <td>
-                            <button class="btn btn-sm btn-outline-info me-1" onclick="openPaymentHistoryModal('vehicle-sales-invoice', {{ $inv->id }})" title="Payment History & Rollback"><i class="bx bx-history"></i></button>
-                            <a href="{{ route('admin.vehicle-sales-invoices.show', $inv) }}" class="btn btn-sm btn-info me-1" title="View / Print"><i class="bx bx-printer"></i></a>
-                            <a href="{{ route('admin.vehicle-sales-invoices.delivery-challan', $inv) }}" class="btn btn-sm btn-success me-1" title="Delivery Challan"><i class="bx bx-package"></i></a>
-                            <a href="{{ route('admin.vehicle-sales-invoices.pdf', [$inv, 'download' => 1]) }}" class="btn btn-sm btn-danger me-1" title="Download PDF"><i class="bx bxs-file-pdf"></i></a>
-                            <a href="{{ route('admin.vehicle-sales-invoices.edit', $inv) }}" class="btn btn-sm btn-primary me-1" title="Edit Full Invoice"><i class="bx bx-edit"></i></a>
-                            <button class="btn btn-sm btn-warning quick-date-btn me-1" data-id="{{ $inv->id }}" data-url="{{ route('admin.vehicle-sales-invoices.quick-update-date', $inv) }}" data-number="{{ $inv->invoice_number }}" data-date="{{ $inv->invoice_date->format('Y-m-d') }}" title="Edit Date & Invoice No"><i class="bx bx-calendar-edit"></i></button>
-                            <button class="btn btn-sm btn-danger delete-btn" data-id="{{ $inv->id }}" data-url="{{ route('admin.vehicle-sales-invoices.destroy', $inv) }}" title="Delete"><i class="bx bx-trash"></i></button>
-                        </td>
                     </tr>
                     @empty
                     <tr><td colspan="8" class="text-center text-muted">No vehicle sales invoices recorded.</td></tr>

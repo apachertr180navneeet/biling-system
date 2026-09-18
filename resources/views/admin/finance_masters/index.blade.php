@@ -52,29 +52,49 @@
             <table class="table table-hover">
                 <thead>
                     <tr>
+                        <th>ACTIONS</th>
                         <th>#</th>
                         <th>Name</th>
                         <th>Description</th>
                         <th>Status</th>
-                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($financeMasters as $item)
                     <tr>
+                        <td>
+                            <div class="dropdown">
+                                <button type="button" class="btn btn-sm btn-action-dropdown dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Action
+                                </button>
+                                <ul class="dropdown-menu action-dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('admin.finance-masters.show', $item) }}">
+                                            <i class="bx bx-show text-info"></i> View Company
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('admin.finance-masters.edit', $item) }}">
+                                            <i class="bx bx-edit text-primary"></i> Edit Company
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider my-1"></li>
+                                    <li>
+                                        <a class="dropdown-item text-danger btn-delete" href="javascript:void(0)" data-url="{{ route('admin.finance-masters.destroy', $item) }}">
+                                            <i class="bx bx-trash text-danger"></i> Delete
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </td>
                         <td>{{ $loop->iteration }}</td>
-                        <td>{{ $item->name }}</td>
+                        <td><strong>{{ $item->name }}</strong></td>
                         <td>{{ \Illuminate\Support\Str::limit($item->description, 50) ?? '-' }}</td>
                         <td>
                             <label class="switch switch-success">
                                 <input type="checkbox" class="toggle-status" data-url="{{ route('admin.finance-masters.toggle-status', $item) }}" {{ $item->is_active ? 'checked' : '' }}>
                                 <span class="slider round"></span>
                             </label>
-                        </td>
-                        <td>
-                            <a href="{{ route('admin.finance-masters.show', $item) }}" class="btn btn-sm btn-info">View</a>
-                            <a href="{{ route('admin.finance-masters.edit', $item) }}" class="btn btn-sm btn-primary">Edit</a>
-                            <button class="btn btn-sm btn-danger btn-delete" data-url="{{ route('admin.finance-masters.destroy', $item) }}">Delete</button>
                         </td>
                     </tr>
                     @empty

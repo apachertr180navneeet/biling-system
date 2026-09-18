@@ -47,6 +47,7 @@
             <table class="table table-striped">
                 <thead>
                     <tr>
+                        <th>ACTIONS</th>
                         <th>#</th>
                         <th>Variant</th>
                         <th>Color</th>
@@ -57,14 +58,33 @@
                         <th>Price</th>
                         <th>Min Stock</th>
                         <th>Status</th>
-                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($vehicles as $v)
                     <tr>
+                        <td>
+                            <div class="dropdown">
+                                <button type="button" class="btn btn-sm btn-action-dropdown dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Action
+                                </button>
+                                <ul class="dropdown-menu action-dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('admin.vehicle-masters.edit', $v) }}">
+                                            <i class="bx bx-edit text-primary"></i> Edit Vehicle
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider my-1"></li>
+                                    <li>
+                                        <a class="dropdown-item text-danger delete-btn" href="javascript:void(0)" data-id="{{ $v->id }}" data-url="{{ route('admin.vehicle-masters.destroy', $v) }}">
+                                            <i class="bx bx-trash text-danger"></i> Delete
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </td>
                         <td>{{ $loop->iteration }}</td>
-                        <td>{{ $v->variant_name ?? '-' }}</td>
+                        <td><strong>{{ $v->variant_name ?? '-' }}</strong></td>
                         <td>{{ $v->color_name ?? '-' }}</td>
                         <td>{{ $v->fuel_type ?? '-' }}</td>
                         <td>{{ $v->transmission ?? '-' }}</td>
@@ -80,13 +100,9 @@
                                 <span class="slider round"></span>
                             </label>
                         </td>
-                        <td>
-                            <a href="{{ route('admin.vehicle-masters.edit', $v) }}" class="btn btn-sm btn-primary"><i class="bx bx-edit"></i></a>
-                            <button class="btn btn-sm btn-danger delete-btn" data-id="{{ $v->id }}" data-url="{{ route('admin.vehicle-masters.destroy', $v) }}"><i class="bx bx-trash"></i></button>
-                        </td>
                     </tr>
                     @empty
-                    <tr><td colspan="10" class="text-center text-muted">No vehicle records.</td></tr>
+                    <tr><td colspan="11" class="text-center text-muted">No vehicle records.</td></tr>
                     @endforelse
                 </tbody>
             </table>

@@ -36,6 +36,7 @@
             <table class="table table-hover">
                 <thead>
                     <tr>
+                        <th>ACTIONS</th>
                         <th>#</th>
                         <th>Invoice No</th>
                         <th>Date</th>
@@ -45,12 +46,42 @@
                         <th>Received</th>
                         <th>Balance</th>
                         <th>Payment Mode</th>
-                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($invoices as $inv)
                     <tr>
+                        <td>
+                            <div class="dropdown">
+                                <button type="button" class="btn btn-sm btn-action-dropdown dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Action
+                                </button>
+                                <ul class="dropdown-menu action-dropdown-menu">
+                                    @if($inv->balance > 0)
+                                    <li>
+                                        <a class="dropdown-item receive-payment-btn" href="javascript:void(0)" data-url="{{ route('admin.part-sales-invoices.receive-payment', $inv) }}" data-balance="{{ $inv->balance }}">
+                                            <i class="bx bx-wallet text-success"></i> Receive Payment
+                                        </a>
+                                    </li>
+                                    @endif
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('admin.part-sales-invoices.show', $inv) }}">
+                                            <i class="bx bx-show text-info"></i> View Invoice
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('admin.part-sales-invoices.pdf', [$inv, 'download' => 1]) }}" target="_blank">
+                                            <i class="bx bxs-file-pdf text-danger"></i> Download PDF
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="javascript:void(0)" onclick="directPrintPdf('{{ route('admin.part-sales-invoices.pdf', $inv) }}')">
+                                            <i class="bx bx-printer text-secondary"></i> Print PDF
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </td>
                         <td>{{ $loop->iteration }}</td>
                         <td><a href="{{ route('admin.part-sales-invoices.show', $inv) }}" class="fw-bold">{{ $inv->invoice_number }}</a></td>
                         <td>{{ $inv->invoice_date->format('d-m-Y') }}</td>
@@ -63,12 +94,6 @@
                         <td>{{ number_format($inv->received_amount, 2) }}</td>
                         <td><span class="badge bg-danger">{{ number_format($inv->balance, 2) }}</span></td>
                         <td>{{ $inv->payment_mode ?? '-' }}</td>
-                        <td>
-                            <a href="{{ route('admin.part-sales-invoices.show', $inv) }}" class="btn btn-sm btn-info" title="Print"><i class="bx bx-printer"></i></a>
-                            @if($inv->balance > 0)
-                            <button class="btn btn-sm btn-success receive-payment-btn" data-url="{{ route('admin.part-sales-invoices.receive-payment', $inv) }}" data-balance="{{ $inv->balance }}" title="Receive Payment"><i class="bx bx-wallet"></i></button>
-                            @endif
-                        </td>
                     </tr>
                     @empty
                     <tr><td colspan="10" class="text-center text-muted">No outstanding part sales invoices found.</td></tr>

@@ -42,6 +42,7 @@
             <table class="table table-hover">
                 <thead>
                     <tr>
+                        <th>ACTIONS</th>
                         <th>#</th>
                         <th class="text-nowrap">PO No.</th>
                         <th>Supplier</th>
@@ -51,7 +52,6 @@
                         <th>PO Received</th>
                         <th>PO Balance</th>
                         <th>Status</th>
-                        <th class="text-nowrap">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -62,6 +62,42 @@
                         @if($outstandingItems->count() > 0)
                             @foreach($outstandingItems as $item)
                             <tr>
+                                <td>
+                                    <div class="dropdown">
+                                        <button type="button" class="btn btn-sm btn-action-dropdown dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                            Action
+                                        </button>
+                                        <ul class="dropdown-menu action-dropdown-menu">
+                                            <li>
+                                                <a class="dropdown-item" href="{{ route('admin.vehicle-purchase-orders.receive', $order) }}">
+                                                    <i class="bx bx-package text-success"></i> Receive Vehicles
+                                                </a>
+                                            </li>
+                                            @if($order->balance > 0)
+                                            <li>
+                                                <a class="dropdown-item receive-payment-btn" href="javascript:void(0)" data-url="{{ route('admin.vehicle-purchase-orders.receive-payment', $order) }}" data-balance="{{ $order->balance }}">
+                                                    <i class="bx bx-wallet text-success"></i> Receive Payment
+                                                </a>
+                                            </li>
+                                            @endif
+                                            <li>
+                                                <a class="dropdown-item" href="{{ route('admin.vehicle-purchase-orders.show', $order) }}">
+                                                    <i class="bx bx-show text-info"></i> View Order
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="{{ route('admin.vehicle-purchase-orders.pdf', $order) }}" target="_blank">
+                                                    <i class="bx bxs-file-pdf text-danger"></i> Download PDF
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="javascript:void(0)" onclick="directPrintPdf('{{ route('admin.vehicle-purchase-orders.pdf', $order) }}')">
+                                                    <i class="bx bx-printer text-secondary"></i> Print PDF
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
                                 <td>{{ $loop->parent->iteration }}</td>
                                 <td class="text-nowrap">{{ $order->po_number }}</td>
                                 <td>{{ $order->supplier->name ?? '-' }}</td>
@@ -79,19 +115,41 @@
                                     <span class="badge bg-secondary">{{ ucfirst($order->status) }}</span>
                                     @endif
                                 </td>
-                                <td class="text-nowrap">
-                                    <a href="{{ route('admin.vehicle-purchase-orders.receive', $order) }}" class="btn btn-sm btn-primary">Receive</a>
-                                    @if($order->balance > 0)
-                                    <button class="btn btn-sm btn-success receive-payment-btn" data-url="{{ route('admin.vehicle-purchase-orders.receive-payment', $order) }}" data-balance="{{ $order->balance }}" title="Receive Payment"><i class="bx bx-wallet"></i></button>
-                                    @endif
-                                    <a href="{{ route('admin.vehicle-purchase-orders.show', $order) }}" class="btn btn-sm btn-info" title="View"><i class="bx bx-show"></i></a>
-                                    <a href="{{ route('admin.vehicle-purchase-orders.pdf', $order) }}" class="btn btn-sm btn-danger me-1" target="_blank" title="Download PDF"><i class="bx bxs-file-pdf"></i></a>
-                                    <button type="button" class="btn btn-sm btn-dark" onclick="directPrintPdf('{{ route('admin.vehicle-purchase-orders.pdf', $order) }}')" title="Direct Print PDF"><i class="bx bx-printer"></i></button>
-                                </td>
                             </tr>
                             @endforeach
                         @elseif($order->balance > 0)
                             <tr>
+                                <td>
+                                    <div class="dropdown">
+                                        <button type="button" class="btn btn-sm btn-action-dropdown dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                            Action
+                                        </button>
+                                        <ul class="dropdown-menu action-dropdown-menu">
+                                            @if($order->balance > 0)
+                                            <li>
+                                                <a class="dropdown-item receive-payment-btn" href="javascript:void(0)" data-url="{{ route('admin.vehicle-purchase-orders.receive-payment', $order) }}" data-balance="{{ $order->balance }}">
+                                                    <i class="bx bx-wallet text-success"></i> Receive Payment
+                                                </a>
+                                            </li>
+                                            @endif
+                                            <li>
+                                                <a class="dropdown-item" href="{{ route('admin.vehicle-purchase-orders.show', $order) }}">
+                                                    <i class="bx bx-show text-info"></i> View Order
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="{{ route('admin.vehicle-purchase-orders.pdf', $order) }}" target="_blank">
+                                                    <i class="bx bxs-file-pdf text-danger"></i> Download PDF
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="javascript:void(0)" onclick="directPrintPdf('{{ route('admin.vehicle-purchase-orders.pdf', $order) }}')">
+                                                    <i class="bx bx-printer text-secondary"></i> Print PDF
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
                                 <td>{{ $loop->iteration }}</td>
                                 <td class="text-nowrap">{{ $order->po_number }}</td>
                                 <td>{{ $order->supplier->name ?? '-' }}</td>
@@ -103,18 +161,10 @@
                                 <td>
                                     <span class="badge bg-success">Received</span>
                                 </td>
-                                <td class="text-nowrap">
-                                    @if($order->balance > 0)
-                                    <button class="btn btn-sm btn-success receive-payment-btn" data-url="{{ route('admin.vehicle-purchase-orders.receive-payment', $order) }}" data-balance="{{ $order->balance }}" title="Receive Payment"><i class="bx bx-wallet"></i></button>
-                                    @endif
-                                    <a href="{{ route('admin.vehicle-purchase-orders.show', $order) }}" class="btn btn-sm btn-info" title="View"><i class="bx bx-show"></i></a>
-                                    <a href="{{ route('admin.vehicle-purchase-orders.pdf', $order) }}" class="btn btn-sm btn-danger me-1" target="_blank" title="Download PDF"><i class="bx bxs-file-pdf"></i></a>
-                                    <button type="button" class="btn btn-sm btn-dark" onclick="directPrintPdf('{{ route('admin.vehicle-purchase-orders.pdf', $order) }}')" title="Direct Print PDF"><i class="bx bx-printer"></i></button>
-                                </td>
                             </tr>
                         @endif
                     @empty
-                    <tr><td colspan="13" class="text-center">No outstanding vehicle purchase orders found.</td></tr>
+                    <tr><td colspan="10" class="text-center">No outstanding vehicle purchase orders found.</td></tr>
                     @endforelse
                 </tbody>
             </table>

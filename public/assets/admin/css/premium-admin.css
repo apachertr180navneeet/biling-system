@@ -408,3 +408,87 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 #theme-toggle-btn:hover #theme-toggle-icon {
     transform: scale(1.2);
 }
+
+/* ==========================================================
+   Table Action Dropdown Styling
+   ========================================================== */
+.btn-action-dropdown {
+    background-color: #1e7e34 !important;
+    border-color: #1e7e34 !important;
+    color: #ffffff !important;
+    font-weight: 500;
+    font-size: 0.8125rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: 0.375rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    transition: all 0.15s ease-in-out;
+}
+.btn-action-dropdown:hover, 
+.btn-action-dropdown:focus, 
+.btn-action-dropdown:active, 
+.btn-action-dropdown.show {
+    background-color: #155724 !important;
+    border-color: #155724 !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(21, 87, 36, 0.35) !important;
+}
+.action-dropdown-menu {
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    border-radius: 0.5rem !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12) !important;
+    padding: 0.4rem 0 !important;
+    min-width: 200px;
+    z-index: 1060 !important;
+}
+.action-dropdown-menu .dropdown-item {
+    padding: 0.5rem 1rem !important;
+    font-size: 0.835rem !important;
+    font-weight: 500 !important;
+    color: #374151 !important;
+    display: flex !important;
+    align-items: center !important;
+    transition: background-color 0.15s ease, color 0.15s ease;
+    cursor: pointer;
+    text-decoration: none;
+}
+.action-dropdown-menu .dropdown-item i {
+    font-size: 1.15rem;
+    margin-right: 0.65rem;
+    width: 20px;
+    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.action-dropdown-menu .dropdown-item:hover {
+    background-color: #f3f4f6 !important;
+    color: #111827 !important;
+}
+.action-dropdown-menu .dropdown-item.text-danger:hover {
+    background-color: #fee2e2 !important;
+    color: #dc2626 !important;
+}
+[data-theme="dark"] .action-dropdown-menu {
+    background-color: #1e293b !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5) !important;
+}
+[data-theme="dark"] .action-dropdown-menu .dropdown-item {
+    color: #e2e8f0 !important;
+}
+[data-theme="dark"] .action-dropdown-menu .dropdown-item:hover {
+    background-color: #334155 !important;
+    color: #ffffff !important;
+}
+[data-theme="dark"] .action-dropdown-menu .dropdown-item.text-danger:hover {
+    background-color: rgba(239, 68, 68, 0.2) !important;
+}
+
+/* Ensure table responsive container doesn't cut off dropdown menus */
+.table-responsive {
+    min-height: 250px;
+}
+

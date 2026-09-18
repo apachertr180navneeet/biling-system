@@ -39,6 +39,7 @@
             <table class="table table-hover">
                 <thead>
                     <tr>
+                        <th>ACTIONS</th>
                         <th>#</th>
                         <th>Order No.</th>
                         <th>Supplier</th>
@@ -49,14 +50,63 @@
                         <th>Balance</th>
                         <th>Status</th>
                         <th>Active</th>
-                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($orders as $order)
                     <tr>
+                        <td>
+                            <div class="dropdown">
+                                <button type="button" class="btn btn-sm btn-action-dropdown dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Action
+                                </button>
+                                <ul class="dropdown-menu action-dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('admin.purchase-orders.show', $order) }}">
+                                            <i class="bx bx-show text-info"></i> View Order
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('admin.purchase-orders.pdf', $order) }}" target="_blank">
+                                            <i class="bx bxs-file-pdf text-danger"></i> Download PDF
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="javascript:void(0)" onclick="directPrintPdf('{{ route('admin.purchase-orders.pdf', $order) }}')">
+                                            <i class="bx bx-printer text-secondary"></i> Print PDF
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('admin.purchase-orders.edit', $order) }}">
+                                            <i class="bx bx-edit text-primary"></i> Edit Order
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('admin.purchase-orders.receive', $order) }}">
+                                            <i class="bx bx-package text-success"></i> Receive Stock
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="javascript:void(0)" onclick="openPaymentHistoryModal('purchase-order', {{ $order->id }})">
+                                            <i class="bx bx-history text-info"></i> Payment History
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('admin.purchase-orders.whatsapp', $order) }}" target="_blank">
+                                            <i class="bx bxl-whatsapp text-success"></i> Send WhatsApp
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider my-1"></li>
+                                    <li>
+                                        <a class="dropdown-item text-danger btn-delete" href="javascript:void(0)" data-url="{{ route('admin.purchase-orders.destroy', $order) }}">
+                                            <i class="bx bx-trash text-danger"></i> Delete
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </td>
                         <td>{{ $loop->iteration }}</td>
-                        <td>{{ $order->order_number }}</td>
+                        <td><a href="{{ route('admin.purchase-orders.show', $order) }}" class="fw-bold">{{ $order->order_number }}</a></td>
                         <td>{{ $order->supplier->name ?? '-' }}</td>
                         <td>{{ $order->order_date->format('d-m-Y') }}</td>
                         <td>{{ $order->items->count() }}</td>
@@ -79,15 +129,6 @@
                                 <input type="checkbox" class="toggle-status" data-url="{{ route('admin.purchase-orders.toggle-status', $order) }}" {{ $order->is_active ? 'checked' : '' }}>
                                 <span class="slider round"></span>
                             </label>
-                        </td>
-                        <td>
-                            <button type="button" class="btn btn-sm btn-outline-info me-1" onclick="openPaymentHistoryModal('purchase-order', {{ $order->id }})" title="Payment History & Rollback"><i class="bx bx-history"></i></button>
-                            <a href="{{ route('admin.purchase-orders.show', $order) }}" class="btn btn-sm btn-info" title="View"><i class="bx bx-show"></i></a>
-                            <a href="{{ route('admin.purchase-orders.edit', $order) }}" class="btn btn-sm btn-primary" title="Edit"><i class="bx bx-edit"></i></a>
-                            <a href="{{ route('admin.purchase-orders.pdf', $order) }}" class="btn btn-sm btn-danger" target="_blank" title="Download PDF"><i class="bx bxs-file-pdf"></i></a>
-                            <button type="button" class="btn btn-sm btn-dark" onclick="directPrintPdf('{{ route('admin.purchase-orders.pdf', $order) }}')" title="Direct Print PDF"><i class="bx bx-printer"></i></button>
-                            <a href="{{ route('admin.purchase-orders.whatsapp', $order) }}" class="btn btn-sm btn-success" target="_blank" title="Send WhatsApp"><i class="bx bxl-whatsapp"></i></a>
-                            <button class="btn btn-sm btn-danger btn-delete" data-url="{{ route('admin.purchase-orders.destroy', $order) }}" title="Delete"><i class="bx bx-trash"></i></button>
                         </td>
                     </tr>
                     @empty

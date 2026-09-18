@@ -44,6 +44,7 @@
             <table class="table table-hover">
                 <thead>
                     <tr>
+                        <th>ACTIONS</th>
                         <th>#</th>
                         <th>Part No.</th>
                         <th>Part Name</th>
@@ -62,6 +63,27 @@
                         $isLow = !$isOut && ($effMin > 0 && $s->quantity <= $effMin);
                     @endphp
                     <tr class="@if($isOut) table-secondary @elseif($isLow) table-danger @endif">
+                        <td>
+                            <div class="dropdown">
+                                <button type="button" class="btn btn-sm btn-action-dropdown dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Action
+                                </button>
+                                <ul class="dropdown-menu action-dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item" href="javascript:void(0)" onclick="openAdjustModal({{ $s->spare_part_id ?? 0 }})">
+                                            <i class="bx bx-slider-alt text-warning"></i> Adjust Stock
+                                        </a>
+                                    </li>
+                                    @if($s->purchaseOrder)
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('admin.purchase-orders.show', $s->purchaseOrder) }}">
+                                            <i class="bx bx-file text-info"></i> View PO ({{ $s->purchaseOrder->order_number }})
+                                        </a>
+                                    </li>
+                                    @endif
+                                </ul>
+                            </div>
+                        </td>
                         <td>{{ $loop->iteration }}</td>
                         <td><code>{{ $s->sparePart->part_no ?? '-' }}</code></td>
                         <td>{{ $s->sparePart->name ?? '-' }}</td>
@@ -86,7 +108,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="8" class="text-center">No stock records. Receive parts via Purchase Orders.</td></tr>
+                    <tr><td colspan="9" class="text-center">No stock records. Receive parts via Purchase Orders.</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -160,5 +182,16 @@ $(document).ready(function() {
         }
     @endif
 });
+
+function openAdjustModal(partId) {
+    if (partId) {
+        $('#spare_part_id').val(partId).trigger('change');
+    }
+    var modalEl = document.getElementById('adjustStockModal');
+    if (modalEl) {
+        var modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+        modal.show();
+    }
+}
 </script>
 @endsection

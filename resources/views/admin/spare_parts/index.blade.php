@@ -52,6 +52,7 @@
             <table class="table table-hover">
                 <thead>
                     <tr>
+                        <th>ACTIONS</th>
                         <th>#</th>
                         <th>Part No</th>
                         <th>Name</th>
@@ -59,15 +60,34 @@
                         <th>Selling Price</th>
                         <th>Min Stock</th>
                         <th>Status</th>
-                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($parts as $part)
                     <tr>
+                        <td>
+                            <div class="dropdown">
+                                <button type="button" class="btn btn-sm btn-action-dropdown dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Action
+                                </button>
+                                <ul class="dropdown-menu action-dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('admin.spare-parts.edit', $part) }}">
+                                            <i class="bx bx-edit text-primary"></i> Edit Part
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider my-1"></li>
+                                    <li>
+                                        <a class="dropdown-item text-danger btn-delete" href="javascript:void(0)" data-url="{{ route('admin.spare-parts.destroy', $part) }}">
+                                            <i class="bx bx-trash text-danger"></i> Delete
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </td>
                         <td>{{ $loop->iteration }}</td>
-                        <td>{{ $part->part_no }}</td>
-                        <td>{{ $part->name }}</td>
+                        <td><code>{{ $part->part_no }}</code></td>
+                        <td><strong>{{ $part->name }}</strong></td>
                         <td>{{ number_format($part->mrp, 2) }}</td>
                         <td>{{ number_format($part->selling_price, 2) }}</td>
                         <td><span class="badge bg-label-secondary">{{ $part->min_stock ?? 0 }}</span></td>
@@ -77,13 +97,9 @@
                                 <span class="slider round"></span>
                             </label>
                         </td>
-                        <td>
-                            <a href="{{ route('admin.spare-parts.edit', $part) }}" class="btn btn-sm btn-primary">Edit</a>
-                            <button class="btn btn-sm btn-danger btn-delete" data-url="{{ route('admin.spare-parts.destroy', $part) }}">Delete</button>
-                        </td>
                     </tr>
                     @empty
-                    <tr><td colspan="7" class="text-center">No spare parts found.</td></tr>
+                    <tr><td colspan="8" class="text-center">No spare parts found.</td></tr>
                     @endforelse
                 </tbody>
             </table>

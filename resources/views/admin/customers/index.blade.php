@@ -52,6 +52,7 @@
             <table class="table table-hover">
                 <thead>
                     <tr>
+                        <th>ACTIONS</th>
                         <th>#</th>
                         <th>Name</th>
                         <th>Type</th>
@@ -59,12 +60,41 @@
                         <th>Email</th>
                         <th>GSTIN</th>
                         <th>Status</th>
-                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($customers as $customer)
                     <tr>
+                        <td>
+                            <div class="dropdown">
+                                <button type="button" class="btn btn-sm btn-action-dropdown dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Action
+                                </button>
+                                <ul class="dropdown-menu action-dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('admin.customers.ledger', $customer) }}">
+                                            <i class="bx bx-book-content text-primary"></i> Customer Ledger
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('admin.customers.show', $customer) }}">
+                                            <i class="bx bx-user text-info"></i> View Profile
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('admin.customers.edit', $customer) }}">
+                                            <i class="bx bx-edit text-primary"></i> Edit Customer
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider my-1"></li>
+                                    <li>
+                                        <a class="dropdown-item text-danger btn-delete" href="javascript:void(0)" data-url="{{ route('admin.customers.destroy', $customer) }}">
+                                            <i class="bx bx-trash text-danger"></i> Delete
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </td>
                         <td>{{ $loop->iteration }}</td>
                         <td>
                             <a href="{{ route('admin.customers.ledger', $customer) }}" class="fw-bold text-primary" title="Click to view complete ledger history">
@@ -80,12 +110,6 @@
                                 <input type="checkbox" class="toggle-status" data-url="{{ route('admin.customers.toggle-status', $customer) }}" {{ $customer->is_active ? 'checked' : '' }}>
                                 <span class="slider round"></span>
                             </label>
-                        </td>
-                        <td>
-                            <a href="{{ route('admin.customers.ledger', $customer) }}" class="btn btn-sm btn-dark me-1" title="View Customer Ledger / History"><i class="bx bx-book-content me-1"></i>Ledger</a>
-                            <a href="{{ route('admin.customers.show', $customer) }}" class="btn btn-sm btn-info">View Profile</a>
-                            <a href="{{ route('admin.customers.edit', $customer) }}" class="btn btn-sm btn-primary">Edit</a>
-                            <button class="btn btn-sm btn-danger btn-delete" data-url="{{ route('admin.customers.destroy', $customer) }}">Delete</button>
                         </td>
                     </tr>
                     @empty

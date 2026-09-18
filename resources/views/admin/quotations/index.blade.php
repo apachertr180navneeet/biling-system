@@ -51,6 +51,7 @@
             <table class="table table-hover">
                 <thead>
                     <tr>
+                        <th>ACTIONS</th>
                         <th>Quotation No</th>
                         <th>Date</th>
                         <th>Type</th>
@@ -59,12 +60,63 @@
                         <th>Taxable Amount</th>
                         <th>GST Amount</th>
                         <th>Grand Total</th>
-                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($quotations as $q)
                     <tr>
+                        <td>
+                            <div class="dropdown">
+                                <button type="button" class="btn btn-sm btn-action-dropdown dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Action
+                                </button>
+                                <ul class="dropdown-menu action-dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('admin.quotations.show', $q) }}">
+                                            <i class="bx bx-show text-info"></i> View Quotation
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('admin.quotations.pdf', $q) }}" target="_blank">
+                                            <i class="bx bxs-file-pdf text-danger"></i> Download PDF
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="javascript:void(0)" onclick="directPrintPdf('{{ route('admin.quotations.pdf', $q) }}')">
+                                            <i class="bx bx-printer text-secondary"></i> Print PDF
+                                        </a>
+                                    </li>
+                                    @if($q->type === 'vehicle')
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('admin.quotations.edit-vehicle', $q) }}">
+                                            <i class="bx bx-edit text-primary"></i> Edit Quotation
+                                        </a>
+                                    </li>
+                                    @else
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('admin.quotations.edit-parts', $q) }}">
+                                            <i class="bx bx-edit text-primary"></i> Edit Quotation
+                                        </a>
+                                    </li>
+                                    @endif
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('admin.quotations.whatsapp', $q) }}" target="_blank">
+                                            <i class="bx bxl-whatsapp text-success"></i> Send WhatsApp
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider my-1"></li>
+                                    <li>
+                                        <form action="{{ route('admin.quotations.destroy', $q) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this quotation?')" style="display:block;">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="dropdown-item text-danger border-0 bg-transparent w-100 text-start">
+                                                <i class="bx bx-trash text-danger"></i> Delete
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        </td>
                         <td>
                             <a href="{{ route('admin.quotations.show', $q) }}" class="fw-bold">
                                 {{ $q->quotation_number }}
@@ -98,34 +150,6 @@
                             @endif
                         </td>
                         <td class="fw-bold">{{ number_format($q->total_amount, 2) }}</td>
-                        <td>
-                            <div class="d-flex gap-1">
-                                <a href="{{ route('admin.quotations.show', $q) }}" class="btn btn-sm btn-outline-secondary" title="View">
-                                    <i class="bx bx-show-alt"></i>
-                                </a>
-                                @if($q->type === 'vehicle')
-                                    <a href="{{ route('admin.quotations.edit-vehicle', $q) }}" class="btn btn-sm btn-outline-primary" title="Edit">
-                                        <i class="bx bx-edit-alt"></i>
-                                    </a>
-                                @endif
-                                <a href="{{ route('admin.quotations.pdf', $q) }}" class="btn btn-sm btn-outline-danger" target="_blank" title="Download PDF">
-                                    <i class="bx bxs-file-pdf"></i>
-                                </a>
-                                <button type="button" class="btn btn-sm btn-outline-dark" onclick="directPrintPdf('{{ route('admin.quotations.pdf', $q) }}')" title="Direct Print PDF">
-                                    <i class="bx bx-printer"></i>
-                                </button>
-                                <a href="{{ route('admin.quotations.whatsapp', $q) }}" class="btn btn-sm btn-outline-success" target="_blank" title="Send WhatsApp">
-                                    <i class="bx bxl-whatsapp"></i>
-                                </a>
-                                <form action="{{ route('admin.quotations.destroy', $q) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this quotation?')" style="display:inline-block;">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
-                                        <i class="bx bx-trash"></i>
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
                     </tr>
                     @empty
                     <tr>

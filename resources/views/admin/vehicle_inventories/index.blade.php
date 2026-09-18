@@ -59,6 +59,7 @@
             <table class="table table-hover">
                 <thead>
                     <tr>
+                        <th>ACTIONS</th>
                         <th>#</th>
                         <th>Vehicle</th>
                         <th>Color</th>
@@ -72,7 +73,6 @@
                         <th>Purchase Price</th>
                         <th>Status</th>
                         <th>PO Ref</th>
-                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -81,6 +81,36 @@
                         $variantInfo = $lowStockVariants[$i->vehicle_description] ?? null;
                     @endphp
                     <tr class="@if($i->status == 'available' && $variantInfo) table-warning @endif">
+                        <td>
+                            <div class="dropdown">
+                                <button type="button" class="btn btn-sm btn-action-dropdown dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Action
+                                </button>
+                                <ul class="dropdown-menu action-dropdown-menu">
+                                    <li>
+                                        <form action="{{ route('admin.vehicle-inventories.toggle-status-sold', $i->id) }}" method="POST">
+                                            @csrf
+                                            @if($i->status == 'available')
+                                            <button type="submit" class="dropdown-item text-danger border-0 bg-transparent w-100 text-start" onclick="return confirm('Mark this vehicle as Sold?')">
+                                                <i class="bx bx-check-circle text-danger"></i> Mark as Sold
+                                            </button>
+                                            @else
+                                            <button type="submit" class="dropdown-item text-success border-0 bg-transparent w-100 text-start" onclick="return confirm('Mark this vehicle as Available?')">
+                                                <i class="bx bx-refresh text-success"></i> Mark as Available
+                                            </button>
+                                            @endif
+                                        </form>
+                                    </li>
+                                    @if($i->purchaseOrder)
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('admin.vehicle-purchase-orders.show', $i->purchaseOrder) }}">
+                                            <i class="bx bx-file text-info"></i> View PO ({{ $i->purchaseOrder->po_number }})
+                                        </a>
+                                    </li>
+                                    @endif
+                                </ul>
+                            </div>
+                        </td>
                         <td>{{ $loop->iteration }}</td>
                         <td>
                             <strong>{{ $i->vehicle_description }}</strong>
@@ -110,16 +140,6 @@
                             @else
                             -
                             @endif
-                        </td>
-                        <td>
-                            <form action="{{ route('admin.vehicle-inventories.toggle-status-sold', $i->id) }}" method="POST" class="d-inline">
-                                @csrf
-                                @if($i->status == 'available')
-                                <button type="submit" class="btn btn-xs btn-outline-danger" onclick="return confirm('Mark this vehicle as Sold?')">Mark Sold</button>
-                                @else
-                                <button type="submit" class="btn btn-xs btn-outline-success" onclick="return confirm('Mark this vehicle as Available?')">Mark Available</button>
-                                @endif
-                            </form>
                         </td>
                     </tr>
                     @empty
