@@ -4,23 +4,25 @@ namespace App\Helpers;
 
 use App\Models\User;
 use DB, Auth, File, Mail;
+use Carbon\Carbon;
 
 
 class Helper
 {
    
     public static function admin(){
-        $admin = User::where('id',1)->first();
+        $admin = User::where('role','admin')->first();
         return $admin;
     }
 
-    public static function slug($table, $name, $column = 'slug')
+
+    public static function slug($table, $name)
     {
         $slug = str_replace(' ', '-', $name);
         $slug = strtolower($slug);
         $i = 1;
         while ($i > 0) {
-            $check_slug = DB::table($table)->where($column, $slug)->first();
+            $check_slug = DB::table($table)->where('slug', $slug)->first();
             if($check_slug) {
                 $slug = str_replace(' ', '-', $name) . '-' . $i;
                 $slug = strtolower($slug);
@@ -34,13 +36,13 @@ class Helper
         return $slug;
     }
 
-    public static function slugUpdate($table, $name, $id, $column = 'slug')
+    public static function slugUpdate($table, $name,$id)
     {
         $slug = str_replace(' ', '-', $name);
         $slug = strtolower($slug);
         $i = 1;
         while ($i > 0) {
-            $check_slug = DB::table($table)->where($column, $slug)->where('id','!=',$id)->first();
+            $check_slug = DB::table($table)->where('slug', $slug)->where('id','!=',$id)->first();
             if($check_slug) {
                 $slug = str_replace(' ', '-', $name) . '-' . $i;
                 $slug = strtolower($slug);
@@ -53,11 +55,12 @@ class Helper
 
         return $slug;
     }
+
 
     public static function cleanImage($string)
     {
         $string = str_replace(' ', '-', $string);
-        return preg_replace('/[^A-Za-z0-9.\-]/', '', $string);
+        return preg_replace('/[^A-Za-z0-9._\-]/', '', $string);
     }
 
 

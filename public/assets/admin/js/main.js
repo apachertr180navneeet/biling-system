@@ -81,7 +81,7 @@ let menu, animate;
 
   // Accordion active class
   const accordionActiveFunction = function (e) {
-    if (e.type == 'show.bs.collapse' || e.type == 'show.bs.collapse') {
+    if (e.type == 'show.bs.collapse' || e.type == 'hide.bs.collapse') {
       e.target.closest('.accordion-item').classList.add('active');
     } else {
       e.target.closest('.accordion-item').classList.remove('active');

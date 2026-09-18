@@ -8,23 +8,24 @@ use Auth;
 
 class UserMiddleware
 {
+    /**
+     * Handle an incoming request.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Closure(\Illuminate\Http\Request): (\Illuminate\Http\Response|\Illuminate\Http\RedirectResponse)  $next
+     * @return \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
+     */
     public function handle(Request $request, Closure $next)
     {
-        if (!Auth::check()) {
-            return redirect()->route('login.get');
+        if(Auth::user()) {
+            $user = Auth::user();
+            if($user->role == "user") {
+                return $next($request);
+            }else{
+                return back()->with("error","Opps! You do not have access this");
+            }
+        }else{
+            return redirect()->route('admin.login');
         }
-
-        $user = Auth::user();
-
-        if ($user->status !== 'active') {
-            Auth::logout();
-            return redirect()->route('login.get')->with('error', 'Your account has been deactivated.');
-        }
-
-        if ($user->role === 'user') {
-            return $next($request);
-        }
-
-        return back()->with('error', 'You do not have access to this area.');
     }
 }

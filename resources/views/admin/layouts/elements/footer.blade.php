@@ -5,11 +5,13 @@
             <script>
                 document.write(new Date().getFullYear());
             </script>
-            <a href="{{ route('admin.dashboard') }}" class="footer-link fw-medium">{{ config('app.name') }}</a>
-            — All rights reserved.
+            , made with ❤️ by
+            <a href="https://themeselection.com" target="_blank"
+                class="footer-link fw-medium">{{ config('app.name') }}</a>    
         </div>
         <div class="d-none d-lg-inline-block">
-            <span class="text-muted" style="font-size: 0.8125rem;">v1.0</span>
+            <a href="#" class="footer-link me-4"
+                target="_blank"></a>
         </div>
     </div>
 </footer>
