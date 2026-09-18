@@ -35,7 +35,7 @@
             </div>
             @endif
             @foreach($vehiclePurchaseOrder->items as $i => $item)
-                @php $remaining = $item->quantity - $item->received_quantity; @endphp
+                @php $remaining = max(0, $item->quantity - $item->received_quantity); @endphp
                 <div class="card mb-3" id="po-item-{{ $item->id }}">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <div>
@@ -55,14 +55,12 @@
                         @if(isset($receivedVehicles) && $receivedVehicles->isNotEmpty())
                             @php
                                 $itemVehicles = $receivedVehicles->filter(function($v) use ($item) {
-                                    return $v->vehicle_description === $item->vehicle_description
-                                        && $v->color_name === $item->color_name
-                                        && $v->mfg_year === $item->mfg_year;
+                                    return trim(strtolower($v->vehicle_description)) === trim(strtolower($item->vehicle_description));
                                 });
                             @endphp
                             @if($itemVehicles->isNotEmpty())
                                 <div class="mb-4 p-3 bg-light rounded border border-light-subtle">
-                                    <div class="small fw-semibold text-muted mb-3"><i class="bx bx-edit me-1"></i> Edit Previously Received Vehicles ({{ $itemVehicles->count() }}):</div>
+                                    <div class="small fw-semibold text-muted mb-3"><i class="bx bx-edit me-1"></i> Previously Received Vehicles ({{ $itemVehicles->count() }}):</div>
                                     <div class="edit-vehicle-rows">
                                         @foreach($itemVehicles as $rev)
                                             <div class="vehicle-row p-3 mb-3 border rounded bg-white">
@@ -117,6 +115,9 @@
                         @endif
 
                         @if($remaining > 0)
+                        <div class="mb-2">
+                            <span class="small fw-semibold text-success"><i class="bx bx-plus-circle me-1"></i> Add New Received Vehicles (Remaining: {{ $remaining }}):</span>
+                        </div>
                         <div class="vehicle-rows" id="vehicles-{{ $item->id }}">
                             @php
                                 $oldVehicles = old("items.{$i}.vehicles");
@@ -126,8 +127,8 @@
                             <div class="vehicle-row p-3 mb-3 border rounded bg-white">
                                 <div class="row g-2">
                                     <div class="col-md-3">
-                                        <label class="form-label small">Chassis Number *</label>
-                                        <input type="text" name="items[{{ $i }}][vehicles][{{ $vIdx }}][chassis_number]" class="form-control" required maxlength="255" data-field="chassis_number" value="{{ old("items.{$i}.vehicles.{$vIdx}.chassis_number", $vVal['chassis_number'] ?? '') }}" style="{{ $errors->has("items.{$i}.vehicles.{$vIdx}.chassis_number") ? 'border: 2px solid #dc3545;' : '' }}">
+                                        <label class="form-label small">Chassis Number</label>
+                                        <input type="text" name="items[{{ $i }}][vehicles][{{ $vIdx }}][chassis_number]" class="form-control" maxlength="255" data-field="chassis_number" placeholder="Chassis No" value="{{ old("items.{$i}.vehicles.{$vIdx}.chassis_number", $vVal['chassis_number'] ?? '') }}" style="{{ $errors->has("items.{$i}.vehicles.{$vIdx}.chassis_number") ? 'border: 2px solid #dc3545;' : '' }}">
                                         <div class="validation-message small text-danger mt-1">
                                             @error("items.{$i}.vehicles.{$vIdx}.chassis_number")
                                                 {{ $message }}
@@ -135,8 +136,8 @@
                                         </div>
                                     </div>
                                     <div class="col-md-3">
-                                        <label class="form-label small">Motor Number *</label>
-                                        <input type="text" name="items[{{ $i }}][vehicles][{{ $vIdx }}][motor_number]" class="form-control" required maxlength="255" value="{{ old("items.{$i}.vehicles.{$vIdx}.motor_number", $vVal['motor_number'] ?? '') }}">
+                                        <label class="form-label small">Motor Number</label>
+                                        <input type="text" name="items[{{ $i }}][vehicles][{{ $vIdx }}][motor_number]" class="form-control" maxlength="255" placeholder="Motor No" value="{{ old("items.{$i}.vehicles.{$vIdx}.motor_number", $vVal['motor_number'] ?? '') }}">
                                     </div>
                                     <div class="col-md-3">
                                         <label class="form-label small">Color</label>
@@ -144,23 +145,23 @@
                                     </div>
                                     <div class="col-md-3">
                                         <label class="form-label small">Battery Number</label>
-                                        <input type="text" name="items[{{ $i }}][vehicles][{{ $vIdx }}][battery_number]" class="form-control" maxlength="255" value="{{ old("items.{$i}.vehicles.{$vIdx}.battery_number", $vVal['battery_number'] ?? '') }}">
+                                        <input type="text" name="items[{{ $i }}][vehicles][{{ $vIdx }}][battery_number]" class="form-control" maxlength="255" placeholder="Battery No" value="{{ old("items.{$i}.vehicles.{$vIdx}.battery_number", $vVal['battery_number'] ?? '') }}">
                                     </div>
                                     <div class="col-md-3">
                                         <label class="form-label small">Charger Number</label>
-                                        <input type="text" name="items[{{ $i }}][vehicles][{{ $vIdx }}][charger_number]" class="form-control" maxlength="255" value="{{ old("items.{$i}.vehicles.{$vIdx}.charger_number", $vVal['charger_number'] ?? '') }}">
+                                        <input type="text" name="items[{{ $i }}][vehicles][{{ $vIdx }}][charger_number]" class="form-control" maxlength="255" placeholder="Charger No" value="{{ old("items.{$i}.vehicles.{$vIdx}.charger_number", $vVal['charger_number'] ?? '') }}">
                                     </div>
                                     <div class="col-md-3">
                                         <label class="form-label small">Controller Number</label>
-                                        <input type="text" name="items[{{ $i }}][vehicles][{{ $vIdx }}][controller_number]" class="form-control" maxlength="255" value="{{ old("items.{$i}.vehicles.{$vIdx}.controller_number", $vVal['controller_number'] ?? '') }}">
+                                        <input type="text" name="items[{{ $i }}][vehicles][{{ $vIdx }}][controller_number]" class="form-control" maxlength="255" placeholder="Controller No" value="{{ old("items.{$i}.vehicles.{$vIdx}.controller_number", $vVal['controller_number'] ?? '') }}">
                                     </div>
                                     <div class="col-md-3">
                                         <label class="form-label small">Convertor Number</label>
-                                        <input type="text" name="items[{{ $i }}][vehicles][{{ $vIdx }}][convertor_number]" class="form-control" maxlength="255" value="{{ old("items.{$i}.vehicles.{$vIdx}.convertor_number", $vVal['convertor_number'] ?? '') }}">
+                                        <input type="text" name="items[{{ $i }}][vehicles][{{ $vIdx }}][convertor_number]" class="form-control" maxlength="255" placeholder="Convertor No" value="{{ old("items.{$i}.vehicles.{$vIdx}.convertor_number", $vVal['convertor_number'] ?? '') }}">
                                     </div>
                                     <div class="col-md-3">
                                         <label class="form-label small">Manual Number</label>
-                                        <input type="text" name="items[{{ $i }}][vehicles][{{ $vIdx }}][manual_number]" class="form-control" maxlength="255" value="{{ old("items.{$i}.vehicles.{$vIdx}.manual_number", $vVal['manual_number'] ?? '') }}">
+                                        <input type="text" name="items[{{ $i }}][vehicles][{{ $vIdx }}][manual_number]" class="form-control" maxlength="255" placeholder="Manual No" value="{{ old("items.{$i}.vehicles.{$vIdx}.manual_number", $vVal['manual_number'] ?? '') }}">
                                     </div>
                                     <div class="col-md-12 d-flex justify-content-end mt-2 remove-btn-col">
                                         @if($vIdx > 0)
@@ -172,14 +173,75 @@
                             @endforeach
                         </div>
                         <button type="button" class="btn btn-sm btn-outline-primary mt-2 add-vehicle-btn" data-item="{{ $item->id }}" data-remaining="{{ $remaining }}" data-max="{{ $remaining }}">
-                            <i class="bx bx-plus"></i> Add Vehicle
+                            <i class="bx bx-plus"></i> Add Another Vehicle
                         </button>
                         @endif
                     </div>
                 </div>
             @endforeach
+
+            @php
+                $allItemDescs = $vehiclePurchaseOrder->items->pluck('vehicle_description')->map(fn($d) => trim(strtolower($d)))->toArray();
+                $otherVehicles = isset($receivedVehicles) ? $receivedVehicles->filter(function($v) use ($allItemDescs) {
+                    return !in_array(trim(strtolower($v->vehicle_description)), $allItemDescs);
+                }) : collect();
+            @endphp
+            @if($otherVehicles->isNotEmpty())
+                <div class="card mb-3 border-warning">
+                    <div class="card-header bg-warning-subtle">
+                        <strong>Other Previously Received Vehicles ({{ $otherVehicles->count() }})</strong>
+                    </div>
+                    <div class="card-body">
+                        <div class="edit-vehicle-rows">
+                            @foreach($otherVehicles as $rev)
+                                <div class="vehicle-row p-3 mb-3 border rounded bg-white">
+                                    <input type="hidden" name="edit_vehicles[{{ $rev->id }}][id]" value="{{ $rev->id }}">
+                                    <div class="row g-2">
+                                        <div class="col-md-3">
+                                            <label class="form-label small text-muted">Chassis Number *</label>
+                                            <input type="text" name="edit_vehicles[{{ $rev->id }}][chassis_number]" class="form-control bg-white" required maxlength="255" data-field="chassis_number" data-id="{{ $rev->id }}" value="{{ old("edit_vehicles.{$rev->id}.chassis_number", $rev->chassis_number) }}">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label small text-muted">Motor Number *</label>
+                                            <input type="text" name="edit_vehicles[{{ $rev->id }}][motor_number]" class="form-control bg-white" required maxlength="255" value="{{ old("edit_vehicles.{$rev->id}.motor_number", $rev->motor_number) }}">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label small text-muted">Color</label>
+                                            <input type="text" name="edit_vehicles[{{ $rev->id }}][color_name]" class="form-control bg-white" maxlength="255" placeholder="Color" value="{{ old("edit_vehicles.{$rev->id}.color_name", $rev->color_name) }}">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label small text-muted">Battery Number</label>
+                                            <input type="text" name="edit_vehicles[{{ $rev->id }}][battery_number]" class="form-control bg-white" maxlength="255" value="{{ old("edit_vehicles.{$rev->id}.battery_number", $rev->battery_number) }}">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label small text-muted">Charger Number</label>
+                                            <input type="text" name="edit_vehicles[{{ $rev->id }}][charger_number]" class="form-control bg-white" maxlength="255" value="{{ old("edit_vehicles.{$rev->id}.charger_number", $rev->charger_number) }}">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label small text-muted">Controller Number</label>
+                                            <input type="text" name="edit_vehicles[{{ $rev->id }}][controller_number]" class="form-control bg-white" maxlength="255" value="{{ old("edit_vehicles.{$rev->id}.controller_number", $rev->controller_number) }}">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label small text-muted">Convertor Number</label>
+                                            <input type="text" name="edit_vehicles[{{ $rev->id }}][convertor_number]" class="form-control bg-white" maxlength="255" value="{{ old("edit_vehicles.{$rev->id}.convertor_number", $rev->convertor_number) }}">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label small text-muted">Manual Number</label>
+                                            <input type="text" name="edit_vehicles[{{ $rev->id }}][manual_number]" class="form-control bg-white" maxlength="255" value="{{ old("edit_vehicles.{$rev->id}.manual_number", $rev->manual_number) }}">
+                                        </div>
+                                        <div class="col-md-12 d-flex justify-content-end mt-2">
+                                            <button type="button" class="btn btn-outline-danger btn-remove-received" data-id="{{ $rev->id }}"><i class="bx bx-trash me-1"></i> Remove</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             <div class="mt-3">
-                <button type="submit" class="btn btn-primary"><i class="bx bx-check"></i> {{ $vehiclePurchaseOrder->status === 'received' ? 'Update Vehicles' : 'Receive Vehicles' }}</button>
+                <button type="submit" class="btn btn-primary"><i class="bx bx-check"></i> {{ $vehiclePurchaseOrder->status === 'received' ? 'Update Received Vehicles' : 'Receive / Update Vehicles' }}</button>
                 <a href="{{ route('admin.vehicle-purchase-orders.show', $vehiclePurchaseOrder) }}" class="btn btn-secondary">Cancel</a>
             </div>
         </form>
@@ -313,14 +375,13 @@ document.querySelectorAll('.add-vehicle-btn').forEach(function(btn) {
         var rows = container.querySelectorAll('.vehicle-row');
         var remaining = parseInt(this.dataset.remaining);
         if (rows.length >= remaining) {
-            alert('Cannot add more vehicles. Remaining quantity is ' + remaining + '.');
+            alert('Cannot add more vehicles than the remaining quantity (' + remaining + ').');
             return;
         }
         var newIndex = rows.length;
         var newRow = rows[0].cloneNode(true);
         newRow.querySelectorAll('input').forEach(function(input) {
             var name = input.name;
-            // e.g. items[0][vehicles][0][chassis_number]
             name = name.replace(/\[vehicles\]\[\d+\]/, '[vehicles][' + newIndex + ']');
             input.name = name;
             if (name.indexOf('color_name') !== -1) {
@@ -371,7 +432,7 @@ document.addEventListener('click', function(e) {
 
 document.addEventListener('click', function(e) {
     if (e.target.closest('.btn-remove-received')) {
-        if (!confirm('Are you sure you want to remove this vehicle from inventory?')) {
+        if (!confirm('Are you sure you want to remove this vehicle from received inventory?')) {
             return;
         }
         var btn = e.target.closest('.btn-remove-received');
@@ -391,19 +452,55 @@ document.addEventListener('click', function(e) {
 });
 
 document.getElementById('receiveForm').addEventListener('submit', function(e) {
-    var inputs = this.querySelectorAll('input[required]');
     var errors = [];
     
-    inputs.forEach(function(input) {
-        var val = input.value.trim();
-        if (!val) {
-            var label = input.name.indexOf('chassis_number') !== -1 ? 'Chassis number' : 'Motor number';
-            errors.push(label + ' is required for all vehicles.');
+    // Validate edit rows
+    var editRows = this.querySelectorAll('.edit-vehicle-rows .vehicle-row');
+    editRows.forEach(function(row) {
+        var chassis = row.querySelector('input[name*="[chassis_number]"]');
+        var motor = row.querySelector('input[name*="[motor_number]"]');
+        if (chassis && !chassis.value.trim()) {
+            errors.push('Chassis number is required for all previously received vehicles.');
         }
-        if (input.style.borderColor === 'rgb(220, 53, 69)' || input.style.borderColor === '#dc3545') {
-            errors.push('Please fix invalid values before submitting.');
+        if (motor && !motor.value.trim()) {
+            errors.push('Motor number is required for all previously received vehicles.');
+        }
+        if (chassis && motor && chassis.value.trim() && motor.value.trim() && chassis.value.trim() === motor.value.trim()) {
+            errors.push('Chassis number and Motor number must be different.');
         }
     });
+
+    // Validate new vehicle rows (only if user started filling in anything in that row)
+    var newRows = this.querySelectorAll('.vehicle-rows .vehicle-row');
+    newRows.forEach(function(row) {
+        var chassis = row.querySelector('input[name*="[chassis_number]"]');
+        var motor = row.querySelector('input[name*="[motor_number]"]');
+        var inputs = row.querySelectorAll('input');
+        var anyFilled = false;
+        inputs.forEach(function(inp) {
+            if (inp.name.indexOf('[color_name]') === -1 && inp.value.trim() !== '') {
+                anyFilled = true;
+            }
+        });
+
+        if (anyFilled) {
+            if (chassis && !chassis.value.trim()) {
+                errors.push('Chassis number is required for added vehicles.');
+            }
+            if (motor && !motor.value.trim()) {
+                errors.push('Motor number is required for added vehicles.');
+            }
+            if (chassis && motor && chassis.value.trim() && motor.value.trim() && chassis.value.trim() === motor.value.trim()) {
+                errors.push('Chassis number and Motor number must be different.');
+            }
+        }
+    });
+
+    // Check invalid border colors
+    var invalidInputs = this.querySelectorAll('input[style*="2px solid rgb(220, 53, 69)"], input[style*="#dc3545"]');
+    if (invalidInputs.length > 0) {
+        errors.push('Please fix duplicate or invalid chassis numbers before submitting.');
+    }
     
     if (errors.length > 0) {
         e.preventDefault();

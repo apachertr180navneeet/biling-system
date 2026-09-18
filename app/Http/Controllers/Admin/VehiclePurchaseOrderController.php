@@ -365,7 +365,6 @@ class VehiclePurchaseOrderController extends Controller
 
     public function receiveStore(Request $request, VehiclePurchaseOrder $vehiclePurchaseOrder)
     {
-
         $request->validate([
             'items' => 'nullable|array',
             'items.*.id' => 'required_with:items|exists:vehicle_po_items,id',
@@ -385,29 +384,37 @@ class VehiclePurchaseOrderController extends Controller
             'delete_vehicles.*' => 'exists:vehicle_inventories,id',
         ]);
 
+        $deletedIds = $request->input('delete_vehicles', []);
         $allChassis = [];
 
         // 1. Validate edited vehicles (exclude any marked for deletion)
-        $deletedIds = $request->input('delete_vehicles', []);
         if ($request->has('edit_vehicles')) {
             foreach ($request->edit_vehicles as $id => $vehicle) {
                 if (in_array($id, $deletedIds)) {
                     continue;
                 }
-                if (!empty($vehicle['chassis_number']) && !empty($vehicle['motor_number']) && $vehicle['chassis_number'] === $vehicle['motor_number']) {
+                $chassis = trim($vehicle['chassis_number'] ?? '');
+                $motor = trim($vehicle['motor_number'] ?? '');
+                if (empty($chassis)) {
+                    return back()->withErrors(["edit_vehicles.{$id}.chassis_number" => "Chassis number is required."])->withInput();
+                }
+                if (empty($motor)) {
+                    return back()->withErrors(["edit_vehicles.{$id}.motor_number" => "Motor number is required."])->withInput();
+                }
+                if ($chassis === $motor) {
                     return back()->withErrors(["edit_vehicles.{$id}.motor_number" => "Chassis number and motor number must be different."])->withInput();
                 }
-                if (in_array($vehicle['chassis_number'], $allChassis)) {
-                    return back()->withErrors(["edit_vehicles.{$id}.chassis_number" => "Duplicate chassis number: {$vehicle['chassis_number']}."])->withInput();
+                if (in_array(strtolower($chassis), array_map('strtolower', $allChassis))) {
+                    return back()->withErrors(["edit_vehicles.{$id}.chassis_number" => "Duplicate chassis number: {$chassis}."])->withInput();
                 }
 
                 // Database unique check ignoring current ID
-                $chassisExists = VehicleInventory::where('chassis_number', $vehicle['chassis_number'])->where('id', '!=', $id)->exists();
+                $chassisExists = VehicleInventory::where('chassis_number', $chassis)->where('id', '!=', $id)->exists();
                 if ($chassisExists) {
-                    return back()->withErrors(["edit_vehicles.{$id}.chassis_number" => "Chassis number is already taken."])->withInput();
+                    return back()->withErrors(["edit_vehicles.{$id}.chassis_number" => "Chassis number {$chassis} is already taken in inventory."])->withInput();
                 }
 
-                $allChassis[] = $vehicle['chassis_number'];
+                $allChassis[] = $chassis;
             }
         }
 
@@ -416,141 +423,130 @@ class VehiclePurchaseOrderController extends Controller
             foreach ($request->items as $itemIdx => $itemData) {
                 if (isset($itemData['vehicles'])) {
                     foreach ($itemData['vehicles'] as $vehIdx => $vehicle) {
-                        if (empty($vehicle['chassis_number']) || empty($vehicle['motor_number'])) {
-                            continue;
+                        $chassis = trim($vehicle['chassis_number'] ?? '');
+                        $motor = trim($vehicle['motor_number'] ?? '');
+                        $anyFilled = !empty($chassis) || !empty($motor) || !empty($vehicle['battery_number']) || !empty($vehicle['charger_number']) || !empty($vehicle['controller_number']) || !empty($vehicle['convertor_number']) || !empty($vehicle['manual_number']);
+
+                        if (!$anyFilled) {
+                            continue; // Skip blank rows
                         }
-                        if ($vehicle['chassis_number'] === $vehicle['motor_number']) {
+
+                        if (empty($chassis)) {
+                            return back()->withErrors(["items.{$itemIdx}.vehicles.{$vehIdx}.chassis_number" => "Chassis number is required."])->withInput();
+                        }
+                        if (empty($motor)) {
+                            return back()->withErrors(["items.{$itemIdx}.vehicles.{$vehIdx}.motor_number" => "Motor number is required."])->withInput();
+                        }
+                        if ($chassis === $motor) {
                             return back()->withErrors(["items.{$itemIdx}.vehicles.{$vehIdx}.motor_number" => "Chassis number and motor number must be different."])->withInput();
                         }
-                        if (in_array($vehicle['chassis_number'], $allChassis)) {
-                            return back()->withErrors(["items.{$itemIdx}.vehicles.{$vehIdx}.chassis_number" => "Duplicate chassis number: {$vehicle['chassis_number']}."])->withInput();
+                        if (in_array(strtolower($chassis), array_map('strtolower', $allChassis))) {
+                            return back()->withErrors(["items.{$itemIdx}.vehicles.{$vehIdx}.chassis_number" => "Duplicate chassis number: {$chassis}."])->withInput();
                         }
 
                         // DB unique check for new ones
-                        $chassisExists = VehicleInventory::where('chassis_number', $vehicle['chassis_number'])->exists();
+                        $chassisExists = VehicleInventory::where('chassis_number', $chassis)->exists();
                         if ($chassisExists) {
-                            return back()->withErrors(["items.{$itemIdx}.vehicles.{$vehIdx}.chassis_number" => "Chassis number is already taken."])->withInput();
+                            return back()->withErrors(["items.{$itemIdx}.vehicles.{$vehIdx}.chassis_number" => "Chassis number {$chassis} is already taken in inventory."])->withInput();
                         }
 
-                        $allChassis[] = $vehicle['chassis_number'];
+                        $allChassis[] = $chassis;
                     }
                 }
             }
         }
 
-        // Check if anything was actually submitted
-        $hasNew = false;
-        if ($request->has('items')) {
-            foreach ($request->items as $itemData) {
-                if (!empty($itemData['vehicles'])) {
-                    $hasNew = true;
-                    break;
-                }
-            }
-        }
-        $hasEdit = false;
-        if ($request->has('edit_vehicles')) {
-            foreach ($request->edit_vehicles as $id => $val) {
-                if (!in_array($id, $deletedIds)) {
-                    $hasEdit = true;
-                    break;
-                }
-            }
-        }
-        $hasDelete = !empty($deletedIds);
-
-        if (!$hasNew && !$hasEdit && !$hasDelete) {
-            return back()->with('error', 'No vehicle details were submitted.')->withInput();
-        }
-
-        DB::transaction(function () use ($request, $vehiclePurchaseOrder, $hasNew, $hasEdit, $hasDelete, $deletedIds) {
-            // Delete removed vehicles and decrement received_quantity
-            if ($hasDelete) {
-                foreach ($deletedIds as $id) {
-                    $vehicle = VehicleInventory::find($id);
-                    if ($vehicle) {
-                        $poItem = $vehiclePurchaseOrder->items()
-                            ->where('vehicle_description', $vehicle->vehicle_description)
-                            ->first();
-                        if ($poItem) {
-                            $poItem->decrement('received_quantity');
-                        }
-                        $vehicle->delete();
-                    }
-                }
+        DB::transaction(function () use ($request, $vehiclePurchaseOrder, $deletedIds) {
+            // Delete removed vehicles
+            if (!empty($deletedIds)) {
+                VehicleInventory::whereIn('id', $deletedIds)->where('vehicle_po_id', $vehiclePurchaseOrder->id)->delete();
             }
 
             // Update edited vehicles
-            if ($hasEdit) {
+            if ($request->has('edit_vehicles')) {
                 foreach ($request->edit_vehicles as $id => $val) {
                     if (in_array($id, $deletedIds)) {
                         continue;
                     }
-                    VehicleInventory::where('id', $id)->update([
-                        'chassis_number' => $val['chassis_number'],
-                        'engine_number' => $val['motor_number'],
-                        'motor_number' => $val['motor_number'],
-                        'color_name' => $val['color_name'] ?? null,
-                        'battery_number' => $val['battery_number'] ?? null,
-                        'charger_number' => $val['charger_number'] ?? null,
-                        'controller_number' => $val['controller_number'] ?? null,
-                        'convertor_number' => $val['convertor_number'] ?? null,
-                        'manual_number' => $val['manual_number'] ?? null,
+                    VehicleInventory::where('id', $id)->where('vehicle_po_id', $vehiclePurchaseOrder->id)->update([
+                        'chassis_number' => trim($val['chassis_number']),
+                        'engine_number' => trim($val['motor_number']),
+                        'motor_number' => trim($val['motor_number']),
+                        'color_name' => !empty($val['color_name']) ? trim($val['color_name']) : null,
+                        'battery_number' => !empty($val['battery_number']) ? trim($val['battery_number']) : null,
+                        'charger_number' => !empty($val['charger_number']) ? trim($val['charger_number']) : null,
+                        'controller_number' => !empty($val['controller_number']) ? trim($val['controller_number']) : null,
+                        'convertor_number' => !empty($val['convertor_number']) ? trim($val['convertor_number']) : null,
+                        'manual_number' => !empty($val['manual_number']) ? trim($val['manual_number']) : null,
                     ]);
                 }
             }
 
-            // Create new vehicles and update PO items
-            $allFullyReceived = true;
-            foreach ($vehiclePurchaseOrder->items()->get() as $poItem) {
-                $previousReceived = $poItem->received_quantity;
-                $delta = 0;
+            // Create new vehicles
+            if ($request->has('items')) {
+                foreach ($request->items as $itemData) {
+                    $poItem = $vehiclePurchaseOrder->items()->find($itemData['id']);
+                    if (!$poItem || empty($itemData['vehicles'])) {
+                        continue;
+                    }
 
-                // Find matching item index in request
-                if ($request->has('items')) {
-                    foreach ($request->items as $itemData) {
-                        if ((int)$itemData['id'] === (int)$poItem->id && !empty($itemData['vehicles'])) {
-                            $validVehicles = array_filter($itemData['vehicles'], function($v) {
-                                return !empty($v['chassis_number']) && !empty($v['motor_number']);
-                            });
-                            $delta = count($validVehicles);
-                            foreach ($validVehicles as $vehicle) {
-                                $inventoryData = [
-                                    'vehicle_po_id' => $vehiclePurchaseOrder->id,
-                                    'vehicle_description' => $poItem->vehicle_description,
-                                    'chassis_number' => $vehicle['chassis_number'],
-                                    'engine_number' => $vehicle['motor_number'],
-                                    'motor_number' => $vehicle['motor_number'],
-                                    'color_name' => !empty($vehicle['color_name']) ? $vehicle['color_name'] : $poItem->color_name,
-                                    'battery_number' => $vehicle['battery_number'] ?? null,
-                                    'charger_number' => $vehicle['charger_number'] ?? null,
-                                    'controller_number' => $vehicle['controller_number'] ?? null,
-                                    'convertor_number' => $vehicle['convertor_number'] ?? null,
-                                    'manual_number' => $vehicle['manual_number'] ?? null,
-                                    'quantity' => 1,
-                                    'purchase_price' => $poItem->unit_price,
-                                    'status' => 'available',
-                                ];
-                                if (\Illuminate\Support\Facades\Schema::hasColumn('vehicle_inventories', 'mfg_year')) {
-                                    $inventoryData['mfg_year'] = $poItem->mfg_year ?? null;
-                                }
-                                VehicleInventory::create($inventoryData);
-                            }
+                    foreach ($itemData['vehicles'] as $vehicle) {
+                        $chassis = trim($vehicle['chassis_number'] ?? '');
+                        $motor = trim($vehicle['motor_number'] ?? '');
+                        if (empty($chassis) || empty($motor)) {
+                            continue;
                         }
+
+                        $inventoryData = [
+                            'vehicle_po_id' => $vehiclePurchaseOrder->id,
+                            'vehicle_description' => $poItem->vehicle_description,
+                            'chassis_number' => $chassis,
+                            'engine_number' => $motor,
+                            'motor_number' => $motor,
+                            'color_name' => !empty($vehicle['color_name']) ? trim($vehicle['color_name']) : ($poItem->color_name ?? null),
+                            'battery_number' => !empty($vehicle['battery_number']) ? trim($vehicle['battery_number']) : null,
+                            'charger_number' => !empty($vehicle['charger_number']) ? trim($vehicle['charger_number']) : null,
+                            'controller_number' => !empty($vehicle['controller_number']) ? trim($vehicle['controller_number']) : null,
+                            'convertor_number' => !empty($vehicle['convertor_number']) ? trim($vehicle['convertor_number']) : null,
+                            'manual_number' => !empty($vehicle['manual_number']) ? trim($vehicle['manual_number']) : null,
+                            'quantity' => 1,
+                            'purchase_price' => $poItem->unit_price,
+                            'status' => 'available',
+                        ];
+                        if (\Illuminate\Support\Facades\Schema::hasColumn('vehicle_inventories', 'mfg_year')) {
+                            $inventoryData['mfg_year'] = $poItem->mfg_year ?? null;
+                        }
+                        VehicleInventory::create($inventoryData);
                     }
                 }
+            }
 
-                $newReceived = min($delta + $previousReceived, $poItem->quantity);
-                $poItem->update(['received_quantity' => $newReceived]);
+            // Recalculate received_quantity for all items in this PO from actual inventory count
+            $allFullyReceived = true;
+            $totalReceivedCount = 0;
 
-                if ($newReceived < $poItem->quantity) {
+            foreach ($vehiclePurchaseOrder->items()->get() as $poItem) {
+                $actualReceived = VehicleInventory::where('vehicle_po_id', $vehiclePurchaseOrder->id)
+                    ->where('vehicle_description', $poItem->vehicle_description)
+                    ->count();
+
+                $poItem->update(['received_quantity' => $actualReceived]);
+                $totalReceivedCount += $actualReceived;
+
+                if ($actualReceived < $poItem->quantity) {
                     $allFullyReceived = false;
                 }
             }
 
-            $vehiclePurchaseOrder->update([
-                'status' => $allFullyReceived ? 'received' : ($vehiclePurchaseOrder->items()->where('received_quantity', '>', 0)->exists() ? 'partial' : 'pending'),
-            ]);
+            // Update PO status
+            $newStatus = 'pending';
+            if ($allFullyReceived) {
+                $newStatus = 'received';
+            } elseif ($totalReceivedCount > 0) {
+                $newStatus = 'partial';
+            }
+
+            $vehiclePurchaseOrder->update(['status' => $newStatus]);
         });
 
         return redirect()->route('admin.vehicle-purchase-orders.show', $vehiclePurchaseOrder)->withSuccess('Vehicles updated successfully.');
