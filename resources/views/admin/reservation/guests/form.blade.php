@@ -9,8 +9,8 @@
                 <h4 class="m-page-title">{{ isset($guest) ? 'Edit Guest' : 'Create Guest' }}</h4>
                 <ul class="m-breadcrumb">
                     <li><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-                    <li class="m-breadcrumb-sep">/</li>
-                    <li><a href="#">Reservation Setup</a></li>
+                    <li class="m-breadcrumb-sep">/</li>
+                    <li><a href="#">Reservation Setup</a></li>
                     <li class="m-breadcrumb-sep">/</li>
                     <li><a href="{{ route('admin.reservation.guests.index') }}">Guests</a></li>
                     <li class="m-breadcrumb-sep">/</li>
@@ -121,5 +121,5 @@
     </div>
 </div>
 @endsection
-
-
+
+

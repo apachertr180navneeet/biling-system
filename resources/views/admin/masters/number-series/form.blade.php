@@ -9,8 +9,8 @@
                 <h4 class="m-page-title">{{ isset($numberSeries) ? 'Edit Number Series' : 'Create Number Series' }}</h4>
                 <ul class="m-breadcrumb">
                     <li><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-                    <li class="m-breadcrumb-sep">/</li>
-                    <li><a href="#">Masters</a></li>
+                    <li class="m-breadcrumb-sep">/</li>
+                    <li><a href="#">Masters</a></li>
                     <li class="m-breadcrumb-sep">/</li>
                     <li><a href="{{ route('admin.masters.number-series.index') }}">Number Series</a></li>
                     <li class="m-breadcrumb-sep">/</li>
@@ -79,4 +79,4 @@
     </div>
 </div>
 @endsection
-
+

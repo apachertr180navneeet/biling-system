@@ -9,8 +9,8 @@
                 <h4 class="m-page-title">{{ isset($designation) ? 'Edit Designation' : 'Create Designation' }}</h4>
                 <ul class="m-breadcrumb">
                     <li><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-                    <li class="m-breadcrumb-sep">/</li>
-                    <li><a href="#">Company Setup</a></li>
+                    <li class="m-breadcrumb-sep">/</li>
+                    <li><a href="#">Company Setup</a></li>
                     <li class="m-breadcrumb-sep">/</li>
                     <li><a href="{{ route('admin.designations.index') }}">Designations</a></li>
                     <li class="m-breadcrumb-sep">/</li>
@@ -64,4 +64,4 @@
     </div>
 </div>
 @endsection
-
+

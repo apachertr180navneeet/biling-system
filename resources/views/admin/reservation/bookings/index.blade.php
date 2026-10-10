@@ -75,7 +75,7 @@ var table = $('#bookings-table').DataTable({
         { data: 'reservation_number', name: 'reservation_number' },
         { data: 'guest_name', name: 'guest_name', orderable: false, searchable: false },
         { data: 'hotel_name', name: 'hotel_name', orderable: false, searchable: false },
-{ data: 'check_in_date', name: 'check_in_date', render: function(data) { return data ? moment(data).format('DD-MM-YYYY') : ''; }},
+{ data: 'check_in_date', name: 'check_in_date', render: function(data) { return data ? moment(data).format('DD-MM-YYYY') : ''; }},
         { data: 'check_out_date', name: 'check_out_date', render: function(data) { return data ? moment(data).format('DD-MM-YYYY') : ''; }},
         { data: 'nights', name: 'nights', orderable: false, searchable: false },
         { data: 'total_amount', name: 'total_amount', render: function(data) { return parseFloat(data).toFixed(2); }},
@@ -90,4 +90,4 @@ var table = $('#bookings-table').DataTable({
 });
 </script>
 @endsection
-
+

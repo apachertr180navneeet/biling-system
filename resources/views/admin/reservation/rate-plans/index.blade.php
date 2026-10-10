@@ -76,4 +76,4 @@ var table = $('#rate-plans-table').DataTable({
 });
 </script>
 @endsection
-
+

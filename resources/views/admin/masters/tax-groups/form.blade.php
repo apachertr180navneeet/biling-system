@@ -9,8 +9,8 @@
                 <h4 class="m-page-title">{{ isset($taxGroup) ? 'Edit Tax Group' : 'Create Tax Group' }}</h4>
                 <ul class="m-breadcrumb">
                     <li><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-                    <li class="m-breadcrumb-sep">/</li>
-                    <li><a href="#">Masters</a></li>
+                    <li class="m-breadcrumb-sep">/</li>
+                    <li><a href="#">Masters</a></li>
                     <li class="m-breadcrumb-sep">/</li>
                     <li><a href="{{ route('admin.masters.tax-groups.index') }}">Tax Groups</a></li>
                     <li class="m-breadcrumb-sep">/</li>
@@ -68,4 +68,4 @@
     </div>
 </div>
 @endsection
-
+

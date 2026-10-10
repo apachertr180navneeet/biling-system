@@ -9,8 +9,8 @@
                 <h4 class="m-page-title">{{ isset($currency) ? 'Edit Currency' : 'Create Currency' }}</h4>
                 <ul class="m-breadcrumb">
                     <li><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-                    <li class="m-breadcrumb-sep">/</li>
-                    <li><a href="#">Masters</a></li>
+                    <li class="m-breadcrumb-sep">/</li>
+                    <li><a href="#">Masters</a></li>
                     <li class="m-breadcrumb-sep">/</li>
                     <li><a href="{{ route('admin.masters.currencies.index') }}">Currencies</a></li>
                     <li class="m-breadcrumb-sep">/</li>
@@ -70,4 +70,4 @@
     </div>
 </div>
 @endsection
-
+

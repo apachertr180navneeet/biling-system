@@ -76,4 +76,4 @@ var table = $('#guests-table').DataTable({
 });
 </script>
 @endsection
-
+

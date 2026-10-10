@@ -9,8 +9,8 @@
                 <h4 class="m-page-title">{{ isset($hotel) ? 'Edit Hotel' : 'Create Hotel' }}</h4>
                 <ul class="m-breadcrumb">
                     <li><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-                    <li class="m-breadcrumb-sep">/</li>
-                    <li><a href="#">Property</a></li>
+                    <li class="m-breadcrumb-sep">/</li>
+                    <li><a href="#">Property</a></li>
                     <li class="m-breadcrumb-sep">/</li>
                     <li><a href="{{ route('admin.property.hotels.index') }}">Hotels</a></li>
                     <li class="m-breadcrumb-sep">/</li>
@@ -99,4 +99,4 @@
         </div>
     </div>
 </div>
-@endsection
+@endsection
