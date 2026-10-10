@@ -25,6 +25,7 @@ class VehicleSalesInvoice extends Model
         'customer_address',
         'customer_residence_phone',
         'vehicle_inventory_id',
+        'hsn_code',
         'rate',
         'sub_total',
         'cgst_rate',
@@ -46,6 +47,17 @@ class VehicleSalesInvoice extends Model
         'warranty_notes',
         'is_active',
     ];
+
+    public function getHsnCodeAttribute()
+    {
+        if (!empty($this->attributes['hsn_code'])) {
+            return $this->attributes['hsn_code'];
+        }
+        if ($this->vehicleInventory && !empty($this->vehicleInventory->hsn_code)) {
+            return $this->vehicleInventory->hsn_code;
+        }
+        return '8711';
+    }
 
     protected function casts(): array
     {

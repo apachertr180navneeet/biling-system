@@ -22,6 +22,11 @@
                     @error('name') <div class="text-danger small">{{ $message }}</div> @enderror
                 </div>
                 <div class="mb-3">
+                    <label class="form-label">HSN Code</label>
+                    <input type="text" name="hsn_code" class="form-control @error('hsn_code') is-invalid @enderror" value="{{ old('hsn_code') }}" placeholder="e.g. 8714">
+                    @error('hsn_code') <div class="text-danger small">{{ $message }}</div> @enderror
+                </div>
+                <div class="mb-3">
                     <label class="form-label">Selling Price</label>
                     <input type="number" step="0.01" name="selling_price" class="form-control @error('selling_price') is-invalid @enderror" value="{{ old('selling_price') }}">
                     @error('selling_price') <div class="text-danger small">{{ $message }}</div> @enderror

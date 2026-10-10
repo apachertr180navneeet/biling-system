@@ -415,6 +415,7 @@
                                 data-id="{{ $p->id }}" 
                                 data-name="{{ strtolower($p->name) }}" 
                                 data-partno="{{ strtolower($p->part_no) }}"
+                                data-hsn="{{ strtolower($p->hsn_code ?? $p->hsn_sac_code ?? '') }}"
                                 data-displayname="{{ $p->part_no }} - {{ $p->name }}"
                                 data-price="{{ number_format($p->selling_price, 2, '.', '') }}"
                                 data-stock="{{ $p->qty_available }}">
@@ -662,7 +663,8 @@ document.addEventListener('DOMContentLoaded', function() {
         rows.forEach(function(row) {
             var name = row.getAttribute('data-name') || '';
             var partNo = row.getAttribute('data-partno') || '';
-            if (!query || name.includes(query) || partNo.includes(query)) {
+            var hsn = row.getAttribute('data-hsn') || '';
+            if (!query || name.includes(query) || partNo.includes(query) || hsn.includes(query)) {
                 row.classList.remove('d-none');
             } else {
                 row.classList.add('d-none');

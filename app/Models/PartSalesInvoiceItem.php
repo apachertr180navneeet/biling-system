@@ -29,4 +29,9 @@ class PartSalesInvoiceItem extends Model
     {
         return $this->belongsTo(SparePart::class, 'spare_part_id');
     }
+
+    public function getHsnCodeAttribute(): ?string
+    {
+        return $this->attributes['hsn_code'] ?? $this->sparePart?->hsn_code ?? $this->sparePart?->hsn_sac_code ?? null;
+    }
 }

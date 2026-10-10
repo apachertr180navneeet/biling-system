@@ -291,7 +291,7 @@
                         </thead>
                         <tbody id="modalPartsList">
                             @foreach($spareParts as $p)
-                            <tr class="modal-part-row" data-id="{{ $p->id }}" data-name="{{ $p->name }}" data-partno="{{ $p->part_no }}" data-hsn="{{ $p->hsn_sac_code ?? '' }}" data-price="{{ $p->selling_price }}" data-stock="{{ $p->qty_available }}">
+                            <tr class="modal-part-row" data-id="{{ $p->id }}" data-name="{{ $p->name }}" data-partno="{{ $p->part_no }}" data-hsn="{{ $p->hsn_code ?? $p->hsn_sac_code ?? '' }}" data-price="{{ $p->selling_price }}" data-stock="{{ $p->qty_available }}">
                                 <td class="text-center">
                                     <input type="checkbox" class="form-check-input part-checkbox">
                                 </td>

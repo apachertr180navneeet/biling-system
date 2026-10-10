@@ -20,7 +20,8 @@ class SparePartController extends Controller
             $escapedSearch = '%' . addcslashes($search, '%_') . '%';
             $query->where(function($q) use ($escapedSearch) {
                 $q->where('part_no', 'like', $escapedSearch)
-                  ->orWhere('name', 'like', $escapedSearch);
+                  ->orWhere('name', 'like', $escapedSearch)
+                  ->orWhere('hsn_code', 'like', $escapedSearch);
             });
         }
 
@@ -37,7 +38,8 @@ class SparePartController extends Controller
             $escapedSearch = '%' . addcslashes($search, '%_') . '%';
             $query->where(function($q) use ($escapedSearch) {
                 $q->where('part_no', 'like', $escapedSearch)
-                  ->orWhere('name', 'like', $escapedSearch);
+                  ->orWhere('name', 'like', $escapedSearch)
+                  ->orWhere('hsn_code', 'like', $escapedSearch);
             });
         }
 
@@ -47,19 +49,21 @@ class SparePartController extends Controller
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setCellValue('A1', 'Part No');
         $sheet->setCellValue('B1', 'Name');
-        $sheet->setCellValue('C1', 'MRP');
-        $sheet->setCellValue('D1', 'Selling Price');
-        $sheet->setCellValue('E1', 'Min Stock');
-        $sheet->setCellValue('F1', 'Status');
+        $sheet->setCellValue('C1', 'HSN Code');
+        $sheet->setCellValue('D1', 'MRP');
+        $sheet->setCellValue('E1', 'Selling Price');
+        $sheet->setCellValue('F1', 'Min Stock');
+        $sheet->setCellValue('G1', 'Status');
 
         $row = 2;
         foreach ($parts as $p) {
             $sheet->setCellValue('A' . $row, $p->part_no);
             $sheet->setCellValue('B' . $row, $p->name);
-            $sheet->setCellValue('C' . $row, $p->mrp);
-            $sheet->setCellValue('D' . $row, $p->selling_price);
-            $sheet->setCellValue('E' . $row, $p->min_stock ?? 0);
-            $sheet->setCellValue('F' . $row, $p->is_active ? 'Active' : 'Inactive');
+            $sheet->setCellValue('C' . $row, $p->hsn_code ?? '');
+            $sheet->setCellValue('D' . $row, $p->mrp);
+            $sheet->setCellValue('E' . $row, $p->selling_price);
+            $sheet->setCellValue('F' . $row, $p->min_stock ?? 0);
+            $sheet->setCellValue('G' . $row, $p->is_active ? 'Active' : 'Inactive');
             $row++;
         }
 
@@ -80,6 +84,7 @@ class SparePartController extends Controller
         $data = $request->validate([
             'part_no' => 'nullable|string|max:100|unique:spare_parts',
             'name' => 'required|string|max:255',
+            'hsn_code' => 'nullable|string|max:20',
             'selling_price' => 'required|numeric|min:0',
             'mrp' => 'required|numeric|min:0',
             'min_stock' => 'nullable|integer|min:0',
@@ -104,6 +109,7 @@ class SparePartController extends Controller
         $data = $request->validate([
             'part_no' => 'nullable|string|max:100|unique:spare_parts,part_no,' . $sparePart->id,
             'name' => 'required|string|max:255',
+            'hsn_code' => 'nullable|string|max:20',
             'selling_price' => 'required|numeric|min:0',
             'mrp' => 'required|numeric|min:0',
             'min_stock' => 'nullable|integer|min:0',

@@ -10,9 +10,14 @@ class VehicleMaster extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'variant_name', 'color_name',
+        'variant_name', 'hsn_code', 'color_name',
         'fuel_type', 'transmission',
         'ex_showroom_price', 'min_stock', 'is_active',
         'battery_type', 'battery_make',
     ];
+
+    public function getHsnCodeAttribute()
+    {
+        return !empty($this->attributes['hsn_code']) ? $this->attributes['hsn_code'] : '8711';
+    }
 }

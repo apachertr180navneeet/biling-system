@@ -236,6 +236,14 @@
     border-bottom: none;
 }
 
+.invoice-card.hide-hsn .col-hsn {
+    display: none !important;
+}
+
+.invoice-card.hide-hsn .col-item-name {
+    width: 58% !important;
+}
+
 .item-name {
     font-size: 16px;
     font-weight: 700;
@@ -583,6 +591,12 @@
         font-size: 12px !important;
         border-bottom: 1px solid #e2e8f0 !important;
     }
+    .invoice-card.hide-hsn .col-hsn {
+        display: none !important;
+    }
+    .invoice-card.hide-hsn .col-item-name {
+        width: 58% !important;
+    }
     .item-name {
         font-size: 15px !important;
         font-weight: 700 !important;
@@ -725,13 +739,19 @@
 
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
-    <div class="d-flex justify-content-between align-items-center mb-4 btn-print-group">
+    <div class="d-flex justify-content-between align-items-center mb-4 btn-print-group flex-wrap gap-2">
         <h4 class="fw-bold mb-0">Invoice Detail</h4>
-        <div>
-            <a href="{{ route('admin.vehicle-sales-invoices.delivery-challan', $vehicleSalesInvoice) }}" class="btn btn-success me-1"><i class="bx bx-package"></i> Delivery Challan</a>
-            <a href="{{ route('admin.vehicle-sales-invoices.edit', $vehicleSalesInvoice) }}" class="btn btn-warning me-1"><i class="bx bx-edit"></i> Edit Invoice</a>
-            <button onclick="window.print();" class="btn btn-primary me-1"><i class="bx bx-printer"></i> Print Invoice</button>
-            <a href="{{ route('admin.vehicle-sales-invoices.pdf', [$vehicleSalesInvoice, 'download' => 1]) }}" class="btn btn-danger me-1"><i class="bx bxs-file-pdf"></i> Download PDF</a>
+        <div class="d-flex align-items-center flex-wrap gap-2">
+            <div class="form-check form-switch d-flex align-items-center mb-0 bg-white border px-3 py-1 rounded shadow-sm">
+                <input class="form-check-input ms-0 me-2" type="checkbox" id="toggleHsnOption" checked style="cursor: pointer;">
+                <label class="form-check-label fw-bold text-dark mb-0" for="toggleHsnOption" style="cursor: pointer; font-size: 13px;">
+                    <i class="bx bx-barcode text-success me-1"></i> Display HSN Code
+                </label>
+            </div>
+            <a href="{{ route('admin.vehicle-sales-invoices.delivery-challan', $vehicleSalesInvoice) }}" class="btn btn-success"><i class="bx bx-package"></i> Delivery Challan</a>
+            <a href="{{ route('admin.vehicle-sales-invoices.edit', $vehicleSalesInvoice) }}" class="btn btn-warning"><i class="bx bx-edit"></i> Edit Invoice</a>
+            <button onclick="window.print();" class="btn btn-primary"><i class="bx bx-printer"></i> Print Invoice</button>
+            <a href="{{ route('admin.vehicle-sales-invoices.pdf', [$vehicleSalesInvoice, 'download' => 1]) }}" id="btnDownloadPdf" class="btn btn-danger"><i class="bx bxs-file-pdf"></i> Download PDF</a>
             <a href="{{ route('admin.vehicle-sales-invoices.index') }}" class="btn btn-secondary">Back to List</a>
         </div>
     </div>
@@ -833,17 +853,18 @@
                 <table class="items-table">
                     <thead>
                         <tr>
-                            <th style="width: 6%; text-align: center;">#</th>
-                            <th style="width: 58%;">Item & Description</th>
+                            <th style="width: 5%; text-align: center;">#</th>
+                            <th style="width: 49%;" class="col-item-name">Item & Description</th>
+                            <th style="width: 14%; text-align: center;" class="col-hsn">HSN Code</th>
                             <th style="width: 8%; text-align: center;">Qty</th>
-                            <th style="width: 14%; text-align: right;">Rate</th>
-                            <th style="width: 14%; text-align: right;">Amount</th>
+                            <th style="width: 12%; text-align: right;">Rate</th>
+                            <th style="width: 12%; text-align: right;">Amount</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
                             <td class="text-center" style="font-weight: 600;">1</td>
-                            <td>
+                            <td class="col-item-name">
                                 <span class="item-name">{{ strtoupper($vehicleSalesInvoice->vehicleInventory->vehicle_description) }}</span>
                                 <span class="item-badge">{{ strtoupper($battery_type) }}</span>
 
@@ -871,9 +892,12 @@
                                     <div class="specs-cell"></div>
                                 </div>
                             </td>
-                            <td class="text-center" style="font-weight: 600;">1</td>
-                            <td class="text-right" style="font-weight: 600;">{{ number_format($vehicleSalesInvoice->rate, 2) }}</td>
-                            <td class="text-right" style="font-weight: 600;">{{ number_format($vehicleSalesInvoice->rate, 2) }}</td>
+                            <td class="text-center col-hsn" style="font-weight: 600; color: #475569; vertical-align: middle;">
+                                {{ $vehicleSalesInvoice->hsn_code ?? $vehicleSalesInvoice->vehicleInventory->hsn_code ?? '8711' }}
+                            </td>
+                            <td class="text-center" style="font-weight: 600; vertical-align: middle;">1</td>
+                            <td class="text-right" style="font-weight: 600; vertical-align: middle;">{{ number_format($vehicleSalesInvoice->rate, 2) }}</td>
+                            <td class="text-right" style="font-weight: 600; vertical-align: middle;">{{ number_format($vehicleSalesInvoice->rate, 2) }}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -958,4 +982,46 @@
         </div>
     </div>
 </div>
+@endsection
+
+@section('script')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const toggleHsn = document.getElementById('toggleHsnOption');
+    const invoiceCard = document.querySelector('.invoice-card');
+    const downloadPdfBtn = document.getElementById('btnDownloadPdf');
+
+    function setHsnState(show) {
+        if (!invoiceCard) return;
+        if (show) {
+            invoiceCard.classList.remove('hide-hsn');
+        } else {
+            invoiceCard.classList.add('hide-hsn');
+        }
+        if (downloadPdfBtn) {
+            try {
+                const currentUrl = new URL(downloadPdfBtn.href, window.location.origin);
+                currentUrl.searchParams.set('show_hsn', show ? '1' : '0');
+                downloadPdfBtn.href = currentUrl.pathname + currentUrl.search;
+            } catch (e) {}
+        }
+    }
+
+    if (toggleHsn) {
+        // Restore saved preference if exists
+        const saved = localStorage.getItem('vehicle_invoice_show_hsn');
+        if (saved !== null) {
+            toggleHsn.checked = (saved === '1');
+            setHsnState(toggleHsn.checked);
+        } else {
+            setHsnState(true);
+        }
+
+        toggleHsn.addEventListener('change', function() {
+            setHsnState(this.checked);
+            localStorage.setItem('vehicle_invoice_show_hsn', this.checked ? '1' : '0');
+        });
+    }
+});
+</script>
 @endsection

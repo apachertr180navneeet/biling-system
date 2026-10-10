@@ -11,11 +11,16 @@ class VehicleInventory extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'vehicle_po_id', 'vehicle_description', 'chassis_number', 'engine_number',
+        'vehicle_po_id', 'vehicle_description', 'hsn_code', 'chassis_number', 'engine_number',
         'color_name', 'mfg_year', 'quantity', 'purchase_price', 'status', 'is_active',
         'motor_number', 'battery_number', 'charger_number', 'controller_number',
         'convertor_number', 'manual_number'
     ];
+
+    public function getHsnCodeAttribute()
+    {
+        return !empty($this->attributes['hsn_code']) ? $this->attributes['hsn_code'] : '8711';
+    }
 
     public function purchaseOrder(): BelongsTo
     {

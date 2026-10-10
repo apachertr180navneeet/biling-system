@@ -12,6 +12,11 @@
                     @error('variant_name')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
                 <div class="col-md-4">
+                    <label class="form-label">HSN / SAC Code</label>
+                    <input type="text" name="hsn_code" class="form-control @error('hsn_code') is-invalid @enderror" value="{{ old('hsn_code', $vehicle->hsn_code ?? '8711') }}" placeholder="8711">
+                    @error('hsn_code')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+                <div class="col-md-4">
                     <label class="form-label">Fuel Type</label>
                     <select name="fuel_type" class="form-select no-select2 @error('fuel_type') is-invalid @enderror">
                         <option value="">Select</option>

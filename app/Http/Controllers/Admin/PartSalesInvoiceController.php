@@ -497,8 +497,9 @@ class PartSalesInvoiceController extends Controller
     public function generatePdf(Request $request, PartSalesInvoice $partSalesInvoice)
     {
         $partSalesInvoice->load('customer', 'items.sparePart');
+        $showHsn = $request->has('show_hsn') ? $request->boolean('show_hsn') : true;
 
-        $pdf = Pdf::loadView('admin.part_sales_invoices.pdf', compact('partSalesInvoice'));
+        $pdf = Pdf::loadView('admin.part_sales_invoices.pdf', compact('partSalesInvoice', 'showHsn'));
         $pdf->setPaper('a4');
         $pdf->setOption('isRemoteEnabled', true);
 

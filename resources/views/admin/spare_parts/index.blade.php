@@ -56,6 +56,7 @@
                         <th>#</th>
                         <th>Part No</th>
                         <th>Name</th>
+                        <th>HSN Code</th>
                         <th>MRP</th>
                         <th>Selling Price</th>
                         <th>Min Stock</th>
@@ -88,6 +89,7 @@
                         <td>{{ $loop->iteration }}</td>
                         <td><code>{{ $part->part_no }}</code></td>
                         <td><strong>{{ $part->name }}</strong></td>
+                        <td><span class="badge bg-label-info">{{ $part->hsn_code ?? '-' }}</span></td>
                         <td>{{ number_format($part->mrp, 2) }}</td>
                         <td>{{ number_format($part->selling_price, 2) }}</td>
                         <td><span class="badge bg-label-secondary">{{ $part->min_stock ?? 0 }}</span></td>

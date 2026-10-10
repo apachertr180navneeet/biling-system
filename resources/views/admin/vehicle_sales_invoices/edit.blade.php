@@ -176,6 +176,11 @@
                             <option value="igst" {{ old('tax_regime', $vehicleSalesInvoice->tax_regime) === 'igst' ? 'selected' : '' }}>IGST</option>
                         </select>
                     </div>
+                    <div class="col-md-3">
+                        <label class="form-label">HSN / SAC Code</label>
+                        <input type="text" name="hsn_code" id="hsn_code" class="form-control @error('hsn_code') is-invalid @enderror" value="{{ old('hsn_code', $vehicleSalesInvoice->hsn_code ?? '8711') }}" placeholder="8711">
+                        @error('hsn_code')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
                 </div>
 
                 <!-- Tax Breakdown Card -->

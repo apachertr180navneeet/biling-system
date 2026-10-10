@@ -11,9 +11,19 @@ class SparePart extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'part_no', 'name',
+        'part_no', 'name', 'category', 'hsn_code',
         'selling_price', 'mrp', 'min_stock', 'is_active',
     ];
+
+    public function getHsnSacCodeAttribute(): ?string
+    {
+        return $this->hsn_code;
+    }
+
+    public function getHsnAttribute(): ?string
+    {
+        return $this->hsn_code;
+    }
 
     public function transactions(): \Illuminate\Database\Eloquent\Relations\HasMany
     {

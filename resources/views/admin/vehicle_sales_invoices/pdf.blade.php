@@ -253,17 +253,28 @@
         </tr>
     </table>
 
+    @php
+        $showHsn = isset($showHsn) ? $showHsn : (request()->has('show_hsn') ? request()->boolean('show_hsn') : true);
+        $displayHsn = $hsn_code ?? $vehicleSalesInvoice->hsn_code ?? ($vehicleSalesInvoice->vehicleInventory->hsn_code ?? '8711');
+    @endphp
+
     <!-- Vehicle Details Table -->
     <table class="items-table">
         <thead>
             <tr>
-                <th style="width: 50%;">Vehicle Description</th>
-                <th style="width: 25%;">Identifiers</th>
-                <th style="width: 25%;" class="text-right">Price / Details</th>
+                <th style="width: 5%;" class="text-center">#</th>
+                <th style="{{ $showHsn ? 'width: 51%;' : 'width: 63%;' }}">Vehicle & Description</th>
+                @if($showHsn)
+                <th style="width: 12%;" class="text-center">HSN Code</th>
+                @endif
+                <th style="width: 7%;" class="text-center">Qty</th>
+                <th style="{{ $showHsn ? 'width: 12%;' : 'width: 12%;' }}" class="text-right">Rate</th>
+                <th style="{{ $showHsn ? 'width: 13%;' : 'width: 13%;' }}" class="text-right">Amount</th>
             </tr>
         </thead>
         <tbody>
             <tr>
+                <td class="text-center" style="vertical-align: middle; font-weight: bold;">1</td>
                 <td>
                     <div style="font-size: 11px; font-weight: bold; color: #0f172a;">
                         {{ $vehicleSalesInvoice->vehicleInventory->vehicle_description ?? 'EV Vehicle' }}
@@ -272,14 +283,18 @@
                         Color: {{ !empty($color_name) && $color_name !== '-' ? $color_name : ($vehicleSalesInvoice->vehicleInventory->color_name ?? '-') }}
                     </div>
 
-                    <table class="specs-table">
+                    <table class="specs-table" style="margin-top: 4px;">
+                        <tr>
+                            <td><strong>Chassis No:</strong> {{ $vehicleSalesInvoice->vehicleInventory->chassis_number ?? '-' }}</td>
+                            <td><strong>Motor No:</strong> {{ $vehicleSalesInvoice->vehicleInventory->motor_number ?? '-' }}</td>
+                        </tr>
                         <tr>
                             <td><strong>Battery:</strong> {{ $battery_type ?? 'LITHIUM' }} ({{ $battery_make ?? 'LITHIUM' }})</td>
                             <td><strong>Battery No:</strong> {{ $vehicleSalesInvoice->vehicleInventory->battery_number ?? '-' }}</td>
                         </tr>
                         <tr>
                             <td><strong>Charger No:</strong> {{ $vehicleSalesInvoice->vehicleInventory->charger_number ?? '-' }}</td>
-                            <td><strong>Motor No:</strong> {{ $vehicleSalesInvoice->vehicleInventory->motor_number ?? '-' }}</td>
+                            <td><strong>Engine No:</strong> {{ $vehicleSalesInvoice->vehicleInventory->engine_number ?? '-' }}</td>
                         </tr>
                     </table>
 
@@ -289,23 +304,14 @@
                     </div>
                     @endif
                 </td>
-                <td>
-                    <div style="font-size: 8.5px; line-height: 1.4;">
-                        <strong>Chassis No:</strong><br>{{ $vehicleSalesInvoice->vehicleInventory->chassis_number ?? '-' }}<br><br>
-                        <strong>Engine/Motor No:</strong><br>{{ $vehicleSalesInvoice->vehicleInventory->engine_number ?? '-' }}
-                    </div>
+                @if($showHsn)
+                <td class="text-center" style="font-weight: bold; color: #334155; vertical-align: middle; font-size: 11px;">
+                    {{ $displayHsn }}
                 </td>
-                <td class="text-right" style="vertical-align: top;">
-                    <div style="font-size: 9px; margin-bottom: 4px;">
-                        <span>Rate:</span> <strong>₹{{ number_format($vehicleSalesInvoice->rate, 2) }}</strong>
-                    </div>
-                    @if($vehicleSalesInvoice->tax_regime === 'igst')
-                        <div style="font-size: 8px; color: #64748b;">IGST ({{ $vehicleSalesInvoice->igst_rate ?? 0 }}%): ₹{{ number_format($vehicleSalesInvoice->igst_amount, 2) }}</div>
-                    @else
-                        <div style="font-size: 8px; color: #64748b;">CGST ({{ $vehicleSalesInvoice->cgst_rate ?? 0 }}%): ₹{{ number_format($vehicleSalesInvoice->cgst_amount, 2) }}</div>
-                        <div style="font-size: 8px; color: #64748b;">SGST ({{ $vehicleSalesInvoice->sgst_rate ?? 0 }}%): ₹{{ number_format($vehicleSalesInvoice->sgst_amount, 2) }}</div>
-                    @endif
-                </td>
+                @endif
+                <td class="text-center" style="font-weight: bold; vertical-align: middle;">1</td>
+                <td class="text-right" style="font-weight: bold; vertical-align: middle;">₹{{ number_format($vehicleSalesInvoice->rate, 2) }}</td>
+                <td class="text-right" style="font-weight: bold; vertical-align: middle;">₹{{ number_format($vehicleSalesInvoice->rate, 2) }}</td>
             </tr>
         </tbody>
     </table>

@@ -253,6 +253,7 @@ class VehicleSalesInvoiceController extends Controller
             'customer_address' => 'nullable|string',
             'customer_residence_phone' => 'nullable|string|max:20',
             'vehicle_inventory_id' => 'required|exists:vehicle_inventories,id',
+            'hsn_code' => 'nullable|string|max:20',
             'rate' => 'required|numeric|min:0',
             'gst_type' => 'required|string|in:exclusive,inclusive',
             'nemmp_incentive' => 'nullable|numeric|min:0',
@@ -343,6 +344,7 @@ class VehicleSalesInvoiceController extends Controller
                 'customer_address' => $request->customer_address,
                 'customer_residence_phone' => $request->customer_residence_phone,
                 'vehicle_inventory_id' => $vehicle->id,
+                'hsn_code' => $request->input('hsn_code', '8711'),
                 'rate' => $rate,
                 'sub_total' => $sub_total,
                 'cgst_rate' => $cgst_rate,
@@ -428,6 +430,7 @@ class VehicleSalesInvoiceController extends Controller
             'customer_address' => 'nullable|string',
             'customer_residence_phone' => 'nullable|string|max:20',
             'vehicle_inventory_id' => 'required|exists:vehicle_inventories,id',
+            'hsn_code' => 'nullable|string|max:20',
             'rate' => 'required|numeric|min:0',
             'gst_type' => 'required|string|in:exclusive,inclusive',
             'nemmp_incentive' => 'nullable|numeric|min:0',
@@ -516,6 +519,7 @@ class VehicleSalesInvoiceController extends Controller
                 'customer_address' => $request->customer_address,
                 'customer_residence_phone' => $request->customer_residence_phone,
                 'vehicle_inventory_id' => $request->vehicle_inventory_id,
+                'hsn_code' => $request->input('hsn_code', '8711'),
                 'rate' => $rate,
                 'sub_total' => $sub_total,
                 'cgst_rate' => $cgst_rate,
@@ -576,12 +580,14 @@ class VehicleSalesInvoiceController extends Controller
         $battery_type = $master ? $master->battery_type : 'LITHIUM';
         $battery_make = $master ? $master->battery_make : 'LITHIUM';
         $color_name = ($vehicle && !empty($vehicle->color_name)) ? $vehicle->color_name : ($master ? $master->color_name : '-');
+        $hsn_code = ($vehicle && !empty($vehicle->hsn_code)) ? $vehicle->hsn_code : ($master && !empty($master->hsn_code) ? $master->hsn_code : '8711');
 
         return [
             'master' => $master,
             'battery_type' => $battery_type,
             'battery_make' => $battery_make,
             'color_name' => $color_name,
+            'hsn_code' => $hsn_code,
         ];
     }
 
@@ -593,8 +599,9 @@ class VehicleSalesInvoiceController extends Controller
         $battery_type = $specs['battery_type'];
         $battery_make = $specs['battery_make'];
         $color_name = $specs['color_name'];
+        $hsn_code = $vehicleSalesInvoice->hsn_code ?: $specs['hsn_code'];
 
-        return view('admin.vehicle_sales_invoices.show', compact('vehicleSalesInvoice', 'battery_type', 'battery_make', 'color_name'));
+        return view('admin.vehicle_sales_invoices.show', compact('vehicleSalesInvoice', 'battery_type', 'battery_make', 'color_name', 'hsn_code'));
     }
 
     public function deliveryChallan(VehicleSalesInvoice $vehicleSalesInvoice)
@@ -698,8 +705,10 @@ class VehicleSalesInvoiceController extends Controller
         $battery_type = $specs['battery_type'];
         $battery_make = $specs['battery_make'];
         $color_name = $specs['color_name'];
+        $hsn_code = $vehicleSalesInvoice->hsn_code ?: $specs['hsn_code'];
+        $showHsn = $request->has('show_hsn') ? $request->boolean('show_hsn') : true;
 
-        $pdf = Pdf::loadView('admin.vehicle_sales_invoices.pdf', compact('vehicleSalesInvoice', 'battery_type', 'battery_make', 'color_name'));
+        $pdf = Pdf::loadView('admin.vehicle_sales_invoices.pdf', compact('vehicleSalesInvoice', 'battery_type', 'battery_make', 'color_name', 'hsn_code', 'showHsn'));
         $pdf->setPaper('a4');
         $pdf->setOption('isRemoteEnabled', true);
 

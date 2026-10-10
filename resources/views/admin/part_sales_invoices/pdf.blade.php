@@ -288,16 +288,23 @@
         </tr>
     </table>
 
+    @php
+        $showHsn = isset($showHsn) ? $showHsn : (request()->has('show_hsn') ? request()->boolean('show_hsn') : true);
+    @endphp
+
     <!-- Items Table -->
     <table class="items-table">
         <thead>
             <tr>
                 <th style="width: 5%;" class="text-center">#</th>
-                <th style="width: 45%;">Items & Description</th>
-                <th style="width: 10%;" class="text-right">Qty</th>
-                <th style="width: 13%;" class="text-right">Rate</th>
-                <th style="width: 12%;" class="text-right">Tax (GST)</th>
-                <th style="width: 15%;" class="text-right">Amount</th>
+                <th style="{{ $showHsn ? 'width: 37%;' : 'width: 45%;' }}">Items & Description</th>
+                @if($showHsn)
+                <th style="width: 13%;" class="text-center">HSN Code</th>
+                @endif
+                <th style="{{ $showHsn ? 'width: 8%;' : 'width: 10%;' }}" class="text-right">Qty</th>
+                <th style="{{ $showHsn ? 'width: 12%;' : 'width: 13%;' }}" class="text-right">Rate</th>
+                <th style="{{ $showHsn ? 'width: 11%;' : 'width: 12%;' }}" class="text-right">Tax (GST)</th>
+                <th style="{{ $showHsn ? 'width: 14%;' : 'width: 15%;' }}" class="text-right">Amount</th>
             </tr>
         </thead>
         <tbody>
@@ -315,6 +322,11 @@
                         <div style="font-size: 8px; color: #047857;">Notes: {{ $item->serial_no_warranty_notes }}</div>
                     @endif
                 </td>
+                @if($showHsn)
+                <td class="text-center" style="font-weight: bold; color: #475569; font-size: 9px;">
+                    {{ $item->hsn_code ?: ($item->sparePart->hsn_code ?? $item->sparePart->hsn_sac_code ?? '-') }}
+                </td>
+                @endif
                 <td class="text-right fw-bold">{{ $item->quantity }}</td>
                 <td class="text-right">₹{{ number_format($item->rate, 2) }}</td>
                 <td class="text-right">

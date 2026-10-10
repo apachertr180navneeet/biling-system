@@ -222,6 +222,14 @@
     margin-top: 2px;
 }
 
+.invoice-card.hide-hsn .col-hsn {
+    display: none !important;
+}
+
+.invoice-card.hide-hsn .col-item-name {
+    width: 54% !important;
+}
+
 /* Bottom elements */
 .bottom-section {
     display: flex;
@@ -529,6 +537,12 @@
         font-size: 11px !important;
         color: #64748b !important;
     }
+    .invoice-card.hide-hsn .col-hsn {
+        display: none !important;
+    }
+    .invoice-card.hide-hsn .col-item-name {
+        width: 54% !important;
+    }
     .bottom-section {
         display: flex !important;
         flex-direction: row !important;
@@ -668,11 +682,17 @@ if (!function_exists('getIndianRupeesInWords')) {
 @endphp
 
 <div class="container-xxl flex-grow-1 container-p-y">
-    <div class="d-flex justify-content-between align-items-center mb-4 btn-print-group">
+    <div class="d-flex justify-content-between align-items-center mb-4 btn-print-group flex-wrap gap-2">
         <h4 class="fw-bold mb-0">Parts Sales Invoice Detail</h4>
-        <div>
-            <button onclick="window.print();" class="btn btn-primary me-1"><i class="bx bx-printer"></i> Print Invoice</button>
-            <a href="{{ route('admin.part-sales-invoices.pdf', [$partSalesInvoice, 'download' => 1]) }}" class="btn btn-danger me-1"><i class="bx bxs-file-pdf"></i> Download PDF</a>
+        <div class="d-flex align-items-center flex-wrap gap-2">
+            <div class="form-check form-switch d-flex align-items-center mb-0 bg-white border px-3 py-1 rounded shadow-sm">
+                <input class="form-check-input ms-0 me-2" type="checkbox" id="toggleHsnOption" checked style="cursor: pointer;">
+                <label class="form-check-label fw-bold text-dark mb-0" for="toggleHsnOption" style="cursor: pointer; font-size: 13px;">
+                    <i class="bx bx-barcode text-success me-1"></i> Display HSN Code
+                </label>
+            </div>
+            <button onclick="window.print();" class="btn btn-primary"><i class="bx bx-printer"></i> Print Invoice</button>
+            <a href="{{ route('admin.part-sales-invoices.pdf', [$partSalesInvoice, 'download' => 1]) }}" id="btnDownloadPdf" class="btn btn-danger"><i class="bx bxs-file-pdf"></i> Download PDF</a>
             <a href="{{ route('admin.part-sales-invoices.index') }}" class="btn btn-secondary">Back to List</a>
         </div>
     </div>
@@ -751,23 +771,30 @@ if (!function_exists('getIndianRupeesInWords')) {
                 <table class="items-table">
                     <thead>
                         <tr>
-                            <th style="width: 6%; text-align: center;">#</th>
-                            <th style="width: 54%;">Items & Description</th>
-                            <th style="width: 10%; text-align: center;">Qty</th>
-                            <th style="width: 14%; text-align: right;">Rate</th>
-                            <th style="width: 16%; text-align: right;">Tax (GST)</th>
-                            <th style="width: 14%; text-align: right;">Amount</th>
+                            <th style="width: 5%; text-align: center;">#</th>
+                            <th style="width: 45%;" class="col-item-name">Items & Description</th>
+                            <th style="width: 14%; text-align: center;" class="col-hsn">HSN Code</th>
+                            <th style="width: 8%; text-align: center;">Qty</th>
+                            <th style="width: 13%; text-align: right;">Rate</th>
+                            <th style="width: 15%; text-align: right;">Tax (GST)</th>
+                            <th style="width: 15%; text-align: right;">Amount</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($partSalesInvoice->items as $index => $item)
                         <tr>
                             <td class="text-center" style="font-weight: 600;">{{ $index + 1 }}</td>
-                            <td>
-                                <span class="item-name">{{ strtoupper($item->sparePart->name) }}</span>
+                            <td class="col-item-name">
+                                <span class="item-name">{{ strtoupper($item->sparePart->name ?? 'SPARE PART') }}</span>
+                                @if(optional($item->sparePart)->part_no)
+                                <span class="item-desc" style="color: #64748b;">Part No: {{ $item->sparePart->part_no }}</span>
+                                @endif
                                 @if($item->serial_no_warranty_notes)
                                 <span class="item-desc">{{ $item->serial_no_warranty_notes }}</span>
                                 @endif
+                            </td>
+                            <td class="text-center col-hsn" style="font-weight: 600; color: #475569;">
+                                {{ $item->hsn_code ?: ($item->sparePart->hsn_code ?? $item->sparePart->hsn_sac_code ?? '-') }}
                             </td>
                             <td class="text-center" style="font-weight: 600;">{{ $item->quantity }}</td>
                             <td class="text-right">{{ number_format($item->rate, 2) }}</td>
@@ -866,4 +893,46 @@ if (!function_exists('getIndianRupeesInWords')) {
         </div>
     </div>
 </div>
+@endsection
+
+@section('script')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const toggleHsn = document.getElementById('toggleHsnOption');
+    const invoiceCard = document.querySelector('.invoice-card');
+    const downloadPdfBtn = document.getElementById('btnDownloadPdf');
+
+    function setHsnState(show) {
+        if (!invoiceCard) return;
+        if (show) {
+            invoiceCard.classList.remove('hide-hsn');
+        } else {
+            invoiceCard.classList.add('hide-hsn');
+        }
+        if (downloadPdfBtn) {
+            try {
+                const currentUrl = new URL(downloadPdfBtn.href, window.location.origin);
+                currentUrl.searchParams.set('show_hsn', show ? '1' : '0');
+                downloadPdfBtn.href = currentUrl.pathname + currentUrl.search;
+            } catch (e) {}
+        }
+    }
+
+    if (toggleHsn) {
+        // Restore saved preference if exists
+        const saved = localStorage.getItem('part_invoice_show_hsn');
+        if (saved !== null) {
+            toggleHsn.checked = (saved === '1');
+            setHsnState(toggleHsn.checked);
+        } else {
+            setHsnState(true);
+        }
+
+        toggleHsn.addEventListener('change', function() {
+            setHsnState(this.checked);
+            localStorage.setItem('part_invoice_show_hsn', this.checked ? '1' : '0');
+        });
+    }
+});
+</script>
 @endsection

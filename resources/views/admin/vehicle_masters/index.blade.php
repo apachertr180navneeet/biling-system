@@ -50,6 +50,7 @@
                         <th>ACTIONS</th>
                         <th>#</th>
                         <th>Variant</th>
+                        <th>HSN Code</th>
                         <th>Color</th>
                         <th>Fuel</th>
                         <th>Transmission</th>
@@ -85,6 +86,7 @@
                         </td>
                         <td>{{ $loop->iteration }}</td>
                         <td><strong>{{ $v->variant_name ?? '-' }}</strong></td>
+                        <td><span class="badge bg-label-info">{{ $v->hsn_code ?? '8711' }}</span></td>
                         <td>{{ $v->color_name ?? '-' }}</td>
                         <td>{{ $v->fuel_type ?? '-' }}</td>
                         <td>{{ $v->transmission ?? '-' }}</td>
@@ -102,7 +104,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="11" class="text-center text-muted">No vehicle records.</td></tr>
+                    <tr><td colspan="12" class="text-center text-muted">No vehicle records.</td></tr>
                     @endforelse
                 </tbody>
             </table>

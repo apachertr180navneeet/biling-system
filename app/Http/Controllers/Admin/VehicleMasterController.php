@@ -19,6 +19,7 @@ class VehicleMasterController extends Controller
             $escapedSearch = '%' . addcslashes($search, '%_') . '%';
             $query->where(function($q) use ($escapedSearch) {
                 $q->where('variant_name', 'like', $escapedSearch)
+                  ->orWhere('hsn_code', 'like', $escapedSearch)
                   ->orWhere('color_name', 'like', $escapedSearch)
                   ->orWhere('fuel_type', 'like', $escapedSearch)
                   ->orWhere('transmission', 'like', $escapedSearch)
@@ -53,26 +54,28 @@ class VehicleMasterController extends Controller
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setCellValue('A1', 'Variant Name');
-        $sheet->setCellValue('B1', 'Color Name');
-        $sheet->setCellValue('C1', 'Fuel Type');
-        $sheet->setCellValue('D1', 'Transmission');
-        $sheet->setCellValue('E1', 'Ex-Showroom Price');
-        $sheet->setCellValue('F1', 'Battery Type');
-        $sheet->setCellValue('G1', 'Battery Make');
-        $sheet->setCellValue('H1', 'Min Stock');
-        $sheet->setCellValue('I1', 'Status');
+        $sheet->setCellValue('B1', 'HSN Code');
+        $sheet->setCellValue('C1', 'Color Name');
+        $sheet->setCellValue('D1', 'Fuel Type');
+        $sheet->setCellValue('E1', 'Transmission');
+        $sheet->setCellValue('F1', 'Ex-Showroom Price');
+        $sheet->setCellValue('G1', 'Battery Type');
+        $sheet->setCellValue('H1', 'Battery Make');
+        $sheet->setCellValue('I1', 'Min Stock');
+        $sheet->setCellValue('J1', 'Status');
 
         $row = 2;
         foreach ($vehicles as $v) {
             $sheet->setCellValue('A' . $row, $v->variant_name);
-            $sheet->setCellValue('B' . $row, $v->color_name);
-            $sheet->setCellValue('C' . $row, $v->fuel_type);
-            $sheet->setCellValue('D' . $row, $v->transmission);
-            $sheet->setCellValue('E' . $row, $v->ex_showroom_price);
-            $sheet->setCellValue('F' . $row, $v->battery_type);
-            $sheet->setCellValue('G' . $row, $v->battery_make);
-            $sheet->setCellValue('H' . $row, $v->min_stock ?? 0);
-            $sheet->setCellValue('I' . $row, $v->is_active ? 'Active' : 'Inactive');
+            $sheet->setCellValue('B' . $row, $v->hsn_code ?? '8711');
+            $sheet->setCellValue('C' . $row, $v->color_name);
+            $sheet->setCellValue('D' . $row, $v->fuel_type);
+            $sheet->setCellValue('E' . $row, $v->transmission);
+            $sheet->setCellValue('F' . $row, $v->ex_showroom_price);
+            $sheet->setCellValue('G' . $row, $v->battery_type);
+            $sheet->setCellValue('H' . $row, $v->battery_make);
+            $sheet->setCellValue('I' . $row, $v->min_stock ?? 0);
+            $sheet->setCellValue('J' . $row, $v->is_active ? 'Active' : 'Inactive');
             $row++;
         }
 
@@ -92,6 +95,7 @@ class VehicleMasterController extends Controller
     {
         $data = $request->validate([
             'variant_name' => 'nullable|string|max:255',
+            'hsn_code' => 'nullable|string|max:20',
             'color_name' => 'nullable|string|max:255',
             'fuel_type' => 'nullable|string|max:255',
             'transmission' => 'nullable|string|max:255',
@@ -100,6 +104,7 @@ class VehicleMasterController extends Controller
             'battery_make' => 'nullable|string|max:255',
             'min_stock' => 'nullable|integer|min:0',
         ]);
+        $data['hsn_code'] = $data['hsn_code'] ?: '8711';
         $data['min_stock'] = $data['min_stock'] ?? 0;
         try {
             VehicleMaster::create($data);
@@ -118,6 +123,7 @@ class VehicleMasterController extends Controller
     {
         $data = $request->validate([
             'variant_name' => 'nullable|string|max:255',
+            'hsn_code' => 'nullable|string|max:20',
             'color_name' => 'nullable|string|max:255',
             'fuel_type' => 'nullable|string|max:255',
             'transmission' => 'nullable|string|max:255',
@@ -126,6 +132,7 @@ class VehicleMasterController extends Controller
             'battery_make' => 'nullable|string|max:255',
             'min_stock' => 'nullable|integer|min:0',
         ]);
+        $data['hsn_code'] = $data['hsn_code'] ?: '8711';
         $data['min_stock'] = $data['min_stock'] ?? 0;
         try {
             $vehicleMaster->update($data);
