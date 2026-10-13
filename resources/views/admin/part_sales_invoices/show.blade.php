@@ -691,6 +691,7 @@ if (!function_exists('getIndianRupeesInWords')) {
                     <i class="bx bx-barcode text-success me-1"></i> Display HSN Code
                 </label>
             </div>
+            <a href="{{ route('admin.part-sales-invoices.edit', $partSalesInvoice) }}" class="btn btn-warning"><i class="bx bx-edit"></i> Edit Invoice</a>
             <button onclick="window.print();" class="btn btn-primary"><i class="bx bx-printer"></i> Print Invoice</button>
             <a href="{{ route('admin.part-sales-invoices.pdf', [$partSalesInvoice, 'download' => 1]) }}" id="btnDownloadPdf" class="btn btn-danger"><i class="bx bxs-file-pdf"></i> Download PDF</a>
             <a href="{{ route('admin.part-sales-invoices.index') }}" class="btn btn-secondary">Back to List</a>

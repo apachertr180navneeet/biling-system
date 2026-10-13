@@ -146,7 +146,7 @@ Route::name('admin.')->prefix('admin')->group(function () {
             Route::get('part-sales-invoices/export', [PartSalesInvoiceController::class, 'export'])->name('part-sales-invoices.export');
             Route::get('part-sales-invoices/outstanding/list', [PartSalesInvoiceController::class, 'outstanding'])->name('part-sales-invoices.outstanding');
             Route::get('part-sales-invoices/outstanding/export', [PartSalesInvoiceController::class, 'exportOutstanding'])->name('part-sales-invoices.outstanding.export');
-            Route::resource('part-sales-invoices', PartSalesInvoiceController::class)->except(['edit', 'update']);
+            Route::resource('part-sales-invoices', PartSalesInvoiceController::class);
             Route::post('part-sales-invoices/{part_sales_invoice}/receive-payment', [PartSalesInvoiceController::class, 'receivePayment'])->name('part-sales-invoices.receive-payment');
             Route::post('part-sales-invoices/{part_sales_invoice}/quick-update-date', [PartSalesInvoiceController::class, 'quickUpdateDate'])->name('part-sales-invoices.quick-update-date');
 

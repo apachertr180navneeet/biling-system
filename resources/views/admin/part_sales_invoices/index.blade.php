@@ -61,6 +61,11 @@
                                         </a>
                                     </li>
                                     <li>
+                                        <a class="dropdown-item" href="{{ route('admin.part-sales-invoices.edit', $inv) }}">
+                                            <i class="bx bx-edit text-primary"></i> Edit Invoice
+                                        </a>
+                                    </li>
+                                    <li>
                                         <a class="dropdown-item" href="{{ route('admin.part-sales-invoices.pdf', [$inv, 'download' => 1]) }}" target="_blank">
                                             <i class="bx bxs-file-pdf text-danger"></i> Download PDF
                                         </a>

@@ -408,6 +408,217 @@ class PartSalesInvoiceController extends Controller
         return view('admin.part_sales_invoices.show', compact('partSalesInvoice'));
     }
 
+    public function edit(PartSalesInvoice $partSalesInvoice)
+    {
+        $partSalesInvoice->load('customer', 'items.sparePart');
+        $customers = Customer::where('is_active', true)->orderBy('name')->get();
+        
+        $spareParts = SparePart::where('is_active', true)
+            ->orderBy('name')
+            ->get()
+            ->map(function ($part) {
+                $stock = SparePartStock::where('spare_part_id', $part->id)->first();
+                $part->qty_available = $stock ? $stock->quantity : 0;
+                return $part;
+            });
+
+        return view('admin.part_sales_invoices.edit', compact('partSalesInvoice', 'customers', 'spareParts'));
+    }
+
+    public function update(Request $request, PartSalesInvoice $partSalesInvoice)
+    {
+        $request->validate([
+            'invoice_number' => 'required|string|max:255|unique:part_sales_invoices,invoice_number,' . $partSalesInvoice->id,
+            'invoice_date' => 'required|date',
+            'customer_id' => 'nullable|exists:customers,id',
+            'customer_name' => 'required|string|max:255',
+            'customer_mobile' => 'nullable|string|max:20',
+            'customer_address' => 'nullable|string',
+            'customer_gstin' => 'nullable|string|max:15',
+            'customer_pan' => 'nullable|string|max:10',
+            'place_of_supply' => 'required|string|max:255',
+            'payment_mode' => 'required|string|max:255',
+            'tax_regime' => 'required|string|in:cgst_sgst,igst',
+            'previous_balance' => 'nullable|numeric|min:0',
+            'received_amount' => 'required|numeric|min:0',
+            'items' => 'required|array|min:1',
+            'items.*.spare_part_id' => 'required|exists:spare_parts,id',
+            'items.*.quantity' => 'required|integer|min:1',
+            'items.*.rate' => 'required|numeric|min:0',
+            'items.*.tax_percentage' => 'required|numeric|min:0|max:100',
+            'items.*.gst_type' => 'required|string|in:exclusive,inclusive',
+            'items.*.serial_no_warranty_notes' => 'nullable|string|max:255',
+        ]);
+
+        if (!$this->isLastFourDigitsUnique($request->invoice_number, null, $partSalesInvoice->id)) {
+            return back()->withErrors(['invoice_number' => 'The last 4 digits of the invoice number must be unique across both vehicle and parts invoices.'])->withInput();
+        }
+
+        // Calculations
+        $taxable_amount = 0;
+        $cgst_amount = 0;
+        $sgst_amount = 0;
+        $igst_amount = 0;
+        $subtotal = 0;
+        $tax_regime = $request->input('tax_regime', 'cgst_sgst');
+
+        foreach ($request->items as $itemData) {
+            $qty = intval($itemData['quantity']);
+            $rate = floatval($itemData['rate']);
+            $tax_pct = floatval($itemData['tax_percentage']);
+            $gst_type = $itemData['gst_type'] ?? 'exclusive';
+
+            if ($gst_type === 'inclusive') {
+                $rate_excl_tax = $rate / (1 + ($tax_pct / 100));
+                $line_taxable = $qty * $rate_excl_tax;
+            } else {
+                $line_taxable = $qty * $rate;
+            }
+            $line_tax = ($line_taxable * $tax_pct) / 100;
+            
+            $taxable_amount += $line_taxable;
+            if ($tax_regime === 'igst') {
+                $igst_amount += round($line_tax, 2);
+            } else {
+                $cgst_amount += round($line_tax / 2, 2);
+                $sgst_amount += round($line_tax / 2, 2);
+            }
+            $subtotal += ($line_taxable + $line_tax);
+        }
+
+        $prev_bal = floatval($request->input('previous_balance', 0));
+        $received = floatval($request->input('received_amount', 0));
+        
+        $total_before_round = $subtotal;
+        $total_rounded = round($total_before_round);
+        $round_off = $total_rounded - $total_before_round;
+
+        $grand_total = $total_rounded;
+        $balance = $grand_total - $received;
+        $curr_bal = $prev_bal + $balance;
+
+        DB::transaction(function () use ($request, $partSalesInvoice, $taxable_amount, $cgst_amount, $sgst_amount, $igst_amount, $tax_regime, $round_off, $total_rounded, $received, $balance, $prev_bal, $curr_bal) {
+            // 1. Revert previous stock movements for existing items
+            $partSalesInvoice->load('items');
+            foreach ($partSalesInvoice->items as $oldItem) {
+                $stock = SparePartStock::firstOrCreate(
+                    ['spare_part_id' => $oldItem->spare_part_id],
+                    ['quantity' => 0, 'min_quantity' => 0, 'purchase_price' => 0]
+                );
+                $stock->increment('quantity', $oldItem->quantity);
+
+                SparePartStockTransaction::create([
+                    'spare_part_id' => $oldItem->spare_part_id,
+                    'transaction_type' => 'in',
+                    'quantity' => $oldItem->quantity,
+                    'reference_no' => $partSalesInvoice->invoice_number,
+                    'notes' => 'Restored for edit on Parts Sales Invoice #' . $partSalesInvoice->invoice_number,
+                ]);
+            }
+
+            // 2. Delete existing items
+            $partSalesInvoice->items()->delete();
+
+            // 3. Update invoice details
+            $invoiceNumber = trim($request->invoice_number);
+            $partSalesInvoice->update([
+                'invoice_number' => $invoiceNumber,
+                'invoice_date' => $request->invoice_date,
+                'customer_id' => $request->customer_id,
+                'customer_name' => $request->customer_name,
+                'customer_mobile' => $request->customer_mobile,
+                'customer_address' => $request->customer_address,
+                'customer_gstin' => $request->customer_gstin,
+                'customer_pan' => $request->customer_pan,
+                'place_of_supply' => $request->place_of_supply,
+                'tax_regime' => $tax_regime,
+                'taxable_amount' => $taxable_amount,
+                'cgst_amount' => $cgst_amount,
+                'sgst_amount' => $sgst_amount,
+                'igst_amount' => $igst_amount,
+                'round_off' => $round_off,
+                'total_amount' => $total_rounded,
+                'received_amount' => $received,
+                'balance' => $balance,
+                'payment_mode' => $request->payment_mode,
+                'previous_balance' => $prev_bal,
+                'current_balance' => $curr_bal,
+            ]);
+
+            // 4. Update or sync initial payment transaction
+            $initialTx = PaymentTransaction::where('payable_type', get_class($partSalesInvoice))
+                ->where('payable_id', $partSalesInvoice->id)
+                ->where('note', 'Initial Payment on Creation')
+                ->first();
+
+            if ($initialTx) {
+                if ($received > 0) {
+                    $initialTx->update([
+                        'amount' => $received,
+                        'payment_mode' => $request->payment_mode ?? 'Cash',
+                    ]);
+                } else {
+                    $initialTx->delete();
+                }
+            } elseif ($received > 0) {
+                PaymentTransaction::create([
+                    'payable_type' => get_class($partSalesInvoice),
+                    'payable_id' => $partSalesInvoice->id,
+                    'transaction_type' => 'payment',
+                    'amount' => $received,
+                    'payment_mode' => $request->payment_mode ?? 'Cash',
+                    'note' => 'Initial Payment on Creation',
+                    'created_by' => Auth::id(),
+                ]);
+            }
+
+            // 5. Add new items & decrement stock
+            foreach ($request->items as $itemData) {
+                $qty = intval($itemData['quantity']);
+                $rate = floatval($itemData['rate']);
+                $tax_pct = floatval($itemData['tax_percentage']);
+                $gst_type = $itemData['gst_type'] ?? 'exclusive';
+
+                if ($gst_type === 'inclusive') {
+                    $rate = $rate / (1 + ($tax_pct / 100));
+                }
+
+                $line_taxable = $qty * $rate;
+                $line_tax = ($line_taxable * $tax_pct) / 100;
+                $line_amount = $line_taxable + $line_tax;
+
+                // Decrement stock
+                $stock = SparePartStock::firstOrCreate(
+                    ['spare_part_id' => $itemData['spare_part_id']],
+                    ['quantity' => 0, 'min_quantity' => 0, 'purchase_price' => 0]
+                );
+                $stock->decrement('quantity', $qty);
+
+                // Transaction log
+                SparePartStockTransaction::create([
+                    'spare_part_id' => $itemData['spare_part_id'],
+                    'transaction_type' => 'out',
+                    'quantity' => $qty,
+                    'reference_no' => $invoiceNumber,
+                    'notes' => 'Sold via Parts Sales Invoice #' . $invoiceNumber,
+                ]);
+
+                PartSalesInvoiceItem::create([
+                    'part_sales_invoice_id' => $partSalesInvoice->id,
+                    'spare_part_id' => $itemData['spare_part_id'],
+                    'quantity' => $qty,
+                    'rate' => $rate,
+                    'tax_percentage' => $tax_pct,
+                    'tax_amount' => $line_tax,
+                    'amount' => $line_amount,
+                    'serial_no_warranty_notes' => $itemData['serial_no_warranty_notes'] ?? null,
+                ]);
+            }
+        });
+
+        return redirect()->route('admin.part-sales-invoices.show', $partSalesInvoice)->withSuccess('Parts Sales Invoice updated successfully.');
+    }
+
     public function destroy(PartSalesInvoice $partSalesInvoice)
     {
         DB::transaction(function () use ($partSalesInvoice) {
