@@ -393,6 +393,12 @@
                         <td class="text-right">₹{{ number_format($partSalesInvoice->sgst_amount, 2) }}</td>
                     </tr>
                     @endif
+                    @if(($partSalesInvoice->discount ?? 0) > 0)
+                    <tr>
+                        <td>Discount (-):</td>
+                        <td class="text-right text-danger">-₹{{ number_format($partSalesInvoice->discount, 2) }}</td>
+                    </tr>
+                    @endif
                     @if($partSalesInvoice->round_off != 0)
                     <tr>
                         <td>Round Off:</td>

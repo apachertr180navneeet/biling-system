@@ -30,6 +30,7 @@ class PartSalesInvoice extends Model
         'sgst_amount',
         'igst_amount',
         'round_off',
+        'discount',
         'total_amount',
         'received_amount',
         'balance',

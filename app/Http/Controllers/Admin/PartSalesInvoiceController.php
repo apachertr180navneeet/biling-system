@@ -249,6 +249,7 @@ class PartSalesInvoiceController extends Controller
             'place_of_supply' => 'required|string|max:255',
             'payment_mode' => 'required|string|max:255',
             'tax_regime' => 'required|string|in:cgst_sgst,igst',
+            'discount' => 'nullable|numeric|min:0',
             'previous_balance' => 'nullable|numeric|min:0',
             'received_amount' => 'required|numeric|min:0',
             'items' => 'required|array|min:1',
@@ -300,10 +301,11 @@ class PartSalesInvoiceController extends Controller
             $subtotal += ($line_taxable + $line_tax);
         }
 
+        $discount = floatval($request->input('discount', 0));
         $prev_bal = floatval($request->input('previous_balance', 0));
         $received = floatval($request->input('received_amount', 0));
         
-        $total_before_round = $subtotal;
+        $total_before_round = max(0, $subtotal - $discount);
         $total_rounded = round($total_before_round);
         $round_off = $total_rounded - $total_before_round;
 
@@ -311,7 +313,7 @@ class PartSalesInvoiceController extends Controller
         $balance = $grand_total - $received;
         $curr_bal = $prev_bal + $balance;
 
-        $invoice = DB::transaction(function () use ($request, $taxable_amount, $cgst_amount, $sgst_amount, $igst_amount, $tax_regime, $round_off, $total_rounded, $received, $balance, $prev_bal, $curr_bal) {
+        $invoice = DB::transaction(function () use ($request, $taxable_amount, $cgst_amount, $sgst_amount, $igst_amount, $tax_regime, $round_off, $discount, $total_rounded, $received, $balance, $prev_bal, $curr_bal) {
             // Generate or use provided invoice number
             $invoiceNumber = $request->filled('invoice_number')
                 ? trim($request->input('invoice_number'))
@@ -333,6 +335,7 @@ class PartSalesInvoiceController extends Controller
                 'sgst_amount' => $sgst_amount,
                 'igst_amount' => $igst_amount,
                 'round_off' => $round_off,
+                'discount' => $discount,
                 'total_amount' => $total_rounded,
                 'received_amount' => $received,
                 'balance' => $balance,
@@ -439,6 +442,7 @@ class PartSalesInvoiceController extends Controller
             'place_of_supply' => 'required|string|max:255',
             'payment_mode' => 'required|string|max:255',
             'tax_regime' => 'required|string|in:cgst_sgst,igst',
+            'discount' => 'nullable|numeric|min:0',
             'previous_balance' => 'nullable|numeric|min:0',
             'received_amount' => 'required|numeric|min:0',
             'items' => 'required|array|min:1',
@@ -486,10 +490,11 @@ class PartSalesInvoiceController extends Controller
             $subtotal += ($line_taxable + $line_tax);
         }
 
+        $discount = floatval($request->input('discount', 0));
         $prev_bal = floatval($request->input('previous_balance', 0));
         $received = floatval($request->input('received_amount', 0));
         
-        $total_before_round = $subtotal;
+        $total_before_round = max(0, $subtotal - $discount);
         $total_rounded = round($total_before_round);
         $round_off = $total_rounded - $total_before_round;
 
@@ -497,7 +502,7 @@ class PartSalesInvoiceController extends Controller
         $balance = $grand_total - $received;
         $curr_bal = $prev_bal + $balance;
 
-        DB::transaction(function () use ($request, $partSalesInvoice, $taxable_amount, $cgst_amount, $sgst_amount, $igst_amount, $tax_regime, $round_off, $total_rounded, $received, $balance, $prev_bal, $curr_bal) {
+        DB::transaction(function () use ($request, $partSalesInvoice, $taxable_amount, $cgst_amount, $sgst_amount, $igst_amount, $tax_regime, $round_off, $discount, $total_rounded, $received, $balance, $prev_bal, $curr_bal) {
             // 1. Revert previous stock movements for existing items
             $partSalesInvoice->load('items');
             foreach ($partSalesInvoice->items as $oldItem) {
@@ -537,6 +542,7 @@ class PartSalesInvoiceController extends Controller
                 'sgst_amount' => $sgst_amount,
                 'igst_amount' => $igst_amount,
                 'round_off' => $round_off,
+                'discount' => $discount,
                 'total_amount' => $total_rounded,
                 'received_amount' => $received,
                 'balance' => $balance,

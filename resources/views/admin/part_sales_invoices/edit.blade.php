@@ -368,6 +368,11 @@
                         <input type="text" id="summary_igst" class="form-control bg-white" readonly value="{{ number_format($partSalesInvoice->igst_amount, 2, '.', '') }}">
                     </div>
                     <div class="col-md-3">
+                        <label class="form-label">Discount / Offer (INR)</label>
+                        <input type="number" step="0.01" name="discount" id="discount" class="form-control @error('discount') is-invalid @enderror" value="{{ old('discount', number_format($partSalesInvoice->discount ?? 0, 2, '.', '')) }}" min="0">
+                        @error('discount')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-md-3">
                         <label class="form-label">Round Off (INR)</label>
                         <input type="text" id="summary_round" class="form-control bg-white" readonly value="{{ number_format($partSalesInvoice->round_off, 2, '.', '') }}">
                     </div>
@@ -987,6 +992,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var summarySgst = document.getElementById('summary_sgst');
     var summaryIgst = document.getElementById('summary_igst');
     var taxRegimeSelect = document.getElementById('tax_regime');
+    var discountInput = document.getElementById('discount');
     var summaryRound = document.getElementById('summary_round');
     var summaryGrand = document.getElementById('summary_grand');
     var prevBalanceInput = document.getElementById('previous_balance');
@@ -1045,9 +1051,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        var netTotalBeforeRound = taxableTotal + cgstTotal + sgstTotal + igstTotal;
+        var discountVal = parseFloat(discountInput ? discountInput.value : 0) || 0;
+        var subtotalWithTax = taxableTotal + cgstTotal + sgstTotal + igstTotal;
+        var netTotalBeforeRound = Math.max(0, subtotalWithTax - discountVal);
         var netTotalRounded = Math.round(netTotalBeforeRound);
-        var roundOff = netTotalRounded - netTotalBeforeRound;
+        var roundOff = netTotalRounded - (subtotalWithTax - discountVal);
 
         summaryTaxable.value = taxableTotal.toFixed(2);
         summaryCgst.value = cgstTotal.toFixed(2);
@@ -1064,6 +1072,7 @@ document.addEventListener('DOMContentLoaded', function() {
         summaryCurrentBalance.value = curBal.toFixed(2);
     }
 
+    if (discountInput) discountInput.addEventListener('input', calculateSummary);
     prevBalanceInput.addEventListener('input', calculateSummary);
     receivedAmountInput.addEventListener('input', calculateSummary);
 

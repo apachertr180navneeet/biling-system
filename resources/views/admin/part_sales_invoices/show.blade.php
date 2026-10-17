@@ -862,13 +862,27 @@ if (!function_exists('getIndianRupeesInWords')) {
                                     <td class="summary-value">₹ {{ number_format($partSalesInvoice->sgst_amount, 2) }}</td>
                                 </tr>
                                 @endif
+                                @if(($partSalesInvoice->discount ?? 0) > 0)
+                                <tr>
+                                    <td class="summary-label">Discount</td>
+                                    <td class="summary-value" style="color: #dc2626;">- ₹ {{ number_format($partSalesInvoice->discount, 2) }}</td>
+                                </tr>
+                                @endif
                                 <tr>
                                     <td class="summary-label">Round Off</td>
                                     <td class="summary-value">₹ {{ number_format($partSalesInvoice->round_off, 2) }}</td>
                                 </tr>
                                 <tr class="summary-total-row">
                                     <td class="summary-total-label">Total Amount</td>
-                                    <td class="summary-total-value">₹ {{ number_format($partSalesInvoice->total_amount, 0) }}</td>
+                                    <td class="summary-total-value">₹ {{ number_format($partSalesInvoice->total_amount, 2) }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="summary-label">Received Amount</td>
+                                    <td class="summary-value" style="color: #059669; font-weight: 600;">₹ {{ number_format($partSalesInvoice->received_amount, 2) }}</td>
+                                </tr>
+                                <tr style="border-top: 1.5px solid #059669;">
+                                    <td class="summary-total-label" style="color: #dc2626; padding-top: 5px;">Outstanding Balance</td>
+                                    <td class="summary-total-value" style="color: #dc2626; padding-top: 5px;">₹ {{ number_format($partSalesInvoice->balance, 2) }}</td>
                                 </tr>
 
 

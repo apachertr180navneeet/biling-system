@@ -943,23 +943,37 @@
                             @endif
                             <tr>
                                 <td class="summary-label">Total</td>
-                                <td class="summary-value">{{ number_format($vehicleSalesInvoice->total, 2) }}</td>
+                                <td class="summary-value">₹ {{ number_format($vehicleSalesInvoice->total, 2) }}</td>
                             </tr>
+                            @if($vehicleSalesInvoice->nemmp_incentive > 0)
                             <tr>
                                 <td class="summary-label" style="font-size: 11px;">Less :- NEMMP 2020</td>
-                                <td class="summary-value">{{ number_format($vehicleSalesInvoice->nemmp_incentive, 2) }}</td>
+                                <td class="summary-value" style="color: #dc2626;">- ₹ {{ number_format($vehicleSalesInvoice->nemmp_incentive, 2) }}</td>
                             </tr>
+                            @endif
+                            @if($vehicleSalesInvoice->discount > 0)
                             <tr>
                                 <td class="summary-label">Discount</td>
-                                <td class="summary-value">{{ number_format($vehicleSalesInvoice->discount, 2) }}</td>
+                                <td class="summary-value" style="color: #dc2626;">- ₹ {{ number_format($vehicleSalesInvoice->discount, 2) }}</td>
                             </tr>
+                            @endif
+                            @if(($vehicleSalesInvoice->nemmp_incentive + $vehicleSalesInvoice->discount) > 0)
                             <tr>
                                 <td class="summary-label">TOTAL DISC. (-)</td>
-                                <td class="summary-value">{{ number_format($vehicleSalesInvoice->nemmp_incentive + $vehicleSalesInvoice->discount, 2) }}</td>
+                                <td class="summary-value" style="color: #dc2626;">- ₹ {{ number_format($vehicleSalesInvoice->nemmp_incentive + $vehicleSalesInvoice->discount, 2) }}</td>
                             </tr>
+                            @endif
                             <tr class="summary-total-row">
                                 <td class="summary-total-label">G. Total</td>
-                                <td class="summary-total-value">{{ number_format($vehicleSalesInvoice->grand_total, 2) }}</td>
+                                <td class="summary-total-value">₹ {{ number_format($vehicleSalesInvoice->grand_total, 2) }}</td>
+                            </tr>
+                            <tr>
+                                <td class="summary-label">Received Amount</td>
+                                <td class="summary-value" style="color: #059669; font-weight: 600;">₹ {{ number_format($vehicleSalesInvoice->received_amount, 2) }}</td>
+                            </tr>
+                            <tr style="border-top: 1.5px solid #059669;">
+                                <td class="summary-total-label" style="color: #dc2626; padding-top: 5px;">Outstanding Balance</td>
+                                <td class="summary-total-value" style="color: #dc2626; padding-top: 5px;">₹ {{ number_format($vehicleSalesInvoice->balance, 2) }}</td>
                             </tr>
                         </table>
                     </div>
